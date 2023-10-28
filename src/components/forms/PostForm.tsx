@@ -15,12 +15,24 @@ import FileUploader from "../shared/FileUploader";
 import { Input } from "../ui/input";
 import { PostSchema } from "@/lib/validation";
 import { Models } from "appwrite";
+import { useCreatePost } from "@/lib/react-query/queries";
+import { useUserContext } from "@/context/AuthContext";
+import { useToast } from "../ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import Loader from "../shared/Loader";
 
 interface PostFormProps {
   post?: Models.Document;
 }
 
 const PostForm = ({ post }: PostFormProps) => {
+  const { mutateAsync: createPost, isPending: isCreatingPost } =
+    useCreatePost();
+
+  const { user } = useUserContext();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
   const form = useForm<z.infer<typeof PostSchema>>({
     resolver: zodResolver(PostSchema),
     defaultValues: {
@@ -31,8 +43,19 @@ const PostForm = ({ post }: PostFormProps) => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof PostSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof PostSchema>) {
+    const newPost = await createPost({
+      ...values,
+      userId: user.id,
+    });
+
+    if (!newPost)
+      return toast({
+        title: "Erro ao criar post",
+        description: "Tente novamente mais tarde",
+      });
+
+    navigate("/");
   }
 
   return (
@@ -110,11 +133,18 @@ const PostForm = ({ post }: PostFormProps) => {
           <Button type="button" className="shad-button_dark_4">
             Cancel
           </Button>
+
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
           >
-            Enviar
+            {isCreatingPost ? (
+              <div className="flex-center">
+                <Loader />
+              </div>
+            ) : (
+              "Enviar"
+            )}
           </Button>
         </div>
       </form>
