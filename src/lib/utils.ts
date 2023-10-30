@@ -24,3 +24,7 @@ export function timeAgo(dateString: string): string {
     return `${Math.floor(differenceInSeconds)} segundo(s) atrás`;
   }
 }
+
+export const checkIsLiked = (likeList: string[], userId: string) => {
+  return likeList.includes(userId);
+};
