@@ -10,12 +10,12 @@ import { FC, useEffect, useState } from "react";
 import Loader from "./Loader";
 
 type Props = {
-  post: Models.Document;
+  post?: Models.Document;
   userId: string;
 };
 
 const PostStats: FC<Props> = ({ post, userId }) => {
-  const likesList = post.likes.map((user: Models.Document) => user.$id);
+  const likesList = post?.likes.map((user: Models.Document) => user.$id);
 
   const [likes, setLikes] = useState<string[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
@@ -28,7 +28,7 @@ const PostStats: FC<Props> = ({ post, userId }) => {
   const { data: currentUser } = useGetCurrentUser();
 
   const savedPostRecord = currentUser?.save.find(
-    (record: Models.Document) => record.post.$id === post.$id
+    (record: Models.Document) => record.post.$id === post?.$id
   );
 
   useEffect(() => {
@@ -52,7 +52,7 @@ const PostStats: FC<Props> = ({ post, userId }) => {
     }
 
     setLikes(newLikes);
-    likePost({ postId: post.$id, likesArray: newLikes });
+    likePost({ postId: post?.$id || "", likesArray: newLikes });
   };
 
   const handleSavePost = (
@@ -65,7 +65,7 @@ const PostStats: FC<Props> = ({ post, userId }) => {
       return deleteSavedPost(savedPostRecord.$id);
     }
 
-    savePost({ userId: userId, postId: post.$id });
+    savePost({ userId: userId, postId: post?.$id || "" });
     setIsSaved(true);
   };
 
