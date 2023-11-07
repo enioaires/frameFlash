@@ -1,11 +1,13 @@
 import Loader from "@/components/shared/Loader";
 import PostCard from "@/components/shared/PostCard";
+import { useUserContext } from "@/context/AuthContext";
 import { useGetRecentPosts } from "@/lib/react-query/queries";
 import { Models } from "appwrite";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const { data: posts, isPending } = useGetRecentPosts();
+  const { user } = useUserContext();
   const navigate = useNavigate();
 
   return (
@@ -14,12 +16,14 @@ const Home = () => {
         <div className="home-posts">
           <div className="flex items-center justify-between w-full">
             <h2 className="h3-bold md:h2-bold text-left w-full">Feed</h2>
-            <img
-              src="/assets/icons/gallery-add.svg"
-              alt="Criar post"
-              className="px-7 cursor-pointer"
-              onClick={() => navigate("/create-post")}
-            />
+            {user.email === "enio@mail.com" && (
+              <img
+                src="/assets/icons/gallery-add.svg"
+                alt="Criar post"
+                className="px-7 cursor-pointer"
+                onClick={() => navigate("/create-post")}
+              />
+            )}
           </div>
           {isPending && !posts ? (
             <Loader />
