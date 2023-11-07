@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   useQuery,
   useMutation,
@@ -164,19 +166,21 @@ export const useGetpostById = (postId: string) => {
   })
 }
 
-export const useGetposts = () => {
+export const useGetPosts = () => {
+  // @ts-ignore
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
-    queryFn: getInfinitePosts,
-    getNextPageParam: (lastPage) => {
-      if (lastPage && lastPage.documents.length === 0) return null
-
-      const lastId = lastPage?.documents[lastPage?.documents.length - 1].$id
-
-      return lastId
-    }
-  })
-}
+    queryKey: [QUERY_KEYS.GET_INFINITE_POSTS], // Certifique-se de que isso é um array
+    queryFn: getInfinitePosts as any,
+    getNextPageParam: (lastPage: any) => {
+      // Se não há dados, não há mais páginas.
+      if (lastPage && lastPage.documents.length === 0) {
+        return null;
+      }
+      const lastId = lastPage.documents[lastPage.documents.length - 1].$id;
+      return lastId;
+    },
+  });
+};
 
 export const useSearchPosts = (searchTerm: string) => {
   return useQuery({
