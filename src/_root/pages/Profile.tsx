@@ -11,7 +11,6 @@ import { LikedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById } from "@/lib/react-query/queries";
 import GridPostList from "@/components/shared/GridPostList";
-import { Button } from "@/components/ui/button";
 import Loader from "@/components/shared/Loader";
 
 interface StabBlockProps {
@@ -88,11 +87,6 @@ const Profile = () => {
                   Edit Profile
                 </p>
               </Link>
-            </div>
-            <div className={`${user.id === id && "hidden"}`}>
-              <Button type="button" className="shad-button_primary px-8">
-                Follow
-              </Button>
             </div>
           </div>
         </div>
