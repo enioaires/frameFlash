@@ -7,7 +7,12 @@ const EditPost = () => {
   const { id } = useParams<{ id: string }>();
   const { data, isPending } = useGetpostById(id || "");
 
-  if (isPending) return <Loader />;
+  if (isPending)
+    return (
+      <div className="flex-center w-full h-full">
+        <Loader />
+      </div>
+    );
 
   return (
     <div className="flex flex-1">

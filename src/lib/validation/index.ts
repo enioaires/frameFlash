@@ -18,3 +18,11 @@ export const PostSchema = z.object({
   location: z.string().min(5).max(100),
   tags: z.string(),
 });
+
+export const ProfileSchema = z.object({
+  file: z.custom<File[]>(),
+  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  username: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  email: z.string().email(),
+  bio: z.string(),
+});
