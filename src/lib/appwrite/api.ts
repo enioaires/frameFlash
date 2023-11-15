@@ -160,6 +160,7 @@ export async function createPost(post: INewPost) {
       v4(),
       {
         creator: post.userId,
+        title: post.title,
         caption: post.caption,
         imageUrl: fileUrl,
         imageId: uploadedFile.$id,
@@ -212,6 +213,7 @@ export async function updatePost(post: IUpdatePost) {
       appwriteConfig.postCollectionId,
       post.postId,
       {
+        title: post.title,
         caption: post.caption,
         imageUrl: image.imageUrl,
         imageId: image.imageId,

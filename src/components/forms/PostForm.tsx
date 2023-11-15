@@ -38,6 +38,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
   const form = useForm<z.infer<typeof PostSchema>>({
     resolver: zodResolver(PostSchema),
     defaultValues: {
+      title: post ? post.title : "",
       caption: post ? post.caption : "",
       file: [],
       location: post ? post.location : "",
@@ -83,6 +84,19 @@ const PostForm = ({ post, action }: PostFormProps) => {
         onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-9 w-full max-w-5xl"
       >
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Titulo</FormLabel>
+              <FormControl>
+                <Input type="text" className="shad-input" {...field} />
+              </FormControl>
+              <FormMessage className="shad-form_message" />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="caption"

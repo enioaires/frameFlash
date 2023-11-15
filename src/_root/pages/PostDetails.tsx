@@ -120,7 +120,7 @@ const PostDetails = () => {
                 </Button>
               </div>
             </div>
-
+            <p className="font-semibold text-2xl text-center">{post?.title}</p>
             <hr className="border w-full border-dark-4/80" />
 
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">

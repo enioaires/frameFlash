@@ -13,7 +13,8 @@ export const SigninSchema = z.object({
 });
 
 export const PostSchema = z.object({
-  caption: z.string().min(5).max(200),
+  title: z.string().min(5).max(100),
+  caption: z.string().min(5).max(2000),
   file: z.custom<File[]>(),
   location: z.string().min(5).max(100),
   tags: z.string(),
