@@ -124,7 +124,11 @@ const PostDetails = () => {
             <hr className="border w-full border-dark-4/80" />
 
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
-              <p>{post?.caption}</p>
+              <div className="flex flex-col gap-4 overflow-auto max-h-[200px] pr-2">
+                {post.captions?.map((caption: string) => (
+                  <p key={caption}>{caption}</p>
+                ))}
+              </div>
               <ul className="flex gap-1 mt-2">
                 {post?.tags.map((tag: string, index: string) => (
                   <li

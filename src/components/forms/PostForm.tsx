@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "../ui/button";
 import {
@@ -20,6 +21,7 @@ import { useUserContext } from "@/context/AuthContext";
 import { useToast } from "../ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import Loader from "../shared/Loader";
+import { PlusSquare } from "lucide-react";
 
 interface PostFormProps {
   post?: Models.Document;
@@ -39,14 +41,31 @@ const PostForm = ({ post, action }: PostFormProps) => {
     resolver: zodResolver(PostSchema),
     defaultValues: {
       title: post ? post.title : "",
-      caption: post ? post.caption : "",
+      captions: post ? post.captions : [""],
       file: [],
       location: post ? post.location : "",
       tags: post ? post.tags.join(",") : "",
     },
   });
+  const { fields, append } = useFieldArray({
+    control: form.control,
+    //@ts-ignore
+    name: "captions",
+  });
+
+  const onAddCaptionClick = () => {
+    append({ text: "" });
+  };
 
   async function onSubmit(values: z.infer<typeof PostSchema>) {
+    console.log(values);
+    if (user.id !== "2da230a7-ef4d-463c-bd6e-fa024def9e14") {
+      return toast({
+        title: "Erro ao criar post",
+        description: "Você não tem permissão para criar posts",
+      });
+    }
+
     if (post && action === "update") {
       const updatedPost = await updatePost({
         ...values,
@@ -77,7 +96,6 @@ const PostForm = ({ post, action }: PostFormProps) => {
 
     navigate("/");
   }
-
   return (
     <Form {...form}>
       <form
@@ -97,22 +115,32 @@ const PostForm = ({ post, action }: PostFormProps) => {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="caption"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="shad-form_label">Legenda</FormLabel>
-              <FormControl>
-                <Textarea
-                  className="shad-textarea custom-scrollbar"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage className="shad-form_message" />
-            </FormItem>
-          )}
-        />
+        {fields.map((field, index) => (
+          <FormField
+            key={field.id}
+            control={form.control}
+            name={`captions.${index}`}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="shad-form_label">
+                  Legenda {index + 1}
+                </FormLabel>
+                <FormControl>
+                  <Textarea
+                    className="shad-textarea custom-scrollbar"
+                    {...field}
+                    value={field.value}
+                  />
+                </FormControl>
+                <FormMessage className="shad-form_message" />
+              </FormItem>
+            )}
+          />
+        ))}
+        <div className="flex justify-end w-full items-center gap-2">
+          <p>Adicionar Legenda</p>
+          <PlusSquare className="cursor-pointer" onClick={onAddCaptionClick} />
+        </div>
         <FormField
           control={form.control}
           name="file"

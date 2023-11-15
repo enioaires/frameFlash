@@ -161,7 +161,7 @@ export async function createPost(post: INewPost) {
       {
         creator: post.userId,
         title: post.title,
-        caption: post.caption,
+        captions: post.captions,
         imageUrl: fileUrl,
         imageId: uploadedFile.$id,
         location: post.location,
@@ -214,7 +214,7 @@ export async function updatePost(post: IUpdatePost) {
       post.postId,
       {
         title: post.title,
-        caption: post.caption,
+        captions: post.captions,
         imageUrl: image.imageUrl,
         imageId: image.imageId,
         location: post.location,
