@@ -11,6 +11,8 @@ import {
   EditPost,
   Explore,
   Home,
+  Items,
+  Lore,
   PostDetails,
   Profile,
   Saved,
@@ -31,6 +33,8 @@ const App = () => {
         <Route element={<RootLayout />}>
           <Route index element={<Home />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/item" element={<Items />} />
+          <Route path="/lore" element={<Lore />} />
           <Route path="/saved" element={<Saved />} />
           <Route path="/all-users" element={<AllUsers />} />
           <Route path="/create-post" element={<CreatePost />} />

@@ -4,7 +4,7 @@ import { INewPost, IUpdatePost } from "@/types";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "../queryKeys";
 import { getCurrentUser } from "@/lib/appwrite/auth/api";
-import { createPost, likePost, savePost, deleteSavedPost, updatePost, deletePost, getRecentPosts, getPostById, getInfinitePosts, searchPosts, getUserPosts } from "@/lib/appwrite/posts/api";
+import { createPost, likePost, savePost, deleteSavedPost, updatePost, deletePost, getRecentPosts, getPostById, getInfinitePosts, searchPosts, getUserPosts, getRecentItems, getRecentLore } from "@/lib/appwrite/posts/api";
 
 export const useCreatePost = () => {
   const queryClient = useQueryClient();
@@ -114,6 +114,20 @@ export const useGetRecentPosts = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
     queryFn: getRecentPosts,
+  })
+}
+
+export const useGetRecentItems = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+    queryFn: getRecentItems,
+  })
+}
+
+export const useGetRecentLores = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+    queryFn: getRecentLore,
   })
 }
 

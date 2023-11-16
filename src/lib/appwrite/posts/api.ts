@@ -187,6 +187,42 @@ export async function getRecentPosts() {
   return posts
 }
 
+export async function getRecentItems() {
+  const tagSearch = Query.search('tags', 'Item');
+
+  const posts = await database.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.postCollectionId,
+    [
+      Query.orderDesc('$createdAt'),
+      Query.limit(20),
+      tagSearch, // Inclua o filtro na lista de queries
+    ]
+  )
+
+  if (!posts) throw Error
+
+  return posts
+}
+
+export async function getRecentLore() {
+  const loreSearch = Query.search('tags', 'Lore');
+
+  const posts = await database.listDocuments(
+    appwriteConfig.databaseId,
+    appwriteConfig.postCollectionId,
+    [
+      Query.orderDesc('$createdAt'),
+      Query.limit(20),
+      loreSearch, // Inclua o filtro na lista de queries
+    ]
+  )
+
+  if (!posts) throw Error
+
+  return posts
+}
+
 export async function likePost(postId: string, likesArray: string[]) {
   try {
     const updatedPost = await database.updateDocument(
