@@ -1,7 +1,7 @@
-import { getUsers, getUserById, updateUser } from "@/lib/appwrite/api";
 import { IUpdateUser } from "@/types";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { QUERY_KEYS } from "../queryKeys";
+import { getUserById, getUsers, updateUser } from "@/lib/appwrite/auth/api";
 
 export const useGetUsers = (limit?: number) => {
   return useQuery({

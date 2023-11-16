@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { createPost, likePost, savePost, deleteSavedPost, updatePost, deletePost, getRecentPosts, getCurrentUser, getPostById, getInfinitePosts, searchPosts, getUserPosts } from "@/lib/appwrite/api";
 import { INewPost, IUpdatePost } from "@/types";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "../queryKeys";
+import { getCurrentUser } from "@/lib/appwrite/auth/api";
+import { createPost, likePost, savePost, deleteSavedPost, updatePost, deletePost, getRecentPosts, getPostById, getInfinitePosts, searchPosts, getUserPosts } from "@/lib/appwrite/posts/api";
 
 export const useCreatePost = () => {
   const queryClient = useQueryClient();

@@ -1,4 +1,4 @@
-import { createUserAccount, signInAccount, signOutAccount } from "@/lib/appwrite/api";
+import { createUserAccount, signInAccount, signOutAccount } from "@/lib/appwrite/auth/api";
 import { INewUser } from "@/types";
 import { useMutation } from "@tanstack/react-query";
 
