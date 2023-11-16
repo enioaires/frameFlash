@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import GridPostList from "@/components/shared/GridPostList";
 import Loader from "@/components/shared/Loader";
 import SearchResults from "@/components/shared/SearchResults";
 import { Input } from "@/components/ui/input";
 import useDebounce from "@/hooks/useDebounce";
-import { useGetPosts, useSearchPosts } from "@/lib/react-query/queries";
+import { useGetPosts, useSearchPosts } from "@/lib/react-query/posts";
 import { useState, useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 
@@ -30,7 +31,7 @@ const Explore = () => {
   const shouldShowSearchResults = searchValue !== "";
   const shouldShowPosts =
     !shouldShowSearchResults &&
-    posts.pages.every((item) => item?.documents.length === 0);
+    posts.pages.every((item: any) => item?.documents.length === 0);
 
   return (
     <div className="explore-container">
@@ -76,7 +77,7 @@ const Explore = () => {
         ) : shouldShowPosts ? (
           <p className="text-light-4 mt-10 text-center w-full">Fim dos posts</p>
         ) : (
-          posts?.pages.map((item, index) => (
+          posts?.pages.map((item: any, index: number) => (
             <GridPostList key={`page-${index}`} posts={item?.documents} />
           ))
         )}

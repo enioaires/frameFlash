@@ -15,12 +15,12 @@ import { useToast } from "@/components/ui/use-toast";
 
 import { ProfileSchema } from "@/lib/validation";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById, useUpdateUser } from "@/lib/react-query/queries";
 import Loader from "@/components/shared/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import ProfileUploader from "@/components/shared/ProfileUploader";
+import { useGetUserById, useUpdateUser } from "@/lib/react-query/user";
 
 const UpdateProfile = () => {
   const { toast } = useToast();

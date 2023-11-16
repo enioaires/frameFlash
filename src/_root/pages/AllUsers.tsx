@@ -1,6 +1,6 @@
 import Loader from "@/components/shared/Loader";
 import UserCard from "@/components/shared/UserCard";
-import { useGetUsers } from "@/lib/react-query/queries";
+import { useGetUsers } from "@/lib/react-query/user";
 
 const AllUsers = () => {
   const { data: creators, isLoading } = useGetUsers();

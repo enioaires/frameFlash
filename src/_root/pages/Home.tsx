@@ -1,10 +1,11 @@
 import { Models } from "appwrite";
 
 // import { useToast } from "@/components/ui/use-toast";
-import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
 import PostCard from "@/components/shared/PostCard";
 import { Loader } from "lucide-react";
 import UserCard from "@/components/shared/UserCard";
+import { useGetRecentPosts } from "@/lib/react-query/posts";
+import { useGetUsers } from "@/lib/react-query/user";
 
 const Home = () => {
   // const { toast } = useToast();

@@ -16,12 +16,12 @@ import FileUploader from "../shared/FileUploader";
 import { Input } from "../ui/input";
 import { PostSchema } from "@/lib/validation";
 import { Models } from "appwrite";
-import { useCreatePost, useUpdatePost } from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
 import { useToast } from "../ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import Loader from "../shared/Loader";
 import { PlusSquare } from "lucide-react";
+import { useCreatePost, useUpdatePost } from "@/lib/react-query/posts";
 
 interface PostFormProps {
   post?: Models.Document;
