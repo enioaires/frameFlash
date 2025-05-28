@@ -43,13 +43,6 @@ const PostForm = ({ post, action }: PostFormProps) => {
   // Obtém as tags disponíveis dinamicamente
   const availableTags = getAvailableTags();
 
-  // Função auxiliar para converter HTML para texto simples (fallback)
-  const htmlToText = (html: string): string => {
-    const temp = document.createElement('div');
-    temp.innerHTML = html;
-    return temp.textContent || temp.innerText || '';
-  };
-
   // Função para preparar as legendas para salvamento
   const prepareCaptions = (htmlContent: string): string[] => {
     if (!htmlContent || htmlContent.trim() === '') return [''];
@@ -70,16 +63,12 @@ const PostForm = ({ post, action }: PostFormProps) => {
   });
 
   async function onSubmit(values: z.infer<typeof PostSchema>) {
-    // console.log(values);
     // if (user.id !== "2da230a7-ef4d-463c-bd6e-fa024def9e14") {
     //   return toast({
     //     title: "Erro ao criar post",
     //     description: "Você não tem permissão para criar posts",
     //   });
     // }
-
-    // Prepara as legendas para salvamento
-    const processedCaptions = prepareCaptions(values.captions);
 
     if (post && action === "update") {
       const updatedPost = await updatePost({
