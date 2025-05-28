@@ -17,9 +17,9 @@ import FileUploader from "../shared/FileUploader";
 import { Input } from "../ui/input";
 import Loader from "../shared/Loader";
 import { Models } from "appwrite";
-import {MultiSelect} from "../shared/multi-select";
+import { MultiSelect } from "../shared/multi-select";
 import { PostSchema } from "@/lib/validation";
-import {RichTextEditor} from "../shared/rich-text-editor";
+import { RichTextEditor } from "../shared/rich-text-editor";
 import { getAvailableTags } from "@/lib/tags";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -46,7 +46,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
   // Função para preparar as legendas para salvamento
   const prepareCaptions = (htmlContent: string): string[] => {
     if (!htmlContent || htmlContent.trim() === '') return [''];
-    
+
     // Retorna como array com um elemento (formato esperado pelo banco)
     return [htmlContent];
   };
@@ -63,12 +63,18 @@ const PostForm = ({ post, action }: PostFormProps) => {
   });
 
   async function onSubmit(values: z.infer<typeof PostSchema>) {
-    // if (user.id !== "2da230a7-ef4d-463c-bd6e-fa024def9e14") {
-    //   return toast({
-    //     title: "Erro ao criar post",
-    //     description: "Você não tem permissão para criar posts",
-    //   });
-    // }
+    const allowedIds = [
+      "2f9599f6-f734-4ba4-b351-90a5958a90cf",
+      "9977be99-cc64-48df-bb5a-42daba635447",
+      "09f99d93-9cdc-4dcd-b698-da1574506f6f",
+      "b6b5df9c-9d09-4614-9920-684cc0effb7a"
+    ];
+    if (!allowedIds.includes(user.id)) {
+      return toast({
+        title: "Erro ao criar post",
+        description: "Você não tem permissão para criar posts",
+      });
+    }
 
     if (post && action === "update") {
       const updatedPost = await updatePost({
@@ -106,7 +112,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
 
     navigate("/");
   }
-  
+
   return (
     <Form {...form}>
       <form

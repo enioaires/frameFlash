@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
 import { FileWithPath, useDropzone } from "react-dropzone";
+import { useCallback, useState } from "react";
 
 import { convertFileToUrl } from "@/lib/utils";
 
@@ -39,7 +39,7 @@ const ProfileUploader = ({ fieldChange, mediaUrl }: ProfileUploaderProps) => {
           className="h-24 w-24 rounded-full object-cover object-top"
         />
         <p className="text-primary-500 small-regular md:bbase-semibold">
-          Change profile photo
+          Alterar Foto
         </p>
       </div>
     </div>
