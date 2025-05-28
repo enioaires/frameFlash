@@ -1,8 +1,8 @@
-import { useUserContext } from "@/context/AuthContext";
-import { timeAgo } from "@/lib/utils";
-import { Models } from "appwrite";
 import { Link } from "react-router-dom";
+import { Models } from "appwrite";
 import PostStats from "./PostStats";
+import { timeAgo } from "@/lib/utils";
+import { useUserContext } from "@/context/AuthContext";
 
 interface PostCardProps {
   post: Models.Document;
@@ -12,6 +12,29 @@ const PostCard = ({ post }: PostCardProps) => {
   const { user } = useUserContext();
 
   if (!post.creator) return null;
+
+  // Função para renderizar o conteúdo da legenda
+  const renderCaptions = (captions: string[] | string) => {
+    if (Array.isArray(captions)) {
+      // Se for array (formato antigo), junta com <br>
+      return captions.map((caption, index) => (
+        <div 
+          key={index} 
+          dangerouslySetInnerHTML={{ __html: caption }}
+          className="mb-2 last:mb-0"
+        />
+      ));
+    } else if (typeof captions === 'string') {
+      // Se for string (novo formato), renderiza o HTML
+      return (
+        <div 
+          dangerouslySetInnerHTML={{ __html: captions }}
+          className="rich-text-content"
+        />
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="post-card">
@@ -67,9 +90,7 @@ const PostCard = ({ post }: PostCardProps) => {
       </Link>
       <div className="text-md py-5">
         <div className="flex flex-col gap-4">
-          {post.captions?.map((caption: string) => (
-            <p key={caption}>{caption}</p>
-          ))}
+          {renderCaptions(post.captions)}
         </div>
         <ul className="flex gap-1 mt-2">
           {post.tags.map((tag: string) => (

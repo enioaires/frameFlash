@@ -17,7 +17,10 @@ export function timeAgo(dateString: string): string {
   const differenceInDays = differenceInHours / 24;
 
   if (differenceInDays >= 1) {
-    return `${Math.floor(differenceInDays)} dia(s) atrás`;
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   } else if (differenceInHours >= 1) {
     return `${Math.floor(differenceInHours)} hora(s) atrás`;
   } else if (differenceInMinutes >= 1) {

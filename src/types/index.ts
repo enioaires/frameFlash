@@ -25,7 +25,7 @@ export type IUpdateUser = {
 export type INewPost = {
   userId: string;
   title: string;
-  captions: string[];
+  captions: string[]; // Volta para string[] para compatibilidade com banco
   file: File[];
   location?: string;
   tags?: string;
@@ -34,7 +34,7 @@ export type INewPost = {
 export type IUpdatePost = {
   postId: string;
   title: string;
-  captions: string[];
+  captions: string[]; // Volta para string[] para compatibilidade com banco
   imageId: string;
   imageUrl: URL;
   file: File[];
@@ -57,4 +57,3 @@ export type INewUser = {
   username: string;
   password: string;
 };
-

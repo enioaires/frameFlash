@@ -1,7 +1,6 @@
-import { Models } from "appwrite";
-
-import PostCard from "@/components/shared/PostCard";
 import { Loader } from "lucide-react";
+import { Models } from "appwrite";
+import PostCard from "@/components/shared/PostCard";
 import UserCard from "@/components/shared/UserCard";
 import { useGetRecentPosts } from "@/lib/react-query/posts";
 import { useGetUsers } from "@/lib/react-query/user";
@@ -35,7 +34,7 @@ const Home = () => {
     <div className="flex flex-1">
       <div className="home-container">
         <div className="home-posts">
-          <h2 className="h3-bold md:h2-bold text-left w-full">Home Feed</h2>
+          <h2 className="h3-bold md:h2-bold text-left w-full">Publicações</h2>
           {isPostLoading && !posts ? (
             <Loader />
           ) : (

@@ -277,4 +277,117 @@
   .shad-button_ghost {
     @apply flex gap-4 items-center justify-start hover:bg-transparent hover:text-white !important;
   }
+  
+  /* Adicione estes estilos ao seu globals.css */
+
+/* Estilos para o editor de texto rico */
+.rich-text-content {
+  @apply text-light-1;
+  line-height: 1.6;
+}
+
+.rich-text-content p {
+  @apply mb-3;
+}
+
+.rich-text-content p:last-child {
+  @apply mb-0;
+}
+
+.rich-text-content strong,
+.rich-text-content b {
+  @apply font-bold text-primary-500;
+}
+
+.rich-text-content em,
+.rich-text-content i {
+  @apply italic;
+}
+
+.rich-text-content ul {
+  @apply list-disc list-inside ml-4 mb-3;
+}
+
+.rich-text-content ol {
+  @apply list-decimal list-inside ml-4 mb-3;
+}
+
+.rich-text-content li {
+  @apply mb-1;
+}
+
+.rich-text-content br {
+  @apply block;
+  content: "";
+  margin-bottom: 0.75rem;
+}
+
+/* Estilos específicos para o editor contentEditable */
+[contenteditable="true"] {
+  @apply text-light-1;
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+[contenteditable="true"]:empty:before {
+  content: attr(data-placeholder);
+  color: #7c7c8a;
+  font-style: italic;
+  pointer-events: none;
+}
+
+[contenteditable="true"]:focus:before {
+  content: none;
+}
+
+/* Melhorar quebras de linha no editor */
+[contenteditable="true"] br {
+  display: block;
+  margin-bottom: 0.5rem;
+  content: "";
+}
+
+[contenteditable="true"] div {
+  margin-bottom: 0.5rem;
+}
+
+/* Melhorar a aparência das listas no editor */
+[contenteditable="true"] ul {
+  @apply list-disc list-inside ml-4 mb-3;
+}
+
+[contenteditable="true"] ol {
+  @apply list-decimal list-inside ml-4 mb-3;
+}
+
+[contenteditable="true"] li {
+  @apply mb-1;
+}
+
+[contenteditable="true"] strong,
+[contenteditable="true"] b {
+  @apply font-bold text-primary-500;
+}
+
+[contenteditable="true"] em,
+[contenteditable="true"] i {
+  @apply italic;
+}
+
+/* Garantir que o texto não quebre de forma estranha */
+[contenteditable="true"] * {
+  max-width: 100%;
+}
+
+/* Estilos para melhor visualização */
+.rich-text-content {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Ajustar espaçamento entre elementos */
+.rich-text-content > *:not(:last-child) {
+  margin-bottom: 0.75rem;
+}
 }

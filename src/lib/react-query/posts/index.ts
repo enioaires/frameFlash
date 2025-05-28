@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import { INewPost, IUpdatePost } from "@/types";
-import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
+import { createPost, deletePost, deleteSavedPost, getInfinitePosts, getPostById, getPostsByTag, getRecentPosts, getUserPosts, likePost, savePost, searchPosts, updatePost } from "@/lib/appwrite/posts/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { QUERY_KEYS } from "../queryKeys";
 import { getCurrentUser } from "@/lib/appwrite/auth/api";
-import { createPost, likePost, savePost, deleteSavedPost, updatePost, deletePost, getRecentPosts, getPostById, getInfinitePosts, searchPosts, getUserPosts, getRecentItems, getRecentLore } from "@/lib/appwrite/posts/api";
 
 export const useCreatePost = () => {
   const queryClient = useQueryClient();
@@ -117,17 +119,11 @@ export const useGetRecentPosts = () => {
   })
 }
 
-export const useGetRecentItems = () => {
+export const useGetPostsByTag = (tag: string) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
-    queryFn: getRecentItems,
-  })
-}
-
-export const useGetRecentLores = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
-    queryFn: getRecentLore,
+    queryKey: [QUERY_KEYS.GET_POSTS_BY_TAG, tag],
+    queryFn: () => getPostsByTag(tag),
+    enabled: !!tag,
   })
 }
 

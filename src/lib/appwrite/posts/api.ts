@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { INewPost, IUpdatePost } from "@/types";
+import { appwriteConfig, database, storage } from "../config";
+
 import { Query } from "appwrite";
 import { v4 } from "uuid";
-import { storage, appwriteConfig, database } from "../config";
 
 export async function uploadFile(file: File) {
   try {
@@ -64,6 +66,15 @@ export async function createPost(post: INewPost) {
     // Convert tags into array
     const tags = post.tags?.replace(/ /g, "").split(",") || [];
 
+    // Prepare captions - handle both string and legacy array format
+    let captions: string | string[];
+    if (typeof post.captions === 'string') {
+      captions = post.captions;
+    } else {
+      // Legacy support for array format
+      captions = Array.isArray(post.captions) ? post.captions : [post.captions];
+    }
+
     // Create post
     const newPost = await database.createDocument(
       appwriteConfig.databaseId,
@@ -72,7 +83,7 @@ export async function createPost(post: INewPost) {
       {
         creator: post.userId,
         title: post.title,
-        captions: post.captions,
+        captions: captions,
         imageUrl: fileUrl,
         imageId: uploadedFile.$id,
         location: post.location,
@@ -118,6 +129,15 @@ export async function updatePost(post: IUpdatePost) {
     // Convert tags into array
     const tags = post.tags?.replace(/ /g, "").split(",") || [];
 
+    // Prepare captions - handle both string and legacy array format
+    let captions: string | string[];
+    if (typeof post.captions === 'string') {
+      captions = post.captions;
+    } else {
+      // Legacy support for array format
+      captions = Array.isArray(post.captions) ? post.captions : [post.captions];
+    }
+
     //  Update post
     const updatedPost = await database.updateDocument(
       appwriteConfig.databaseId,
@@ -125,7 +145,7 @@ export async function updatePost(post: IUpdatePost) {
       post.postId,
       {
         title: post.title,
-        captions: post.captions,
+        captions: captions,
         imageUrl: image.imageUrl,
         imageId: image.imageId,
         location: post.location,
@@ -187,40 +207,42 @@ export async function getRecentPosts() {
   return posts
 }
 
-export async function getRecentItems() {
-  const tagSearch = Query.search('tags', 'Item');
+export async function getPostsByTag(tagName: string) {
+  try {
+    if (!tagName) return { documents: [] };
 
-  const posts = await database.listDocuments(
-    appwriteConfig.databaseId,
-    appwriteConfig.postCollectionId,
-    [
-      Query.orderDesc('$createdAt'),
-      Query.limit(20),
-      tagSearch, // Inclua o filtro na lista de queries
-    ]
-  )
+    // Busca todos os posts recentes
+    const posts = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [Query.orderDesc('$createdAt'), Query.limit(100)]
+    );
 
-  if (!posts) throw Error
+    if (!posts) throw Error;
 
-  return posts
-}
+    // Normaliza a tag de busca (remove acentos, converte para minúsculo)
+    const normalizeText = (text: string) => 
+      text.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
 
-export async function getRecentLore() {
-  const loreSearch = Query.search('tags', 'Lore');
+    const normalizedSearchTag = normalizeText(tagName);
 
-  const posts = await database.listDocuments(
-    appwriteConfig.databaseId,
-    appwriteConfig.postCollectionId,
-    [
-      Query.orderDesc('$createdAt'),
-      Query.limit(20),
-      loreSearch, // Inclua o filtro na lista de queries
-    ]
-  )
+    // Filtra posts que contenham a tag (case-insensitive, sem acentos)
+    const filteredPosts = {
+      ...posts,
+      documents: posts.documents.filter((post: any) => 
+        post.tags && post.tags.some((tag: string) => 
+          normalizeText(tag).includes(normalizedSearchTag)
+        )
+      )
+    };
 
-  if (!posts) throw Error
-
-  return posts
+    return filteredPosts;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 }
 
 export async function likePost(postId: string, likesArray: string[]) {

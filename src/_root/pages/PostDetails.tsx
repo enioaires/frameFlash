@@ -1,16 +1,16 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
-
-import { multiFormatDateString } from "@/lib/utils";
-import { useUserContext } from "@/context/AuthContext";
-import GridPostList from "@/components/shared/GridPostList";
-import Loader from "@/components/shared/Loader";
-import PostStats from "@/components/shared/PostStats";
-import { Button } from "@/components/ui/button";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   useDeletePost,
   useGetPostById,
   useGetUserPosts,
 } from "@/lib/react-query/posts";
+
+import { Button } from "@/components/ui/button";
+import GridPostList from "@/components/shared/GridPostList";
+import Loader from "@/components/shared/Loader";
+import PostStats from "@/components/shared/PostStats";
+import { multiFormatDateString } from "@/lib/utils";
+import { useUserContext } from "@/context/AuthContext";
 
 const PostDetails = () => {
   const navigate = useNavigate();
@@ -32,6 +32,29 @@ const PostDetails = () => {
 
     deletePost({ postId: id, imageId: post?.imageId });
     navigate(-1);
+  };
+
+  // Função para renderizar o conteúdo da legenda
+  const renderCaptions = (captions: string[] | string) => {
+    if (Array.isArray(captions)) {
+      // Se for array (formato antigo), renderiza cada item
+      return captions.map((caption, index) => (
+        <div 
+          key={index} 
+          dangerouslySetInnerHTML={{ __html: caption }}
+          className="mb-2 last:mb-0"
+        />
+      ));
+    } else if (typeof captions === 'string') {
+      // Se for string (novo formato), renderiza o HTML
+      return (
+        <div 
+          dangerouslySetInnerHTML={{ __html: captions }}
+          className="rich-text-content"
+        />
+      );
+    }
+    return null;
   };
 
   return (
@@ -108,9 +131,7 @@ const PostDetails = () => {
                 <Button
                   onClick={handleDeletePost}
                   variant="ghost"
-                  className={`ost_details-delete_btn ${
-                    user.id !== post?.creator.$id && "hidden"
-                  }`}
+                  className={`ost_details-delete_btn`}
                 >
                   <img
                     src={"/assets/icons/delete.svg"}
@@ -125,10 +146,8 @@ const PostDetails = () => {
             <hr className="border w-full border-dark-4/80" />
 
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
-              <div className="flex flex-col gap-4 overflow-auto max-h-[200px] pr-2">
-                {post.captions?.map((caption: string) => (
-                  <p key={caption}>{caption}</p>
-                ))}
+              <div className="flex flex-col gap-4 overflow-auto max-h-[600px] pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-dark-4 [&::-webkit-scrollbar-thumb]:bg-dark-3 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-dark-2">
+                {renderCaptions(post.captions)}
               </div>
               <ul className="flex gap-1 mt-2">
                 {post?.tags.map((tag: string, index: string) => (

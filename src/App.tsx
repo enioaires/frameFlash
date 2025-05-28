@@ -1,23 +1,23 @@
-import { Routes, Route } from "react-router-dom";
 import "./globals.css";
 
-import SigninForm from "./_auth/forms/SigninForm";
-import SignupForm from "./_auth/forms/SignupForm";
-import AuthLayout from "./_auth/AuthLayout";
-import RootLayout from "./_root/RootLayout";
 import {
   AllUsers,
   CreatePost,
   EditPost,
   Explore,
   Home,
-  Items,
-  Lore,
   PostDetails,
   Profile,
   Saved,
   UpdateProfile,
 } from "./_root/pages";
+import { Route, Routes } from "react-router-dom";
+
+import AuthLayout from "./_auth/AuthLayout";
+import RootLayout from "./_root/RootLayout";
+import SigninForm from "./_auth/forms/SigninForm";
+import SignupForm from "./_auth/forms/SignupForm";
+import TagPage from "./_root/pages/TagPage";
 import { Toaster } from "./components/ui/toaster";
 
 const App = () => {
@@ -33,8 +33,7 @@ const App = () => {
         <Route element={<RootLayout />}>
           <Route index element={<Home />} />
           <Route path="/explore" element={<Explore />} />
-          <Route path="/item" element={<Items />} />
-          <Route path="/lore" element={<Lore />} />
+          <Route path="/tag/:tag" element={<TagPage />} />
           <Route path="/saved" element={<Saved />} />
           <Route path="/all-users" element={<AllUsers />} />
           <Route path="/create-post" element={<CreatePost />} />

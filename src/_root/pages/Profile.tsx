@@ -1,17 +1,17 @@
 import {
-  Route,
-  Routes,
   Link,
   Outlet,
-  useParams,
+  Route,
+  Routes,
   useLocation,
+  useParams,
 } from "react-router-dom";
 
-import { LikedPosts } from "@/_root/pages";
-import { useUserContext } from "@/context/AuthContext";
 import GridPostList from "@/components/shared/GridPostList";
+import { LikedPosts } from "@/_root/pages";
 import Loader from "@/components/shared/Loader";
 import { useGetUserById } from "@/lib/react-query/user";
+import { useUserContext } from "@/context/AuthContext";
 
 interface StabBlockProps {
   value: string | number;
@@ -84,7 +84,7 @@ const Profile = () => {
                   height={20}
                 />
                 <p className="flex whitespace-nowrap small-medium">
-                  Edit Profile
+                  Editar Perfil
                 </p>
               </Link>
             </div>
@@ -120,7 +120,7 @@ const Profile = () => {
               width={20}
               height={20}
             />
-            Liked Posts
+            Posts Curtidos
           </Link>
         </div>
       )}
