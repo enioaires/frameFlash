@@ -2,6 +2,7 @@ import Loader, { ListLoader } from "@/components/shared/Loader";
 
 import { Models } from "appwrite";
 import PostCard from "@/components/shared/PostCard";
+import { TagBanner } from "@/components/shared/HeaderBanner";
 import { useGetPostsByTag } from "@/lib/react-query/posts";
 import { useParams } from "react-router-dom";
 
@@ -19,24 +20,11 @@ const TagPage = () => {
     return tagName.charAt(0).toUpperCase() + tagName.slice(1).toLowerCase();
   };
 
-  // Mapear tags para títulos mais amigáveis
-  const getTagTitle = (tagName: string) => {
-    const tag = tagName.toLowerCase();
-    // Handle plural forms
-    const singularTag = tag.endsWith('s') ? tag.slice(0, -1) : tag;
-
-    const tagMap: { [key: string]: string } = {
-      'item': 'Items',
-      'lore': 'Lore',
-    };
-
-    return tagMap[singularTag] || `Posts sobre ${capitalizeTag(tagName)}`;
-  };
-
   if (isErrorPosts) {
     return (
       <div className="flex flex-1">
         <div className="home-container">
+          <TagBanner tagName={tag || "Error"} />
           <div className="flex-center flex-col gap-4">
             <p className="body-medium text-light-1">Erro ao carregar posts</p>
             <Loader text="Tentando reconectar..." />
@@ -60,15 +48,15 @@ const TagPage = () => {
 
   return (
     <div className="flex flex-1">
-      <div className="home-container">
-        <div className="home-posts">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-2 h-8 bg-primary-500 rounded-full"></div>
-            <h2 className="h3-bold md:h2-bold text-left w-full">
-              {getTagTitle(tag)}
-            </h2>
-          </div>
+      <div className="flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar">
+        <div className="w-full max-w-6xl">
+          <TagBanner
+            tagName={capitalizeTag(tag)}
+            postCount={posts?.documents.length || 0}
+          />
+        </div>
 
+        <div className="home-posts">
           {isPostLoading ? (
             <ListLoader count={4} />
           ) : posts?.documents.length === 0 ? (

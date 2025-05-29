@@ -1,7 +1,4 @@
 import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, useParams } from "react-router-dom";
 
 import {
   Form,
@@ -11,16 +8,19 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useToast } from "@/components/ui/use-toast";
+import { useGetUserById, useUpdateUser } from "@/lib/react-query/user";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { ProfileSchema } from "@/lib/validation";
-import { useUserContext } from "@/context/AuthContext";
-import Loader from "@/components/shared/Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import Loader from "@/components/shared/Loader";
+import { ProfileSchema } from "@/lib/validation";
 import ProfileUploader from "@/components/shared/ProfileUploader";
-import { useGetUserById, useUpdateUser } from "@/lib/react-query/user";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { useToast } from "@/components/ui/use-toast";
+import { useUserContext } from "@/context/AuthContext";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const UpdateProfile = () => {
   const { toast } = useToast();
@@ -186,7 +186,7 @@ const UpdateProfile = () => {
                 className="shad-button_dark_4"
                 onClick={() => navigate(-1)}
               >
-                Cancel
+                Cancelar
               </Button>
               <Button
                 type="submit"
@@ -194,7 +194,7 @@ const UpdateProfile = () => {
                 disabled={isLoadingUpdate}
               >
                 {isLoadingUpdate && <Loader />}
-                Update Profile
+                Atualizar Perfil
               </Button>
             </div>
           </form>
