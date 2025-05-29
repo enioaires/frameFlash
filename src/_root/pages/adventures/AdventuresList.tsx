@@ -50,7 +50,7 @@ const AdventuresList = () => {
       if (a.status !== b.status) {
         return a.status === 'active' ? -1 : 1;
       }
-      
+
       // Depois por data de criação (mais recentes primeiro)
       return new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime();
     });
@@ -70,10 +70,10 @@ const AdventuresList = () => {
     return (
       <div className="flex flex-1">
         <div className="common-container">
-          <HeaderBanner 
-            title="Ops! Algo deu errado"
-            subtitle="Não foi possível carregar as aventuras"
-            height="sm"
+          <HeaderBanner
+            backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
+            imageOnly={true}
+            height="md"
           />
           <div className="flex-center flex-col gap-4">
             <p className="body-medium text-light-1">Erro ao carregar aventuras</p>
@@ -89,9 +89,9 @@ const AdventuresList = () => {
       <div className="common-container">
         {/* Header Banner */}
         <div className="w-full max-w-6xl">
-          <HeaderBanner 
-            title="🏰 Aventuras"
-            subtitle={userIsAdmin ? "Gerencie todas as aventuras do sistema" : "Suas aventuras disponíveis"}
+          <HeaderBanner
+            backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
+            imageOnly={true}
             height="md"
           />
         </div>
@@ -224,7 +224,7 @@ const AdventuresList = () => {
                       {userIsAdmin ? "Nenhuma aventura criada ainda" : "Você não está em nenhuma aventura"}
                     </h3>
                     <p className="text-light-4 max-w-md">
-                      {userIsAdmin 
+                      {userIsAdmin
                         ? "Comece criando sua primeira aventura para organizar suas sessões de RPG."
                         : "Entre em contato com um mestre para ser adicionado a uma aventura."
                       }
@@ -244,9 +244,9 @@ const AdventuresList = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredAdventures.map((adventure) => (
-                <AdventureCardWithParticipants 
-                  key={adventure.$id} 
-                  adventure={adventure} 
+                <AdventureCardWithParticipants
+                  key={adventure.$id}
+                  adventure={adventure}
                 />
               ))}
             </div>
@@ -271,10 +271,10 @@ const AdventuresList = () => {
 // Componente auxiliar para buscar participantes
 const AdventureCardWithParticipants: React.FC<{ adventure: Models.Document }> = ({ adventure }) => {
   const { data: participants } = useGetAdventureParticipants(adventure.$id);
-  
+
   return (
-    <AdventureCard 
-      adventure={adventure} 
+    <AdventureCard
+      adventure={adventure}
       participantCount={participants?.documents.length || 0}
     />
   );
