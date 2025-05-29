@@ -26,8 +26,12 @@ export const PERMISSIONS = {
   MANAGE_SYSTEM_SETTINGS: 'manage_system_settings',
 } as const;
 
-// Mapeamento de roles para permissões
-export const ROLE_PERMISSIONS = {
+// Tipo para as chaves de permissões
+type PermissionKey = keyof typeof PERMISSIONS;
+type PermissionValue = (typeof PERMISSIONS)[PermissionKey];
+
+// Mapeamento de roles para permissões - CORRIGIDO
+export const ROLE_PERMISSIONS: Record<'admin' | 'user', PermissionValue[]> = {
   admin: [
     PERMISSIONS.CREATE_ADVENTURE,
     PERMISSIONS.EDIT_ADVENTURE,
@@ -47,12 +51,12 @@ export const ROLE_PERMISSIONS = {
   user: [
     PERMISSIONS.CREATE_POST, // Com restrições
   ],
-} as const;
+};
 
-// Função para verificar se usuário tem permissão específica
+// Função para verificar se usuário tem permissão específica - CORRIGIDA
 export const hasPermission = (
   user: IUser, 
-  permission: keyof typeof PERMISSIONS
+  permission: PermissionKey
 ): boolean => {
   const userPermissions = ROLE_PERMISSIONS[user.role] || [];
   return userPermissions.includes(PERMISSIONS[permission]);
@@ -61,7 +65,7 @@ export const hasPermission = (
 // Função para verificar múltiplas permissões (precisa ter todas)
 export const hasAllPermissions = (
   user: IUser, 
-  permissions: (keyof typeof PERMISSIONS)[]
+  permissions: PermissionKey[]
 ): boolean => {
   return permissions.every(permission => hasPermission(user, permission));
 };
@@ -69,7 +73,7 @@ export const hasAllPermissions = (
 // Função para verificar múltiplas permissões (precisa ter pelo menos uma)
 export const hasAnyPermission = (
   user: IUser, 
-  permissions: (keyof typeof PERMISSIONS)[]
+  permissions: PermissionKey[]
 ): boolean => {
   return permissions.some(permission => hasPermission(user, permission));
 };
@@ -190,9 +194,9 @@ export const canViewPost = (
 
 // Função para obter mensagem de erro baseada na permissão
 export const getPermissionErrorMessage = (
-  permission: keyof typeof PERMISSIONS
+  permission: PermissionKey
 ): string => {
-  const messages = {
+  const messages: Record<PermissionKey, string> = {
     CREATE_ADVENTURE: "Você precisa ser administrador para criar aventuras.",
     EDIT_ADVENTURE: "Você não tem permissão para editar esta aventura.",
     DELETE_ADVENTURE: "Você não tem permissão para deletar esta aventura.",
