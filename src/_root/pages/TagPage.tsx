@@ -2,9 +2,9 @@ import EmptyState, { LoadingState, NoAdventuresState } from "@/components/shared
 import { useAdventureFiltering, usePostFiltering } from "@/hooks/useFiltering";
 
 import { CompactAdventureSelect } from "@/components/shared/AdventureSelect";
+import HeaderBanner from "@/components/shared/HeaderBanner";
 import { Models } from "appwrite";
 import PostCard from "@/components/shared/PostCard";
-import { TagBanner } from "@/components/shared/HeaderBanner";
 import { useGetPostsByTag } from "@/lib/react-query/posts";
 import { useParams } from "react-router-dom";
 import { useState } from "react";
@@ -31,10 +31,10 @@ const TagPage = () => {
   const { filteredPosts } = usePostFiltering(allTagPosts?.documents || []);
 
   // Posts finais (considerando filtro por aventura específica)
-  const finalPosts = selectedAdventure 
-    ? filteredPosts.filter((post: Models.Document) => 
-        post.adventures && post.adventures.includes(selectedAdventure)
-      )
+  const finalPosts = selectedAdventure
+    ? filteredPosts.filter((post: Models.Document) =>
+      post.adventures && post.adventures.includes(selectedAdventure)
+    )
     : filteredPosts;
 
   // Encontrar aventura selecionada
@@ -52,8 +52,12 @@ const TagPage = () => {
     return (
       <div className="flex flex-1">
         <div className="home-container">
-          <TagBanner tagName={tag || "Error"} />
-          <EmptyState 
+          <HeaderBanner
+            backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
+            imageOnly={true}
+            height="md"
+          />
+          <EmptyState
             type="empty"
             title="Erro ao carregar posts"
             description="Algo deu errado ao carregar os posts desta tag."
@@ -68,7 +72,7 @@ const TagPage = () => {
     return (
       <div className="flex flex-1">
         <div className="home-container">
-          <EmptyState 
+          <EmptyState
             type="empty"
             title="Tag não especificada"
             description="Nenhuma tag foi especificada para busca."
@@ -82,9 +86,10 @@ const TagPage = () => {
     <div className="flex flex-1">
       <div className="flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar">
         <div className="w-full max-w-6xl">
-          <TagBanner
-            tagName={capitalizeTag(tag)}
-            postCount={finalPosts.length}
+          <HeaderBanner
+            backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
+            imageOnly={true}
+            height="md"
           />
         </div>
 
@@ -101,7 +106,7 @@ const TagPage = () => {
                 </p>
               )}
             </div>
-            
+
             {/* Filtro por aventura - só mostra se há aventuras disponíveis */}
             {activeUserAdventures.length > 0 && (
               <CompactAdventureSelect
@@ -163,12 +168,12 @@ const TagPage = () => {
               <p className="text-light-4 text-sm text-center">
                 {finalPosts.length} post{finalPosts.length !== 1 ? 's' : ''} encontrado{finalPosts.length !== 1 ? 's' : ''}
                 {selectedAdventure && ` nesta aventura`}
-                {allTagPosts?.documents && selectedAdventure && 
-                 filteredPosts.length !== finalPosts.length && (
-                  <span className="text-light-3 ml-1">
-                    (de {filteredPosts.length} visíveis)
-                  </span>
-                )}
+                {allTagPosts?.documents && selectedAdventure &&
+                  filteredPosts.length !== finalPosts.length && (
+                    <span className="text-light-3 ml-1">
+                      (de {filteredPosts.length} visíveis)
+                    </span>
+                  )}
               </p>
             </div>
           )}
@@ -182,7 +187,7 @@ const TagPage = () => {
                   {" "}Total com tag "{tag}": {allTagPosts.documents.length}
                 </p>
                 <p>
-                  Visíveis para usuários: {filteredPosts.length} | 
+                  Visíveis para usuários: {filteredPosts.length} |
                   Nesta aventura: {finalPosts.length}
                 </p>
               </div>

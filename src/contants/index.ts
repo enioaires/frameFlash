@@ -1,41 +1,57 @@
+import {
+  Book,
+  Bookmark,
+  Castle,
+  Crown,
+  Home,
+  Map,
+  Plus,
+  Scroll,
+  Sparkles,
+  Sword,
+  User,
+  Users,
+  Zap
+} from "lucide-react";
+
 export const sidebarLinks = [
   {
-    imgURL: "/assets/icons/home.svg",
+    icon: Home,
     route: "/",
     label: "Início",
   },
   {
-    imgURL: "/assets/icons/swords.svg",
+    icon: Sword,
     route: "/tag/item",
     label: "Items",
   },
   {
-    imgURL: "/assets/icons/books.svg",
+    icon: Book,
     route: "/tag/lore",
     label: "Lore",
   },
   {
-    imgURL: "/assets/icons/people.svg",
+    icon: Users,
     route: "/tag/classe",
     label: "Classes",
   },
   {
-    imgURL: "/assets/icons/profile-placeholder.svg",
+    icon: User,
     route: "/tag/raca",
     label: "Raças",
   },
   {
-    imgURL: "/assets/icons/gallery-add.svg",
+    icon: Map,
     route: "/tag/regiao",
     label: "Regiões",
   },
   {
-    imgURL: "/assets/icons/bookmark.svg",
+    icon: Bookmark,
     route: "/saved",
     label: "Salvos",
   },
   {
-    imgURL: "/assets/icons/gallery-add.svg",
+    icon: Plus,
     route: "/create-post",
     label: "Novo",
   },
@@ -43,27 +59,27 @@ export const sidebarLinks = [
 
 export const bottombarLinks = [
   {
-    imgURL: "/assets/icons/home.svg",
+    icon: Home,
     route: "/",
     label: "Início",
   },
   {
-    imgURL: "/assets/icons/people.svg",
+    icon: Users,
     route: "/all-users",
     label: "Usuários",
   },
   {
-    imgURL: "/assets/icons/swords.svg",
+    icon: Sword,
     route: "/tag/item",
     label: "Items",
   },
   {
-    imgURL: "/assets/icons/books.svg",
+    icon: Book,
     route: "/tag/lore",
     label: "Lore",
   },
   {
-    imgURL: "/assets/icons/gallery-add.svg",
+    icon: Plus,
     route: "/create-post",
     label: "Novo",
   },
@@ -72,81 +88,81 @@ export const bottombarLinks = [
 // Menu expandido com todas as categorias
 export const allMenuCategories = [
   {
-    imgURL: "/assets/icons/home.svg",
+    icon: Home,
     route: "/",
     label: "Início",
     category: "main"
   },
   // RPG Core
   {
-    imgURL: "/assets/icons/people.svg",
+    icon: Users,
     route: "/tag/classe",
     label: "Classes",
     category: "rpg"
   },
   {
-    imgURL: "/assets/icons/people.svg",
+    icon: User,
     route: "/tag/raca",
     label: "Raças",
     category: "rpg"
   },
   {
-    imgURL: "/assets/icons/people.svg",
+    icon: Crown,
     route: "/tag/personagem",
     label: "Personagens",
     category: "rpg"
   },
   {
-    imgURL: "/assets/icons/books.svg",
+    icon: Sparkles,
     route: "/tag/talento",
     label: "Talentos",
     category: "rpg"
   },
   {
-    imgURL: "/assets/icons/books.svg",
+    icon: Zap,
     route: "/tag/magia",
     label: "Magias",
     category: "rpg"
   },
   {
-    imgURL: "/assets/icons/books.svg",
+    icon: Crown,
     route: "/tag/deus",
     label: "Deuses",
     category: "rpg"
   },
   {
-    imgURL: "/assets/icons/books.svg",
+    icon: Book,
     route: "/tag/lore",
     label: "Lore",
     category: "rpg"
   },
   {
-    imgURL: "/assets/icons/swords.svg",
+    icon: Sword,
     route: "/tag/item",
     label: "Items",
     category: "rpg"
   },
   {
-    imgURL: "/assets/icons/books.svg",
+    icon: Scroll,
     route: "/tag/relato",
     label: "Relatos",
     category: "rpg"
   },
   // Sistema
   {
-    imgURL: "/assets/icons/bookmark.svg",
+    icon: Bookmark,
     route: "/saved",
     label: "Salvos",
     category: "system"
   },
   {
-    imgURL: "/assets/icons/gallery-add.svg",
+    icon: Plus,
     route: "/create-post",
     label: "Novo",
     category: "system"
   },
   {
-    imgURL: "/assets/icons/books.svg",
+    icon: Castle,
     route: "/adventures",
     label: "Aventuras",
     category: "system"

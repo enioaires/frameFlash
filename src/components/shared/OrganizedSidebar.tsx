@@ -1,16 +1,12 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, LogOut } from "lucide-react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { Button } from "../ui/button";
-import { INavLink } from "@/types";
 import { allMenuCategories } from "@/contants";
 import { isAdmin } from "@/lib/adventures";
 import { useSignOutAccount } from "@/lib/react-query/auth";
 import { useUserContext } from "@/context/AuthContext";
-
-// NOVA IMPORTAÇÃO PARA VERIFICAR ADMIN
-
 
 const OrganizedSidebar = () => {
   const { mutate: signOut, isSuccess } = useSignOutAccount();
@@ -60,8 +56,10 @@ const OrganizedSidebar = () => {
           }
           return true;
         })
-        .map((link: INavLink) => {
+        .map((link) => {
           const isActive = pathname === link.route;
+          const IconComponent = link.icon;
+          
           return (
             <li key={link.label}>
               <NavLink
@@ -69,11 +67,10 @@ const OrganizedSidebar = () => {
                 className={`leftsidebar-link group flex gap-4 items-center p-3 rounded-lg transition-all ${isActive && "bg-primary-500"
                   }`}
               >
-                <img
-                  src={link.imgURL}
-                  alt={link.label}
-                  className={`w-5 h-5 group-hover:invert-white ${isActive && "invert-white"
-                    }`}
+                <IconComponent 
+                  className={`w-5 h-5 group-hover:text-white ${
+                    isActive ? "text-white" : "text-primary-500"
+                  }`}
                 />
                 <span className="text-sm font-medium">{link.label}</span>
               </NavLink>
@@ -159,7 +156,7 @@ const OrganizedSidebar = () => {
           className="shad-button_ghost mt-6"
           onClick={() => signOut()}
         >
-          <img src="/assets/icons/logout.svg" alt="logout" />
+          <LogOut className="w-5 h-5" />
           <p className="small-medium lg:base-medium">Sair</p>
         </Button>
       </div>

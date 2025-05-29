@@ -1,10 +1,11 @@
-import { sidebarLinks } from "@/contants";
-import { useUserContext } from "@/context/AuthContext";
-import { INavLink } from "@/types";
-import { useEffect } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+
 import { Button } from "../ui/button";
+import { LogOut } from "lucide-react";
+import { sidebarLinks } from "@/contants";
+import { useEffect } from "react";
 import { useSignOutAccount } from "@/lib/react-query/auth";
+import { useUserContext } from "@/context/AuthContext";
 
 const LeftSidebar = () => {
   const { mutate: signOut, isSuccess } = useSignOutAccount();
@@ -32,8 +33,9 @@ const LeftSidebar = () => {
         </Link>
 
         <ul className="flex flex-col gap-6">
-          {sidebarLinks.map((link: INavLink) => {
+          {sidebarLinks.map((link) => {
             const isActive = pathname === link.route;
+            const IconComponent = link.icon;
 
             return (
               <li
@@ -46,11 +48,9 @@ const LeftSidebar = () => {
                   to={link.route}
                   className="flex gap-4 items-center p-4"
                 >
-                  <img
-                    src={link.imgURL}
-                    alt={link.label}
-                    className={`group-hover:invert-white ${
-                      isActive && "invert-white"
+                  <IconComponent 
+                    className={`w-5 h-5 group-hover:text-white ${
+                      isActive ? "text-white" : "text-light-3"
                     }`}
                   />
                   {link.label}
@@ -66,7 +66,7 @@ const LeftSidebar = () => {
         className="shad-button_ghost"
         onClick={() => signOut()}
       >
-        <img src="/assets/icons/logout.svg" alt="logout" />
+        <LogOut className="w-5 h-5" />
         <p className="small-medium lg:base-medium">Sair</p>
       </Button>
     </nav>

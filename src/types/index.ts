@@ -1,7 +1,10 @@
+import { LucideIcon } from "lucide-react";
+
 export type INavLink = {
-  imgURL: string;
+  icon: LucideIcon;
   route: string;
   label: string;
+  category?: string;
 };
 
 export type IContextType = {

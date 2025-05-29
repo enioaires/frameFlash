@@ -39,10 +39,10 @@ const Home = () => {
   const { filteredPosts } = usePostFiltering(allPosts?.documents || []);
 
   // Posts finais (considerando filtro por aventura específica)
-  const finalPosts = selectedAdventure 
-    ? filteredPosts.filter((post: Models.Document) => 
-        post.adventures && post.adventures.includes(selectedAdventure)
-      )
+  const finalPosts = selectedAdventure
+    ? filteredPosts.filter((post: Models.Document) =>
+      post.adventures && post.adventures.includes(selectedAdventure)
+    )
     : filteredPosts;
 
   // Encontrar aventura selecionada
@@ -56,13 +56,13 @@ const Home = () => {
       <div className="flex flex-1">
         <div className="flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar">
           <div className="w-full max-w-5xl">
-            <HeaderBanner 
-              title="Ops! Algo deu errado"
-              subtitle="Não foi possível carregar o conteúdo"
-              height="sm"
+            <HeaderBanner
+              backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
+              imageOnly={true}
+              height="md"
             />
           </div>
-          <EmptyState 
+          <EmptyState
             type="empty"
             title="Erro ao carregar conteúdo"
             description="Algo deu errado ao carregar os posts. Tente recarregar a página."
@@ -97,18 +97,18 @@ const Home = () => {
     <div className="flex flex-1">
       <div className="flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar">
         <div className="w-full max-w-6xl">
-          <HeaderBanner 
-            title="Obziammos"
-            subtitle="Aventuras épicas e momentos inesquecíveis"
+          <HeaderBanner
+            backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
+            imageOnly={true}
             height="md"
           />
         </div>
-        
+
         <div className="home-posts">
           {/* Header com filtro */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full mb-6">
             <h2 className="h3-bold md:h2-bold text-left">Publicações Recentes</h2>
-            
+
             {/* Filtro por aventura - só mostra se há aventuras disponíveis */}
             {activeUserAdventures.length > 0 && (
               <CompactAdventureSelect
@@ -156,7 +156,7 @@ const Home = () => {
           {selectedAdventure && finalPosts.length > 0 && (
             <div className="flex items-center justify-center gap-2 mt-6 p-3 bg-dark-3 rounded-lg border border-dark-4">
               <p className="text-light-4 text-sm">
-                Exibindo posts de: 
+                Exibindo posts de:
                 <span className="text-primary-500 font-medium ml-1">
                   {selectedAdventureData?.title}
                 </span>
@@ -174,7 +174,7 @@ const Home = () => {
           {isAdmin && allPosts?.documents && (
             <div className="mt-6 p-3 bg-dark-4/50 rounded-lg border border-dark-4">
               <p className="text-light-4 text-xs text-center">
-                <span className="text-primary-500 font-medium">Admin:</span> 
+                <span className="text-primary-500 font-medium">Admin:</span>
                 {" "}Exibindo {finalPosts.length} de {allPosts.documents.length} posts
                 {filteredPosts.length !== allPosts.documents.length && (
                   <span className="text-light-3">

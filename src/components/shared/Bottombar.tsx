@@ -1,5 +1,6 @@
-import { bottombarLinks } from "@/contants";
 import { Link, useLocation } from "react-router-dom";
+
+import { bottombarLinks } from "@/contants";
 
 const Bottombar = () => {
   const { pathname } = useLocation();
@@ -8,6 +9,7 @@ const Bottombar = () => {
     <section className="bottom-bar">
       {bottombarLinks.map((link) => {
         const isActive = pathname === link.route;
+        const IconComponent = link.icon;
 
         return (
           <Link
@@ -17,12 +19,10 @@ const Bottombar = () => {
               isActive && "bg-primary-500 rounded-[10px]"
             }`}
           >
-            <img
-              src={link.imgURL}
-              alt={link.label}
-              className={`${isActive && "invert-white"}`}
-              width={16}
-              height={16}
+            <IconComponent 
+              className={`w-4 h-4 ${
+                isActive ? "text-white" : "text-primary-500"
+              }`}
             />
             <p className="tiny-medium text-light-2">{link.label}</p>
           </Link>

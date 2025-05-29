@@ -1,9 +1,10 @@
-import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "../ui/button";
-import { useUserContext } from "@/context/AuthContext";
+import { LogOut } from "lucide-react";
+import { useEffect } from "react";
 import { useSignOutAccount } from "@/lib/react-query/auth";
+import { useUserContext } from "@/context/AuthContext";
 
 const Topbar = () => {
   const { mutate: signOut, isSuccess } = useSignOutAccount();
@@ -23,7 +24,7 @@ const Topbar = () => {
             className="shad-button_ghost"
             onClick={() => signOut()}
           >
-            <img src="/assets/icons/logout.svg" alt="logout" />
+            <LogOut className="w-5 h-5" />
           </Button>
           <Link to={`/profile/${user.id}`} className="flex-center gap-3">
             <img

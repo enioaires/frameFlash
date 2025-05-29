@@ -7,6 +7,7 @@ interface HeaderBannerProps {
   height?: 'sm' | 'md' | 'lg';
   overlay?: boolean;
   className?: string;
+  imageOnly?: boolean; // Nova prop para mostrar apenas a imagem
 }
 
 const HeaderBanner: React.FC<HeaderBannerProps> = ({
@@ -15,13 +16,27 @@ const HeaderBanner: React.FC<HeaderBannerProps> = ({
   backgroundImage,
   height = 'md',
   overlay = true,
-  className = ''
+  className = '',
+  imageOnly = false // Nova prop, padrão false
 }) => {
   const heightClasses = {
     sm: 'h-32 md:h-40',
     md: 'h-40 md:h-56',
     lg: 'h-56 md:h-72'
   };
+
+  // Se imageOnly for true, renderiza apenas a imagem
+  if (imageOnly && backgroundImage) {
+    return (
+      <div className={`relative w-full ${heightClasses[height]} overflow-hidden rounded-lg mb-6 ${className}`}>
+        <img 
+          src={backgroundImage} 
+          alt="Banner" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={`relative w-full ${heightClasses[height]} overflow-hidden rounded-lg mb-6 ${className}`}>
