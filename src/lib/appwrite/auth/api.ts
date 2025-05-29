@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { v4 } from 'uuid'
-import { INewUser, IUpdateUser } from "@/types";
-import { Query } from 'appwrite';
+
 import { account, appwriteConfig, avatars, database } from '../config';
+
+import { INewUser, type IUpdateUser } from "@/types";
+import { Query } from 'appwrite';
+import { v4 } from 'uuid'
 import { deleteFile, getFilePreview, uploadFile } from '../posts/api';
 
 export async function createUserAccount(user: INewUser) {
@@ -23,7 +25,8 @@ export async function createUserAccount(user: INewUser) {
       email: newAccount.email,
       name: newAccount.name,
       imageUrl: avatarUrl,
-      username: user.username
+      username: user.username,
+      role: 'user' // NOVO: definir role padrão
     })
 
     return newUser
@@ -33,19 +36,24 @@ export async function createUserAccount(user: INewUser) {
   }
 }
 
+// ATUALIZADO: incluir role
 export async function saveUserToDatabase(user: {
   accountId: string,
   email: string,
   name: string,
   imageUrl: URL,
-  username?: string
+  username?: string,
+  role?: 'admin' | 'user' // NOVO CAMPO
 }) {
   try {
     const newUser = await database.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
       v4(),
-      user
+      {
+        ...user,
+        role: user.role || 'user' // Default para 'user'
+      }
     )
 
     return newUser
@@ -186,5 +194,58 @@ export async function updateUser(user: IUpdateUser) {
     return updatedUser;
   } catch (error) {
     console.log(error);
+  }
+}
+
+// NOVA: Buscar usuários por role
+export async function getUsersByRole(role: 'admin' | 'user') {
+  try {
+    const users = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [
+        Query.equal('role', role),
+        Query.orderDesc('$createdAt')
+      ]
+    );
+
+    if (!users) throw Error;
+
+    return users;
+  } catch (error) {
+    console.log("Error getting users by role:", error);
+    throw error;
+  }
+}
+
+// NOVA: Verificar se usuário é admin
+export async function checkIfUserIsAdmin(userId: string): Promise<boolean> {
+  try {
+    const user = await getUserById(userId);
+    return user?.role === 'admin';
+  } catch (error) {
+    console.log("Error checking if user is admin:", error);
+    return false;
+  }
+}
+
+// NOVA: Atualizar role do usuário (apenas para migração)
+export async function updateUserRole(userId: string, role: 'admin' | 'user') {
+  try {
+    const updatedUser = await database.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId,
+      {
+        role: role
+      }
+    );
+
+    if (!updatedUser) throw Error;
+
+    return updatedUser;
+  } catch (error) {
+    console.log("Error updating user role:", error);
+    throw error;
   }
 }

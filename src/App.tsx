@@ -1,6 +1,12 @@
 import "./globals.css";
 
 import {
+  AdventureManagement,
+  AdventuresList,
+  CreateAdventure,
+  EditAdventure,
+} from "./_root/pages/adventures";
+import {
   AllUsers,
   CreatePost,
   EditPost,
@@ -11,6 +17,7 @@ import {
   Saved,
   UpdateProfile,
 } from "./_root/pages";
+import ProtectedRoute, { AdminRoute } from "./components/shared/ProtectedRoute";
 import { Route, Routes } from "react-router-dom";
 
 import AuthLayout from "./_auth/AuthLayout";
@@ -29,8 +36,13 @@ const App = () => {
           <Route path="/sign-in" element={<SigninForm />} />
           <Route path="/sign-up" element={<SignupForm />} />
         </Route>
+        
         {/** Private Routes  */}
-        <Route element={<RootLayout />}>
+        <Route element={
+          <ProtectedRoute requireAuth>
+            <RootLayout />
+          </ProtectedRoute>
+        }>
           <Route index element={<Home />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/tag/:tag" element={<TagPage />} />
@@ -41,6 +53,28 @@ const App = () => {
           <Route path="/posts/:id" element={<PostDetails />} />
           <Route path="/profile/:id/*" element={<Profile />} />
           <Route path="/update-profile/:id" element={<UpdateProfile />} />
+          
+          {/** ROTAS PROTEGIDAS DE AVENTURAS - APENAS ADMINS */}
+          <Route path="/adventures" element={
+            <AdminRoute>
+              <AdventuresList />
+            </AdminRoute>
+          } />
+          <Route path="/adventures/create" element={
+            <AdminRoute>
+              <CreateAdventure />
+            </AdminRoute>
+          } />
+          <Route path="/adventures/:id/edit" element={
+            <AdminRoute>
+              <EditAdventure />
+            </AdminRoute>
+          } />
+          <Route path="/adventures/:id/manage" element={
+            <AdminRoute>
+              <AdventureManagement />
+            </AdminRoute>
+          } />
         </Route>
       </Routes>
 

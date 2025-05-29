@@ -2,12 +2,29 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { INewPost, IUpdatePost } from "@/types";
-import { createPost, deletePost, deleteSavedPost, getInfinitePosts, getPostById, getPostsByTag, getRecentPosts, getUserPosts, likePost, savePost, searchPosts, updatePost } from "@/lib/appwrite/posts/api";
+import {
+  createPost,
+  deletePost,
+  deleteSavedPost,
+  getFilteredPostsForUser,
+  getInfinitePosts,
+  getPostById,
+  getPostsByAdventures,
+  getPostsByTag,
+  getPostsByTagForUser,
+  getRecentPosts,
+  getUserPosts,
+  likePost,
+  savePost,
+  searchPosts,
+  updatePost
+} from "@/lib/appwrite/posts/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { QUERY_KEYS } from "../queryKeys";
 import { getCurrentUser } from "@/lib/appwrite/auth/api";
 
+// ATUALIZADO: invalidar novas queries relacionadas a aventuras
 export const useCreatePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -15,6 +32,12 @@ export const useCreatePost = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS_BY_ADVENTURES],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER],
       });
     },
   });
@@ -40,6 +63,9 @@ export const useLikePost = () => {
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS_BY_ADVENTURES],
       });
     },
   });
@@ -85,6 +111,7 @@ export const useDeleteSavedPost = () => {
   });
 };
 
+// ATUALIZADO: invalidar queries relacionadas a aventuras
 export const useUpdatePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -93,10 +120,20 @@ export const useUpdatePost = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id],
       });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS_BY_ADVENTURES],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER],
+      });
     },
   });
 }
 
+// ATUALIZADO: invalidar queries relacionadas a aventuras
 export const useDeletePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -107,6 +144,12 @@ export const useDeletePost = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS_BY_ADVENTURES],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER],
       });
     },
   });
@@ -126,6 +169,33 @@ export const useGetPostsByTag = (tag: string) => {
     enabled: !!tag,
   })
 }
+
+// NOVO: Hook para posts filtrados por aventuras
+export const useGetPostsByAdventures = (adventureIds: string[]) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_POSTS_BY_ADVENTURES, adventureIds],
+    queryFn: () => getPostsByAdventures(adventureIds),
+    enabled: !!adventureIds && adventureIds.length > 0,
+  });
+};
+
+// NOVO: Hook para posts filtrados para usuário
+export const useGetFilteredPostsForUser = (userAdventureIds: string[], isAdmin: boolean = false) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER, userAdventureIds, isAdmin],
+    queryFn: () => getFilteredPostsForUser(userAdventureIds, isAdmin),
+    enabled: isAdmin || (userAdventureIds && userAdventureIds.length > 0),
+  });
+};
+
+// ATUALIZADO: Hook para posts por tag considerando aventuras do usuário
+export const useGetPostsByTagForUser = (tag: string, userAdventureIds: string[], isAdmin: boolean = false) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_POSTS_BY_TAG_FOR_USER, tag, userAdventureIds, isAdmin],
+    queryFn: () => getPostsByTagForUser(tag, userAdventureIds, isAdmin),
+    enabled: !!tag && (isAdmin || (userAdventureIds && userAdventureIds.length > 0)),
+  });
+};
 
 export const useGetCurrentUser = () => {
   return useQuery({

@@ -5,14 +5,21 @@ import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { INavLink } from "@/types";
 import { allMenuCategories } from "@/contants";
+import { isAdmin } from "@/lib/adventures";
 import { useSignOutAccount } from "@/lib/react-query/auth";
 import { useUserContext } from "@/context/AuthContext";
+
+// NOVA IMPORTAÇÃO PARA VERIFICAR ADMIN
+
 
 const OrganizedSidebar = () => {
   const { mutate: signOut, isSuccess } = useSignOutAccount();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { user } = useUserContext();
+
+  // VERIFICAR SE USUÁRIO É ADMIN
+  const userIsAdmin = isAdmin(user);
 
   // Estado para controlar quais seções estão expandidas
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
@@ -45,54 +52,77 @@ const OrganizedSidebar = () => {
 
   const renderLinks = (links: typeof allMenuCategories) => (
     <ul className="flex flex-col gap-2">
-      {links.map((link: INavLink) => {
-        const isActive = pathname === link.route;
-        return (
-          <li key={link.label}>
-            <NavLink
-              to={link.route}
-              className={`leftsidebar-link group flex gap-4 items-center p-3 rounded-lg transition-all ${isActive && "bg-primary-500"
-                }`}
-            >
-              <img
-                src={link.imgURL}
-                alt={link.label}
-                className={`w-5 h-5 group-hover:invert-white ${isActive && "invert-white"
+      {links
+        .filter(link => {
+          // FILTRAR AVENTURAS APENAS PARA ADMINS
+          if (link.route === '/adventures') {
+            return userIsAdmin;
+          }
+          return true;
+        })
+        .map((link: INavLink) => {
+          const isActive = pathname === link.route;
+          return (
+            <li key={link.label}>
+              <NavLink
+                to={link.route}
+                className={`leftsidebar-link group flex gap-4 items-center p-3 rounded-lg transition-all ${isActive && "bg-primary-500"
                   }`}
-              />
-              <span className="text-sm font-medium">{link.label}</span>
-            </NavLink>
-          </li>
-        );
-      })}
+              >
+                <img
+                  src={link.imgURL}
+                  alt={link.label}
+                  className={`w-5 h-5 group-hover:invert-white ${isActive && "invert-white"
+                    }`}
+                />
+                <span className="text-sm font-medium">{link.label}</span>
+              </NavLink>
+            </li>
+          );
+        })}
     </ul>
   );
 
-  const renderSection = (categoryKey: string, title: string, links: typeof allMenuCategories) => (
-    <div key={categoryKey} className="mb-4">
-      <button
-        onClick={() => toggleSection(categoryKey)}
-        className="flex items-center gap-2 w-full p-2 text-left text-light-2 hover:text-light-1 transition-colors"
-      >
-        {expandedSections[categoryKey] ? (
-          <ChevronDown className="w-4 h-4" />
-        ) : (
-          <ChevronRight className="w-4 h-4" />
+  const renderSection = (categoryKey: string, title: string, links: typeof allMenuCategories) => {
+    // FILTRAR LINKS DA SEÇÃO
+    const filteredLinks = links.filter(link => {
+      if (link.route === '/adventures') {
+        return userIsAdmin;
+      }
+      return true;
+    });
+
+    // NÃO RENDERIZAR SEÇÃO SE ESTIVER VAZIA
+    if (filteredLinks.length === 0) {
+      return null;
+    }
+
+    return (
+      <div key={categoryKey} className="mb-4">
+        <button
+          onClick={() => toggleSection(categoryKey)}
+          className="flex items-center gap-2 w-full p-2 text-left text-light-2 hover:text-light-1 transition-colors"
+        >
+          {expandedSections[categoryKey] ? (
+            <ChevronDown className="w-4 h-4" />
+          ) : (
+            <ChevronRight className="w-4 h-4" />
+          )}
+          <span className="text-sm font-semibold">{title}</span>
+        </button>
+        {expandedSections[categoryKey] && (
+          <div className="ml-4 mt-2">
+            {renderLinks(filteredLinks)}
+          </div>
         )}
-        <span className="text-sm font-semibold">{title}</span>
-      </button>
-      {expandedSections[categoryKey] && (
-        <div className="ml-4 mt-2">
-          {renderLinks(links)}
-        </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  };
 
   return (
     <nav className="leftsidebar">
       <div className="flex flex-col justify-between h-full">
-        <div className="flex-grow overflow-y-auto custom-scrollbar pr-2"> {/* Added flex-grow, overflow-y-auto, custom-scrollbar, and padding-right for scrollbar */}
+        <div className="flex-grow overflow-y-auto custom-scrollbar pr-2">
           <div className="flex flex-col gap-6">
             {/* Perfil do usuário */}
             <Link to={`/profile/${user.id}`} className="flex gap-3 items-center p-4 bg-dark-3 rounded-lg">
@@ -103,7 +133,14 @@ const OrganizedSidebar = () => {
               />
               <div className="flex flex-col">
                 <p className="body-bold text-white">{user.name}</p>
-                <p className="small-regular text-light-3">@{user.username}</p>
+                <div className="flex items-center gap-1">
+                  <p className="small-regular text-light-3">@{user.username}</p>
+                  {userIsAdmin && (
+                    <span className="text-xs bg-primary-500/20 text-primary-400 px-1.5 py-0.5 rounded">
+                      Admin
+                    </span>
+                  )}
+                </div>
               </div>
             </Link>
 
@@ -115,7 +152,6 @@ const OrganizedSidebar = () => {
             {renderSection('system', categoryTitles.system, linksByCategory.system)}
           </div>
         </div>
-
 
         {/* Botão de sair */}
         <Button

@@ -1,8 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
-import { getCurrentUser } from "@/lib/appwrite/auth/api";
+
 import { IContextType, IUser } from "@/types";
 import { createContext, useContext, useEffect, useState } from "react";
+
+import { getCurrentUser } from "@/lib/appwrite/auth/api";
+import { isAdminById } from "@/lib/adventures";
 import { useNavigate } from "react-router-dom";
+
+// IMPORTAÇÃO PARA VERIFICAÇÃO DE ADMIN
+
 
 export const INITIAL_USER = {
   id: "",
@@ -11,6 +17,7 @@ export const INITIAL_USER = {
   username: "",
   imageUrl: "",
   bio: "",
+  role: "user" as "admin" | "user", // CAMPO ROLE ADICIONADO
 };
 
 const INITIAL_STATE = {
@@ -37,13 +44,22 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const currentAccount = await getCurrentUser();
 
       if (currentAccount) {
+        // VERIFICAR SE O USUÁRIO TEM ROLE DEFINIDA
+        let userRole = currentAccount.role;
+        
+        // FALLBACK: Se não tem role, verificar por ID (transição)
+        if (!userRole) {
+          userRole = await isAdminById(currentAccount.$id) ? 'admin' : 'user';
+        }
+
         setUser({
           id: currentAccount.$id,
           name: currentAccount.name,
           email: currentAccount.email,
-          username: currentAccount.name,
+          username: currentAccount.username || currentAccount.name,
           imageUrl: currentAccount.imageUrl,
-          bio: currentAccount.name,
+          bio: currentAccount.bio || "",
+          role: userRole, // DEFINIR ROLE
         });
 
         setIsAuthenticated(true);
@@ -87,3 +103,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 export default AuthProvider;
 
 export const useUserContext = () => useContext(AuthContext);
+
+// HOOKS AUXILIARES PARA VERIFICAÇÃO DE PERMISSÕES
+export const useIsAdmin = () => {
+  const { user } = useUserContext();
+  return user.role === 'admin';
+};
+
+export const useCanAccessAdminFeatures = () => {
+  const { user } = useUserContext();
+  // Verificação dupla: por role e por ID (durante transição)
+  return user.role === 'admin' || isAdminById(user.id);
+};

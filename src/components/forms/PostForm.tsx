@@ -12,6 +12,7 @@ import {
 } from "../ui/form";
 import { useCreatePost, useUpdatePost } from "@/lib/react-query/posts";
 
+import AdventureMultiSelect from "../shared/AdventureMultiSelect";
 import { Button } from "../ui/button";
 import FileUploader from "../shared/FileUploader";
 import { Input } from "../ui/input";
@@ -21,7 +22,9 @@ import { MultiSelect } from "../shared/multi-select";
 import { PostSchema } from "@/lib/validation";
 import { RichTextEditor } from "../shared/rich-text-editor";
 import { getAvailableTags } from "@/lib/tags";
+import { isAdmin } from "@/lib/adventures";
 import { useForm } from "react-hook-form";
+import { useGetAdventuresForUser } from "@/lib/react-query/adventures";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
@@ -40,6 +43,12 @@ const PostForm = ({ post, action }: PostFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // BUSCAR AVENTURAS DISPONÍVEIS PARA O USUÁRIO
+  const { data: userAdventures, isLoading: isLoadingAdventures } = useGetAdventuresForUser(
+    user.id, 
+    user.role
+  );
+
   // Obtém as tags disponíveis dinamicamente
   const availableTags = getAvailableTags();
 
@@ -57,7 +66,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
       title: post ? post.title : "",
       captions: post ? (Array.isArray(post.captions) ? post.captions.join('<br>') : post.captions || "") : "",
       file: [],
-      location: post ? post.location : "",
+      adventures: post ? (post.adventures || []) : [], // MUDOU de location
       tags: post ? post.tags || [] : [],
     },
   });
@@ -74,6 +83,21 @@ const PostForm = ({ post, action }: PostFormProps) => {
         title: "Erro ao criar post",
         description: "Você não tem permissão para criar posts",
       });
+    }
+
+    // VALIDAR SE USUÁRIO PODE POSTAR NAS AVENTURAS SELECIONADAS
+    if (!isAdmin(user)) {
+      const userAdventureIds = userAdventures?.documents.map(a => a.$id) || [];
+      const canPost = values.adventures.every(adventureId => 
+        userAdventureIds.includes(adventureId)
+      );
+      
+      if (!canPost) {
+        return toast({
+          title: "Erro de permissão",
+          description: "Você só pode criar posts em aventuras onde participa",
+        });
+      }
     }
 
     if (post && action === "update") {
@@ -169,16 +193,35 @@ const PostForm = ({ post, action }: PostFormProps) => {
           )}
         />
 
+        {/* CAMPO AVENTURAS - SUBSTITUIU LOCATION */}
         <FormField
           control={form.control}
-          name="location"
+          name="adventures"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="shad-form_label">Aventura</FormLabel>
+              <FormLabel className="shad-form_label">Aventuras</FormLabel>
               <FormControl>
-                <Input type="text" className="shad-input" {...field} />
+                {isLoadingAdventures ? (
+                  <div className="flex items-center justify-center h-12 bg-dark-4 rounded-md">
+                    <Loader size="sm" />
+                    <span className="ml-2 text-light-4 text-sm">Carregando aventuras...</span>
+                  </div>
+                ) : (
+                  <AdventureMultiSelect
+                    adventures={userAdventures?.documents || []}
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    placeholder="Selecione as aventuras para este post..."
+                    error={form.formState.errors.adventures?.message}
+                  />
+                )}
               </FormControl>
               <FormMessage className="shad-form_message" />
+              {!isAdmin(user) && (
+                <p className="text-light-4 text-sm mt-1">
+                  Você só pode postar em aventuras onde participa
+                </p>
+              )}
             </FormItem>
           )}
         />
@@ -214,7 +257,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
-            disabled={isCreating || isUpdating}
+            disabled={isCreating || isUpdating || isLoadingAdventures}
           >
             {isCreating || isUpdating ? (
               <div className="flex-center">

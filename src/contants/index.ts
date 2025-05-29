@@ -145,4 +145,10 @@ export const allMenuCategories = [
     label: "Novo",
     category: "system"
   },
+  {
+    imgURL: "/assets/icons/books.svg",
+    route: "/adventures",
+    label: "Aventuras",
+    category: "system"
+  },
 ];

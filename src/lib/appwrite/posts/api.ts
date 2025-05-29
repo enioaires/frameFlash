@@ -49,6 +49,7 @@ export async function deleteFile(fileId: string) {
   }
 }
 
+// ATUALIZADO: adventures array
 export async function createPost(post: INewPost) {
   try {
     // Upload file to appwrite storage
@@ -86,7 +87,7 @@ export async function createPost(post: INewPost) {
         captions: captions,
         imageUrl: fileUrl,
         imageId: uploadedFile.$id,
-        location: post.location,
+        adventures: post.adventures, // MUDOU de location
         tags: tags,
       }
     );
@@ -102,6 +103,7 @@ export async function createPost(post: INewPost) {
   }
 }
 
+// ATUALIZADO: adventures array
 export async function updatePost(post: IUpdatePost) {
   const hasFileToUpdate = post.file.length > 0;
 
@@ -148,7 +150,7 @@ export async function updatePost(post: IUpdatePost) {
         captions: captions,
         imageUrl: image.imageUrl,
         imageId: image.imageId,
-        location: post.location,
+        adventures: post.adventures, // MUDOU de location
         tags: tags,
       }
     );
@@ -207,6 +209,52 @@ export async function getRecentPosts() {
   return posts
 }
 
+// NOVA: Buscar posts por aventuras específicas
+export async function getPostsByAdventures(adventureIds: string[]) {
+  try {
+    if (!adventureIds || adventureIds.length === 0) {
+      return { documents: [] };
+    }
+
+    const posts = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [
+        Query.search('adventures', adventureIds.join(',')),
+        Query.orderDesc('$createdAt'),
+        Query.limit(50)
+      ]
+    );
+
+    if (!posts) throw Error;
+
+    return posts;
+  } catch (error) {
+    console.log("Error getting posts by adventures:", error);
+    throw error;
+  }
+}
+
+// ATUALIZADA: Buscar posts filtrados por aventuras do usuário
+export async function getFilteredPostsForUser(userAdventureIds: string[], isAdmin: boolean = false) {
+  try {
+    if (isAdmin) {
+      // Admins veem todos os posts
+      return await getRecentPosts();
+    }
+
+    if (!userAdventureIds || userAdventureIds.length === 0) {
+      // Usuário sem aventuras não vê posts
+      return { documents: [] };
+    }
+
+    return await getPostsByAdventures(userAdventureIds);
+  } catch (error) {
+    console.log("Error getting filtered posts for user:", error);
+    throw error;
+  }
+}
+
 export async function getPostsByTag(tagName: string) {
   try {
     if (!tagName) return { documents: [] };
@@ -241,6 +289,43 @@ export async function getPostsByTag(tagName: string) {
     return filteredPosts;
   } catch (error) {
     console.log(error);
+    throw error;
+  }
+}
+
+// ATUALIZADA: Filtrar posts por tag E aventuras do usuário
+export async function getPostsByTagForUser(tagName: string, userAdventureIds: string[], isAdmin: boolean = false) {
+  try {
+    if (!tagName) return { documents: [] };
+
+    let posts;
+    
+    if (isAdmin) {
+      // Admins veem todos os posts
+      posts = await getPostsByTag(tagName);
+    } else {
+      if (!userAdventureIds || userAdventureIds.length === 0) {
+        return { documents: [] };
+      }
+      
+      // Buscar posts da tag que estejam nas aventuras do usuário
+      const allTagPosts = await getPostsByTag(tagName);
+      
+      const filteredPosts = {
+        ...allTagPosts,
+        documents: allTagPosts.documents.filter((post: any) => 
+          post.adventures && post.adventures.some((adventureId: string) => 
+            userAdventureIds.includes(adventureId)
+          )
+        )
+      };
+      
+      posts = filteredPosts;
+    }
+
+    return posts;
+  } catch (error) {
+    console.log("Error getting posts by tag for user:", error);
     throw error;
   }
 }

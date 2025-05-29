@@ -25,20 +25,21 @@ export type IUpdateUser = {
 export type INewPost = {
   userId: string;
   title: string;
-  captions: string[]; // Volta para string[] para compatibilidade com banco
+  captions: string[];
   file: File[];
-  location?: string;
+  adventures: string[];
   tags?: string;
 };
 
+// ATUALIZADO: adventures array
 export type IUpdatePost = {
   postId: string;
   title: string;
-  captions: string[]; // Volta para string[] para compatibilidade com banco
+  captions: string[];
   imageId: string;
   imageUrl: URL;
   file: File[];
-  location?: string;
+  adventures: string[];
   tags?: string;
 };
 
@@ -49,6 +50,7 @@ export type IUser = {
   email: string;
   imageUrl: string;
   bio: string;
+  role: 'admin' | 'user';
 };
 
 export type INewUser = {
@@ -56,4 +58,59 @@ export type INewUser = {
   email: string;
   username: string;
   password: string;
+};
+
+export type IAdventure = {
+  id: string;
+  title: string;
+  imageUrl: string;
+  imageId: string;
+  description?: string;
+  status: 'active' | 'inactive';
+  createdBy: string;
+  $createdAt: string;
+  $updatedAt: string;
+};
+
+export type INewAdventure = {
+  title: string;
+  description?: string;
+  file: File[];
+  status: 'active' | 'inactive';
+  createdBy: string;
+};
+
+export type IUpdateAdventure = {
+  adventureId: string;
+  title: string;
+  description?: string;
+  imageId: string;
+  imageUrl: URL | string;
+  file: File[];
+  status: 'active' | 'inactive';
+};
+
+export type IAdventureParticipant = {
+  id: string;
+  adventureId: string;
+  userId: string;
+  addedBy: string;
+  $createdAt: string;
+};
+
+export type INewAdventureParticipant = {
+  adventureId: string;
+  userId: string;
+  addedBy: string;
+};
+
+export type IAdventureOption = {
+  label: string;
+  value: string;
+  status: 'active' | 'inactive';
+};
+
+export type IUserAdventures = {
+  userId: string;
+  adventures: string[];
 };
