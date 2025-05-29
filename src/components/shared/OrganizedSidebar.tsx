@@ -15,7 +15,7 @@ const OrganizedSidebar = () => {
   const { user } = useUserContext();
 
   // Estado para controlar quais seções estão expandidas
-  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({
+  const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
     rpg: true,
     system: false,
   });
@@ -51,16 +51,14 @@ const OrganizedSidebar = () => {
           <li key={link.label}>
             <NavLink
               to={link.route}
-              className={`leftsidebar-link group flex gap-4 items-center p-3 rounded-lg transition-all ${
-                isActive && "bg-primary-500"
-              }`}
+              className={`leftsidebar-link group flex gap-4 items-center p-3 rounded-lg transition-all ${isActive && "bg-primary-500"
+                }`}
             >
               <img
                 src={link.imgURL}
                 alt={link.label}
-                className={`w-5 h-5 group-hover:invert-white ${
-                  isActive && "invert-white"
-                }`}
+                className={`w-5 h-5 group-hover:invert-white ${isActive && "invert-white"
+                  }`}
               />
               <span className="text-sm font-medium">{link.label}</span>
             </NavLink>
@@ -93,37 +91,42 @@ const OrganizedSidebar = () => {
 
   return (
     <nav className="leftsidebar">
-      <div className="flex flex-col gap-6">
-        {/* Perfil do usuário */}
-        <Link to={`/profile/${user.id}`} className="flex gap-3 items-center p-4 bg-dark-3 rounded-lg">
-          <img
-            src={user.imageUrl || "/assets/images/profile-placeholder.svg"}
-            alt="avatar"
-            className="h-12 w-12 rounded-full"
-          />
-          <div className="flex flex-col">
-            <p className="body-bold text-white">{user.name}</p>
-            <p className="small-regular text-light-3">@{user.username}</p>
+      <div className="flex flex-col justify-between h-full">
+        <div className="flex-grow overflow-y-auto custom-scrollbar pr-2"> {/* Added flex-grow, overflow-y-auto, custom-scrollbar, and padding-right for scrollbar */}
+          <div className="flex flex-col gap-6">
+            {/* Perfil do usuário */}
+            <Link to={`/profile/${user.id}`} className="flex gap-3 items-center p-4 bg-dark-3 rounded-lg">
+              <img
+                src={user.imageUrl || "/assets/images/profile-placeholder.svg"}
+                alt="avatar"
+                className="h-12 w-12 rounded-full"
+              />
+              <div className="flex flex-col">
+                <p className="body-bold text-white">{user.name}</p>
+                <p className="small-regular text-light-3">@{user.username}</p>
+              </div>
+            </Link>
+
+            {/* Links principais (Início) */}
+            {renderLinks(linksByCategory.main)}
+
+            {/* Seções categorizadas */}
+            {renderSection('rpg', categoryTitles.rpg, linksByCategory.rpg)}
+            {renderSection('system', categoryTitles.system, linksByCategory.system)}
           </div>
-        </Link>
+        </div>
 
-        {/* Links principais (Início) */}
-        {renderLinks(linksByCategory.main)}
 
-        {/* Seções categorizadas */}
-        {renderSection('rpg', categoryTitles.rpg, linksByCategory.rpg)}
-        {renderSection('system', categoryTitles.system, linksByCategory.system)}
+        {/* Botão de sair */}
+        <Button
+          variant={"ghost"}
+          className="shad-button_ghost mt-6"
+          onClick={() => signOut()}
+        >
+          <img src="/assets/icons/logout.svg" alt="logout" />
+          <p className="small-medium lg:base-medium">Sair</p>
+        </Button>
       </div>
-
-      {/* Botão de sair */}
-      <Button
-        variant={"ghost"}
-        className="shad-button_ghost mt-6"
-        onClick={() => signOut()}
-      >
-        <img src="/assets/icons/logout.svg" alt="logout" />
-        <p className="small-medium lg:base-medium">Sair</p>
-      </Button>
     </nav>
   );
 };
