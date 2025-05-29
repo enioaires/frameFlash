@@ -32,14 +32,20 @@ export const AdventureSchema = z.object({
   title: z.string().min(3, { message: "Título deve ter pelo menos 3 caracteres" }).max(100, { message: "Título deve ter no máximo 100 caracteres" }),
   description: z.string().max(1000, { message: "Descrição deve ter no máximo 1000 caracteres" }).optional(),
   file: z.custom<File[]>().refine((files) => files?.length > 0, "Imagem é obrigatória"),
-  status: z.enum(['active', 'inactive'], { message: "Status deve ser ativo ou inativo" }),
+  status: z.enum(['active', 'inactive'], { 
+    required_error: "Status é obrigatório",
+    invalid_type_error: "Status deve ser ativo ou inativo" 
+  }),
 });
 
 export const UpdateAdventureSchema = z.object({
   title: z.string().min(3, { message: "Título deve ter pelo menos 3 caracteres" }).max(100, { message: "Título deve ter no máximo 100 caracteres" }),
   description: z.string().max(1000, { message: "Descrição deve ter no máximo 1000 caracteres" }).optional(),
   file: z.custom<File[]>(),
-  status: z.enum(['active', 'inactive'], { message: "Status deve ser ativo ou inativo" }),
+  status: z.enum(['active', 'inactive'], { 
+    required_error: "Status é obrigatório",
+    invalid_type_error: "Status deve ser ativo ou inativo" 
+  }),
 });
 
 export const AdventureParticipantSchema = z.object({
