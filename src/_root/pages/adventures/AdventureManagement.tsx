@@ -23,7 +23,6 @@ import { Button } from '@/components/ui/button';
 import Loader from '@/components/shared/Loader';
 import { cn } from '@/lib/utils';
 import { isAdmin } from '@/lib/adventures';
-import { multiFormatDateString } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { useUserContext } from '@/context/AuthContext';
 
