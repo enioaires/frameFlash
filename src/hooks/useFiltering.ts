@@ -46,9 +46,8 @@ export const useAdventureFiltering = () => {
   };
 };
 
-// Hook para filtrar posts baseado nas aventuras do usuário
 export const usePostFiltering = (posts: Models.Document[] = []) => {
-  const { userAdventureIds, isAdmin: userIsAdmin } = useAdventureFiltering();
+  const { userAdventureIds, isAdmin: userIsAdmin, activeUserAdventures } = useAdventureFiltering();
 
   const filteredPosts = useMemo(() => {
     if (!posts.length) return [];
@@ -56,19 +55,26 @@ export const usePostFiltering = (posts: Models.Document[] = []) => {
     // Admin vê todos os posts
     if (userIsAdmin) return posts;
 
-    // Usuário sem aventuras não vê posts
-    if (userAdventureIds.length === 0) return [];
+    // Obter IDs das aventuras públicas
+    const publicAdventureIds = activeUserAdventures
+      .filter(adventure => adventure.isPublic === true)
+      .map(adventure => adventure.$id);
 
-    // Filtrar posts que o usuário pode ver
     return posts.filter(post => {
-      if (!post.adventures || !Array.isArray(post.adventures)) return false;
+      // Post público (sem aventuras)
+      if (!post.adventures || !Array.isArray(post.adventures) || post.adventures.length === 0) {
+        return true;
+      }
+      
+      // Post com aventuras: verificar se usuário tem acesso
+      const allAccessibleAdventures = [...new Set([...userAdventureIds, ...publicAdventureIds])];
       
       // Usuário vê post se estiver em pelo menos uma aventura do post
       return post.adventures.some((adventureId: string) => 
-        userAdventureIds.includes(adventureId)
+        allAccessibleAdventures.includes(adventureId)
       );
     });
-  }, [posts, userAdventureIds, userIsAdmin]);
+  }, [posts, userAdventureIds, userIsAdmin, activeUserAdventures]);
 
   return {
     filteredPosts,

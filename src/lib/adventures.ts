@@ -29,10 +29,14 @@ export const filterAdventuresForUser = (
     return adventures;
   }
   
-  // Usuários veem apenas aventuras ativas onde participam
-  return adventures.filter(adventure => 
-    adventure.status === 'active' && userAdventures.includes(adventure.$id)
-  );
+  // Usuários veem aventuras ativas onde participam OU aventuras públicas ativas
+  return adventures.filter(adventure => {
+    const isActive = adventure.status === 'active';
+    const isPublicAdventure = adventure.isPublic === true;
+    const isParticipant = userAdventures.includes(adventure.$id);
+    
+    return isActive && (isPublicAdventure || isParticipant);
+  });
 };
 
 // Converter aventuras para options de select
@@ -44,19 +48,47 @@ export const adventuresToOptions = (adventures: Models.Document[]): IAdventureOp
   }));
 };
 
-// Verificar se usuário pode ver um post baseado nas aventuras
-export const canUserSeePost = (
-  user: IUser, 
-  postAdventures: string[], 
+export const getPublicAdventureIds = (adventures: Models.Document[]): string[] => {
+  return adventures
+    .filter(adventure => adventure.isPublic === true && adventure.status === 'active')
+    .map(adventure => adventure.$id);
+};
+
+export const isAdventurePublic = (adventure: Models.Document): boolean => {
+  return adventure.isPublic === true && adventure.status === 'active';
+};
+
+export const canUserAccessAdventure = (
+  user: IUser,
+  adventure: Models.Document,
   userAdventures: string[]
 ): boolean => {
   if (isAdmin(user)) {
     return true;
   }
   
+  // Usuário pode acessar se for participante ou se for pública e ativa
+  const isParticipant = userAdventures.includes(adventure.$id);
+  const isPublicAndActive = adventure.isPublic === true && adventure.status === 'active';
+  
+  return isParticipant || isPublicAndActive;
+};
+
+// Verificar se usuário pode ver um post baseado nas aventuras
+export const canUserSeePost = (
+  user: IUser, 
+  postAdventures: string[], 
+  userAdventures: string[],
+  publicAdventures: string[] = []
+): boolean => {
+  if (isAdmin(user)) {
+    return true;
+  }
+  
   // Usuário vê o post se estiver em pelo menos uma aventura do post
+  // OU se pelo menos uma aventura do post for pública
   return postAdventures.some(adventureId => 
-    userAdventures.includes(adventureId)
+    userAdventures.includes(adventureId) || publicAdventures.includes(adventureId)
   );
 };
 
@@ -95,15 +127,19 @@ export const canUserManageAdventure = (user: IUser): boolean => {
 };
 
 // Obter status badge para aventura
-export const getAdventureStatusBadge = (status: 'active' | 'inactive') => {
-  return {
+export const getAdventureStatusBadge = (status: 'active' | 'inactive', isPublic: boolean = false) => {
+  const statusMap = {
     active: {
-      text: 'Ativa',
-      className: 'bg-green-500/20 text-green-400 border-green-500/30'
+      text: isPublic ? 'Pública' : 'Ativa',
+      className: isPublic 
+        ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+        : 'bg-green-500/20 text-green-400 border-green-500/30'
     },
     inactive: {
       text: 'Inativa', 
       className: 'bg-red-500/20 text-red-400 border-red-500/30'
     }
-  }[status];
+  };
+  
+  return statusMap[status];
 };

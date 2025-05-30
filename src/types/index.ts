@@ -70,6 +70,7 @@ export type IAdventure = {
   imageId: string;
   description?: string;
   status: 'active' | 'inactive';
+  isPublic: boolean;
   createdBy: string;
   $createdAt: string;
   $updatedAt: string;
@@ -80,6 +81,7 @@ export type INewAdventure = {
   description?: string;
   file: File[];
   status: 'active' | 'inactive';
+  isPublic: boolean;
   createdBy: string;
 };
 
@@ -91,6 +93,7 @@ export type IUpdateAdventure = {
   imageUrl: URL | string;
   file: File[];
   status: 'active' | 'inactive';
+  isPublic: boolean;
 };
 
 export type IAdventureParticipant = {

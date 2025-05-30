@@ -16,8 +16,13 @@ export const PostSchema = z.object({
   title: z.string().min(5).max(100),
   captions: z.string().min(1, { message: "A legenda é obrigatória" }),
   file: z.custom<File[]>(),
-  adventures: z.array(z.string()).min(1, { message: "Selecione pelo menos uma aventura" }),
+  adventures: z.array(z.string()).optional().default([]),
   tags: z.array(z.string()).min(1, { message: "Selecione pelo menos uma tag" }),
+}).refine(() => {
+  return true;
+}, {
+  message: "Selecione pelo menos uma aventura ou deixe vazio para post público",
+  path: ["adventures"]
 });
 
 export const ProfileSchema = z.object({
@@ -32,9 +37,13 @@ export const AdventureSchema = z.object({
   title: z.string().min(3, { message: "Título deve ter pelo menos 3 caracteres" }).max(100, { message: "Título deve ter no máximo 100 caracteres" }),
   description: z.string().max(1000, { message: "Descrição deve ter no máximo 1000 caracteres" }).optional(),
   file: z.custom<File[]>().refine((files) => files?.length > 0, "Imagem é obrigatória"),
-  status: z.enum(['active', 'inactive'], { 
+  status: z.enum(['active', 'inactive'], {
     required_error: "Status é obrigatório",
-    invalid_type_error: "Status deve ser ativo ou inativo" 
+    invalid_type_error: "Status deve ser ativo ou inativo"
+  }),
+  isPublic: z.boolean({
+    required_error: "Visibilidade é obrigatória",
+    invalid_type_error: "Visibilidade deve ser verdadeiro ou falso"
   }),
 });
 
@@ -42,9 +51,13 @@ export const UpdateAdventureSchema = z.object({
   title: z.string().min(3, { message: "Título deve ter pelo menos 3 caracteres" }).max(100, { message: "Título deve ter no máximo 100 caracteres" }),
   description: z.string().max(1000, { message: "Descrição deve ter no máximo 1000 caracteres" }).optional(),
   file: z.custom<File[]>(),
-  status: z.enum(['active', 'inactive'], { 
+  status: z.enum(['active', 'inactive'], {
     required_error: "Status é obrigatório",
-    invalid_type_error: "Status deve ser ativo ou inativo" 
+    invalid_type_error: "Status deve ser ativo ou inativo"
+  }),
+  isPublic: z.boolean({
+    required_error: "Visibilidade é obrigatória",
+    invalid_type_error: "Visibilidade deve ser verdadeiro ou falso"
   }),
 });
 

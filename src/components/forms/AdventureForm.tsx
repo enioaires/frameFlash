@@ -46,6 +46,7 @@ const AdventureForm: React.FC<AdventureFormProps> = ({ adventure, action }) => {
       description: adventure?.description || '',
       file: [],
       status: adventure?.status || 'active',
+      isPublic: adventure?.isPublic || false,
     },
   });
 
@@ -58,6 +59,7 @@ const AdventureForm: React.FC<AdventureFormProps> = ({ adventure, action }) => {
           description: values.description,
           file: values.file,
           status: values.status,
+          isPublic: values.isPublic,
           imageId: adventure.imageId,
           imageUrl: adventure.imageUrl,
         });
@@ -78,6 +80,7 @@ const AdventureForm: React.FC<AdventureFormProps> = ({ adventure, action }) => {
           description: values.description,
           file: values.file,
           status: values.status,
+          isPublic: values.isPublic,
           createdBy: user.id,
         });
 
@@ -182,7 +185,7 @@ const AdventureForm: React.FC<AdventureFormProps> = ({ adventure, action }) => {
                     />
                     <span className="text-light-1">Ativa</span>
                     <span className="text-xs text-light-4">
-                      (Visível para todos os participantes)
+                      (Funcional e visível)
                     </span>
                   </label>
 
@@ -198,6 +201,53 @@ const AdventureForm: React.FC<AdventureFormProps> = ({ adventure, action }) => {
                     <span className="text-xs text-light-4">
                       (Visível apenas para admins)
                     </span>
+                  </label>
+                </div>
+              </FormControl>
+              <FormMessage className="shad-form_message" />
+            </FormItem>
+          )}
+        />
+
+        {/* Visibilidade (isPublic) */}
+        <FormField
+          control={form.control}
+          name="isPublic"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">Visibilidade da Aventura</FormLabel>
+              <FormControl>
+                <div className="space-y-4">
+                  <label className="flex items-start gap-3 cursor-pointer p-4 border border-dark-4 rounded-lg hover:border-primary-500/50 transition-colors">
+                    <input
+                      type="radio"
+                      checked={!field.value}
+                      onChange={() => field.onChange(false)}
+                      className="w-4 h-4 text-primary-500 bg-dark-4 border-gray-300 focus:ring-primary-500 mt-1"
+                    />
+                    <div>
+                      <span className="text-light-1 font-medium">🔒 Aventura Privada</span>
+                      <p className="text-xs text-light-4 mt-1">
+                        Apenas usuários adicionados manualmente como participantes podem ver esta aventura e seus posts.
+                        Você precisa gerenciar a lista de participantes.
+                      </p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer p-4 border border-dark-4 rounded-lg hover:border-primary-500/50 transition-colors">
+                    <input
+                      type="radio"
+                      checked={field.value}
+                      onChange={() => field.onChange(true)}
+                      className="w-4 h-4 text-primary-500 bg-dark-4 border-gray-300 focus:ring-primary-500 mt-1"
+                    />
+                    <div>
+                      <span className="text-light-1 font-medium">🌍 Aventura Pública</span>
+                      <p className="text-xs text-light-4 mt-1">
+                        Todos os usuários automaticamente têm acesso a esta aventura e podem ver seus posts.
+                        Não é necessário adicionar participantes manualmente.
+                      </p>
+                    </div>
                   </label>
                 </div>
               </FormControl>

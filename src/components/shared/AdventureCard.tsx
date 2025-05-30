@@ -1,4 +1,4 @@
-import { Calendar, Edit, Users } from 'lucide-react';
+import { Calendar, Edit, Globe, Lock, Users } from 'lucide-react';
 
 import { Link } from 'react-router-dom';
 import { Models } from 'appwrite';
@@ -23,22 +23,31 @@ const AdventureCard: React.FC<AdventureCardProps> = ({
   const { user } = useUserContext();
   const canManage = isAdmin(user);
 
-  const getStatusBadge = (status: 'active' | 'inactive') => {
-    const badges = {
-      active: {
-        text: 'Ativa',
-        className: 'bg-green-500/20 text-green-400 border-green-500/30'
-      },
-      inactive: {
+  const getStatusBadge = (status: 'active' | 'inactive', isPublic: boolean = false) => {
+    if (status === 'inactive') {
+      return {
         text: 'Inativa',
-        className: 'bg-red-500/20 text-red-400 border-red-500/30'
-      }
+        className: 'bg-red-500/20 text-red-400 border-red-500/30',
+        icon: null
+      };
+    }
+    
+    if (isPublic) {
+      return {
+        text: 'Pública',
+        className: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+        icon: <Globe className="w-3 h-3" />
+      };
+    }
+    
+    return {
+      text: 'Privada',
+      className: 'bg-green-500/20 text-green-400 border-green-500/30',
+      icon: <Lock className="w-3 h-3" />
     };
-
-    return badges[status] || badges.active;
   };
 
-  const statusBadge = getStatusBadge(adventure.status);
+  const statusBadge = getStatusBadge(adventure.status, adventure.isPublic);
 
   return (
     <div className={`bg-dark-2 rounded-3xl border border-dark-4 overflow-hidden hover:border-primary-500/50 transition-all duration-300 group ${className}`}>
@@ -50,12 +59,23 @@ const AdventureCard: React.FC<AdventureCardProps> = ({
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
 
-        {/* Status Badge */}
-        <div className="absolute top-3 right-3">
-          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${statusBadge.className}`}>
+        {/* Status Badges */}
+        <div className="absolute top-3 right-3 flex gap-2">
+          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${statusBadge.className}`}>
+            {statusBadge.icon}
             {statusBadge.text}
           </span>
         </div>
+
+        {/* Public Adventure Indicator */}
+        {adventure.isPublic && adventure.status === 'active' && (
+          <div className="absolute top-3 left-3">
+            <div className="bg-blue-500/90 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+              <Globe className="w-3 h-3" />
+              Acesso Livre
+            </div>
+          </div>
+        )}
 
         {/* Overlay on hover */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
@@ -80,12 +100,33 @@ const AdventureCard: React.FC<AdventureCardProps> = ({
         <div className="flex items-center gap-4 text-light-4 text-sm mb-4">
           <div className="flex items-center gap-1">
             <Users className="w-4 h-4" />
-            <span>{participantCount} participante{participantCount !== 1 ? 's' : ''}</span>
+            <span>
+              {adventure.isPublic ? 'Todos os usuários' : `${participantCount} participante${participantCount !== 1 ? 's' : ''}`}
+            </span>
           </div>
 
           <div className="flex items-center gap-1">
             <Calendar className="w-4 h-4" />
             <span>{multiFormatDateString(adventure.$createdAt)}</span>
+          </div>
+        </div>
+
+        {/* Visibility Info */}
+        <div className="mb-4 p-2 bg-dark-3 rounded-lg">
+          <div className="flex items-center gap-2 text-xs">
+            {adventure.isPublic ? (
+              <>
+                <Globe className="w-3 h-3 text-blue-400" />
+                <span className="text-blue-400 font-medium">Aventura Pública</span>
+                <span className="text-light-4">• Todos podem ver posts desta aventura</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-3 h-3 text-green-400" />
+                <span className="text-green-400 font-medium">Aventura Privada</span>
+                <span className="text-light-4">• Apenas participantes veem os posts</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -114,10 +155,16 @@ export const CompactAdventureCard: React.FC<{
   isSelected?: boolean;
   onClick?: () => void;
 }> = ({ adventure, isSelected = false, onClick }) => {
-  const statusBadge = {
-    active: 'bg-green-500/20 text-green-400',
-    inactive: 'bg-red-500/20 text-red-400'
-  }[adventure.status as 'active' | 'inactive'];
+  const getStatusBadge = (status: 'active' | 'inactive', isPublic: boolean = false) => {
+    if (status === 'inactive') {
+      return 'bg-red-500/20 text-red-400';
+    }
+    return isPublic 
+      ? 'bg-blue-500/20 text-blue-400'
+      : 'bg-green-500/20 text-green-400';
+  };
+
+  const statusBadge = getStatusBadge(adventure.status, adventure.isPublic);
 
   return (
     <div
@@ -138,9 +185,17 @@ export const CompactAdventureCard: React.FC<{
           <h4 className="font-medium text-light-1 truncate">
             {adventure.title}
           </h4>
-          <span className={`px-2 py-0.5 rounded text-xs ${statusBadge}`}>
-            {adventure.status === 'active' ? 'Ativa' : 'Inativa'}
-          </span>
+          <div className="flex items-center gap-1">
+            <span className={`px-2 py-0.5 rounded text-xs ${statusBadge}`}>
+              {adventure.status === 'active' 
+                ? (adventure.isPublic ? 'Pública' : 'Privada')
+                : 'Inativa'
+              }
+            </span>
+            {adventure.isPublic && adventure.status === 'active' && (
+              <Globe className="w-3 h-3 text-blue-400" />
+            )}
+          </div>
         </div>
 
         {adventure.description && (
@@ -165,6 +220,7 @@ export const AdventureCardSkeleton: React.FC = () => (
         <div className="h-4 bg-dark-3 rounded w-20" />
         <div className="h-4 bg-dark-3 rounded w-24" />
       </div>
+      <div className="h-8 bg-dark-3 rounded mt-4" />
     </div>
   </div>
 );

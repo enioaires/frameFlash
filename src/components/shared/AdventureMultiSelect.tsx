@@ -50,6 +50,11 @@ const AdventureMultiSelect: React.FC<AdventureMultiSelectProps> = ({
     }
   };
 
+  const handleClearAll = () => {
+    if (disabled) return;
+    onChange([]);
+  };
+
   const selectedAdventures = adventures.filter((adventure) =>
     value.includes(adventure.$id)
   );
@@ -58,6 +63,12 @@ const AdventureMultiSelect: React.FC<AdventureMultiSelectProps> = ({
     return status === 'active'
       ? 'bg-green-500/20 text-green-400'
       : 'bg-red-500/20 text-red-400';
+  };
+
+  const getVisibilityColor = (isPublic: boolean) => {
+    return isPublic
+      ? 'bg-blue-500/20 text-blue-400'
+      : 'bg-orange-500/20 text-orange-400';
   };
 
   return (
@@ -87,6 +98,9 @@ const AdventureMultiSelect: React.FC<AdventureMultiSelectProps> = ({
                     className="w-4 h-4 rounded object-cover"
                   />
                   <span className="max-w-[100px] truncate">{adventure.title}</span>
+                  {adventure.isPublic && (
+                    <span className="text-xs">🌍</span>
+                  )}
                   {!disabled && (
                     <button
                       type="button"
@@ -125,16 +139,28 @@ const AdventureMultiSelect: React.FC<AdventureMultiSelectProps> = ({
       {isOpen && !disabled && (
         <div className="absolute z-50 w-full mt-1 bg-dark-3 border border-dark-4 rounded-md shadow-lg max-h-60 overflow-hidden">
           {adventures.length > 1 && (
-            <div className="p-2 border-b border-dark-4">
-              <button
-                type="button"
-                className="w-full text-left px-2 py-1 text-sm text-light-2 hover:bg-dark-4 rounded transition-colors"
-                onClick={handleSelectAll}
-              >
-                {value.length === adventures.length
-                  ? "Desmarcar todas"
-                  : "Selecionar todas"}
-              </button>
+            <div className="p-2 border-b border-dark-4 space-y-1">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className="flex-1 text-left px-2 py-1 text-sm text-light-2 hover:bg-dark-4 rounded transition-colors"
+                  onClick={handleSelectAll}
+                >
+                  {value.length === adventures.length
+                    ? "Desmarcar todas"
+                    : "Selecionar todas"}
+                </button>
+                <button
+                  type="button"
+                  className="px-2 py-1 text-sm text-blue-400 hover:bg-dark-4 rounded transition-colors"
+                  onClick={handleClearAll}
+                >
+                  Post Público
+                </button>
+              </div>
+              <p className="text-xs text-light-4 px-2">
+                💡 Deixe vazio para criar um post público visível para todos
+              </p>
             </div>
           )}
 
@@ -174,12 +200,22 @@ const AdventureMultiSelect: React.FC<AdventureMultiSelectProps> = ({
                       <span className="text-sm text-light-1 truncate font-medium">
                         {adventure.title}
                       </span>
-                      <span className={cn(
-                        "px-1.5 py-0.5 rounded text-xs flex-shrink-0",
-                        getStatusColor(adventure.status)
-                      )}>
-                        {adventure.status === 'active' ? 'Ativa' : 'Inativa'}
-                      </span>
+                      <div className="flex gap-1">
+                        <span className={cn(
+                          "px-1.5 py-0.5 rounded text-xs flex-shrink-0",
+                          getStatusColor(adventure.status)
+                        )}>
+                          {adventure.status === 'active' ? 'Ativa' : 'Inativa'}
+                        </span>
+                        {adventure.isPublic && (
+                          <span className={cn(
+                            "px-1.5 py-0.5 rounded text-xs flex-shrink-0",
+                            getVisibilityColor(true)
+                          )}>
+                            🌍 Pública
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {adventure.description && (

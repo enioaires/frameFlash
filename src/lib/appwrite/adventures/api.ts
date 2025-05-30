@@ -34,6 +34,7 @@ export async function createAdventure(adventure: INewAdventure) {
         imageUrl: fileUrl,
         imageId: uploadedFile.$id,
         status: adventure.status,
+        isPublic: adventure.isPublic,
         createdBy: adventure.createdBy,
       }
     );
@@ -85,6 +86,7 @@ export async function updateAdventure(adventure: IUpdateAdventure) {
         imageUrl: image.imageUrl,
         imageId: image.imageId,
         status: adventure.status,
+        isPublic: adventure.isPublic,
       }
     );
 
@@ -342,31 +344,72 @@ export async function isUserParticipantInAdventure(userId: string, adventureId: 
   }
 }
 
+export async function getPublicAdventures() {
+  try {
+    const adventures = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.adventureCollectionId,
+      [
+        Query.equal('isPublic', true),
+        Query.equal('status', 'active'),
+        Query.orderDesc('$createdAt')
+      ]
+    );
+
+    if (!adventures) throw Error;
+
+    return adventures;
+  } catch (error) {
+    console.log("Error getting public adventures:", error);
+    throw error;
+  }
+}
+
 export async function getAdventuresForUser(userId: string, userRole: string) {
   try {
     if (userRole === 'admin') {
       // Admins see all adventures
       return await getAdventures();
     } else {
-      // Regular users see only adventures they participate in
+      // Get user's private adventures (where they participate)
       const userParticipations = await getUserAdventures(userId);
-      const adventureIds = userParticipations.documents.map(p => p.adventureId);
+      const userAdventureIds = userParticipations.documents.map(p => p.adventureId);
       
-      if (adventureIds.length === 0) {
-        return { documents: [] };
+      // Get public adventures
+      const publicAdventures = await getPublicAdventures();
+      
+      let userPrivateAdventures = { documents: [] };
+      
+      // Get private adventures where user participates
+      if (userAdventureIds.length > 0) {
+        userPrivateAdventures = await database.listDocuments(
+          appwriteConfig.databaseId,
+          appwriteConfig.adventureCollectionId,
+          [
+            Query.equal('$id', userAdventureIds),
+            Query.equal('status', 'active'),
+            Query.orderDesc('$createdAt')
+          ]
+        );
       }
 
-      const adventures = await database.listDocuments(
-        appwriteConfig.databaseId,
-        appwriteConfig.adventureCollectionId,
-        [
-          Query.equal('$id', adventureIds),
-          Query.equal('status', 'active'),
-          Query.orderDesc('$createdAt')
-        ]
+      // Combine public and private adventures, removing duplicates
+      const allUserAdventures = [
+        ...publicAdventures.documents,
+        ...userPrivateAdventures.documents
+      ];
+
+      // Remove duplicates by ID
+      const uniqueAdventures = allUserAdventures.filter((adventure, index, array) =>
+        array.findIndex(a => a.$id === adventure.$id) === index
       );
 
-      return adventures;
+      return {
+        ...publicAdventures,
+        documents: uniqueAdventures.sort((a, b) => 
+          new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime()
+        )
+      };
     }
   } catch (error) {
     console.log("Error getting adventures for user:", error);

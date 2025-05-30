@@ -49,7 +49,6 @@ export async function deleteFile(fileId: string) {
   }
 }
 
-// ATUALIZADO: adventures array
 export async function createPost(post: INewPost) {
   try {
     // Upload file to appwrite storage
@@ -76,6 +75,9 @@ export async function createPost(post: INewPost) {
       captions = Array.isArray(post.captions) ? post.captions : [post.captions];
     }
 
+    // Ensure adventures is an array (empty array for public posts)
+    const adventures = post.adventures || [];
+
     // Create post
     const newPost = await database.createDocument(
       appwriteConfig.databaseId,
@@ -87,7 +89,7 @@ export async function createPost(post: INewPost) {
         captions: captions,
         imageUrl: fileUrl,
         imageId: uploadedFile.$id,
-        adventures: post.adventures, // MUDOU de location
+        adventures: adventures, // Can be empty array for public posts
         tags: tags,
       }
     );
@@ -103,7 +105,6 @@ export async function createPost(post: INewPost) {
   }
 }
 
-// ATUALIZADO: adventures array
 export async function updatePost(post: IUpdatePost) {
   const hasFileToUpdate = post.file.length > 0;
 
@@ -140,6 +141,9 @@ export async function updatePost(post: IUpdatePost) {
       captions = Array.isArray(post.captions) ? post.captions : [post.captions];
     }
 
+    // Ensure adventures is an array (empty array for public posts)
+    const adventures = post.adventures || [];
+
     //  Update post
     const updatedPost = await database.updateDocument(
       appwriteConfig.databaseId,
@@ -150,7 +154,7 @@ export async function updatePost(post: IUpdatePost) {
         captions: captions,
         imageUrl: image.imageUrl,
         imageId: image.imageId,
-        adventures: post.adventures, // MUDOU de location
+        adventures: adventures, // Can be empty array for public posts
         tags: tags,
       }
     );
@@ -235,20 +239,46 @@ export async function getPostsByAdventures(adventureIds: string[]) {
   }
 }
 
-// ATUALIZADA: Buscar posts filtrados por aventuras do usuário
-export async function getFilteredPostsForUser(userAdventureIds: string[], isAdmin: boolean = false) {
+// ATUALIZADA: Buscar posts filtrados por aventuras do usuário + posts públicos
+export async function getFilteredPostsForUser(userAdventureIds: string[], publicAdventureIds: string[] = [], isAdmin: boolean = false) {
   try {
     if (isAdmin) {
       // Admins veem todos os posts
       return await getRecentPosts();
     }
 
-    if (!userAdventureIds || userAdventureIds.length === 0) {
-      // Usuário sem aventuras não vê posts
-      return { documents: [] };
+    // Buscar posts públicos (sem aventuras)
+    const publicPosts = await getPublicPosts();
+
+    let userPosts: any = { documents: [] }; // Fix: usar any ao invés de never[]
+    
+    // Buscar posts das aventuras do usuário (privadas + públicas)
+    const allUserAdventureIds = [...new Set([...userAdventureIds, ...publicAdventureIds])];
+    
+    if (allUserAdventureIds.length > 0) {
+      userPosts = await getPostsByAdventures(allUserAdventureIds);
     }
 
-    return await getPostsByAdventures(userAdventureIds);
+    // Combinar posts públicos + posts das aventuras
+    const allPosts = [
+      ...publicPosts.documents,
+      ...userPosts.documents
+    ];
+
+    // Remover duplicatas por ID
+    const uniquePosts = allPosts.filter((post, index, array) =>
+      array.findIndex(p => p.$id === post.$id) === index
+    );
+
+    // Ordenar por data (mais recentes primeiro)
+    const sortedPosts = uniquePosts.sort((a, b) => 
+      new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime()
+    );
+
+    return {
+      ...publicPosts,
+      documents: sortedPosts
+    };
   } catch (error) {
     console.log("Error getting filtered posts for user:", error);
     throw error;
@@ -293,8 +323,8 @@ export async function getPostsByTag(tagName: string) {
   }
 }
 
-// ATUALIZADA: Filtrar posts por tag E aventuras do usuário
-export async function getPostsByTagForUser(tagName: string, userAdventureIds: string[], isAdmin: boolean = false) {
+// ATUALIZADA: Filtrar posts por tag E aventuras do usuário + posts públicos
+export async function getPostsByTagForUser(tagName: string, userAdventureIds: string[], publicAdventureIds: string[] = [], isAdmin: boolean = false) {
   try {
     if (!tagName) return { documents: [] };
 
@@ -304,20 +334,24 @@ export async function getPostsByTagForUser(tagName: string, userAdventureIds: st
       // Admins veem todos os posts
       posts = await getPostsByTag(tagName);
     } else {
-      if (!userAdventureIds || userAdventureIds.length === 0) {
-        return { documents: [] };
-      }
-      
-      // Buscar posts da tag que estejam nas aventuras do usuário
+      // Buscar todos os posts da tag
       const allTagPosts = await getPostsByTag(tagName);
       
+      // Filtrar posts que o usuário pode ver
       const filteredPosts = {
         ...allTagPosts,
-        documents: allTagPosts.documents.filter((post: any) => 
-          post.adventures && post.adventures.some((adventureId: string) => 
-            userAdventureIds.includes(adventureId)
-          )
-        )
+        documents: allTagPosts.documents.filter((post: any) => {
+          // Post público (sem aventuras)
+          if (!post.adventures || post.adventures.length === 0) {
+            return true;
+          }
+          
+          // Post em aventuras do usuário (privadas + públicas)
+          const allUserAdventureIds = [...new Set([...userAdventureIds, ...publicAdventureIds])];
+          return post.adventures.some((adventureId: string) => 
+            allUserAdventureIds.includes(adventureId)
+          );
+        })
       };
       
       posts = filteredPosts;
@@ -454,5 +488,26 @@ export async function getUserPosts(userId?: string) {
     return post;
   } catch (error) {
     console.log(error);
+  }
+}
+
+export async function getPublicPosts() {
+  try {
+    const posts = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [
+        Query.equal('adventures', []), // Posts sem aventuras
+        Query.orderDesc('$createdAt'),
+        Query.limit(50)
+      ]
+    );
+
+    if (!posts) throw Error;
+
+    return posts;
+  } catch (error) {
+    console.log("Error getting public posts:", error);
+    throw error;
   }
 }

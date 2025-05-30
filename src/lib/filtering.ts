@@ -1,7 +1,6 @@
 import { IUser } from '@/types';
 import { Models } from 'appwrite';
 
-// Função para normalizar texto (remove acentos, converte para minúsculo)
 export const normalizeText = (text: string): string => {
   return text
     .toLowerCase()
@@ -9,10 +8,10 @@ export const normalizeText = (text: string): string => {
     .replace(/[\u0300-\u036f]/g, '');
 };
 
-// Filtrar posts baseado nas aventuras do usuário
 export const filterPostsByUserAdventures = (
   posts: Models.Document[],
   userAdventureIds: string[],
+  publicAdventureIds: string[] = [],
   isAdmin: boolean = false
 ): Models.Document[] => {
   if (!posts.length) return [];
@@ -20,20 +19,61 @@ export const filterPostsByUserAdventures = (
   // Admins veem todos os posts
   if (isAdmin) return posts;
 
-  // Usuários sem aventuras não veem posts
-  if (userAdventureIds.length === 0) return [];
-
   return posts.filter(post => {
-    if (!post.adventures || !Array.isArray(post.adventures)) return false;
+    // Post público (sem aventuras)
+    if (!post.adventures || !Array.isArray(post.adventures) || post.adventures.length === 0) {
+      return true;
+    }
     
-    // Post é visível se o usuário participa de pelo menos uma aventura do post
+    // Post com aventuras: verificar se usuário tem acesso
+    const allAccessibleAdventures = [...new Set([...userAdventureIds, ...publicAdventureIds])];
+    
+    // Post é visível se o usuário tem acesso a pelo menos uma aventura do post
     return post.adventures.some((adventureId: string) => 
-      userAdventureIds.includes(adventureId)
+      allAccessibleAdventures.includes(adventureId)
     );
   });
 };
 
-// Filtrar aventuras baseado em permissões do usuário
+export const isPostPublic = (post: Models.Document): boolean => {
+  return !post.adventures || !Array.isArray(post.adventures) || post.adventures.length === 0;
+};
+
+export const canUserSeePostsFromAdventures = (
+  postAdventures: string[],
+  userAdventureIds: string[],
+  publicAdventureIds: string[] = [],
+  isAdmin: boolean = false
+): { canSee: boolean; reason: string } => {
+  if (isAdmin) {
+    return { canSee: true, reason: 'admin' };
+  }
+
+  // Post público (sem aventuras)
+  if (!postAdventures || postAdventures.length === 0) {
+    return { canSee: true, reason: 'public_post' };
+  }
+
+  // Verificar acesso às aventuras
+  const allAccessibleAdventures = [...new Set([...userAdventureIds, ...publicAdventureIds])];
+  
+  const hasMatchingAdventure = postAdventures.some(adventureId => 
+    allAccessibleAdventures.includes(adventureId)
+  );
+
+  if (hasMatchingAdventure) {
+    const isPublicAdventure = postAdventures.some(adventureId => 
+      publicAdventureIds.includes(adventureId)
+    );
+    return { 
+      canSee: true, 
+      reason: isPublicAdventure ? 'public_adventure' : 'participant' 
+    };
+  }
+
+  return { canSee: false, reason: 'no_access' };
+};
+
 export const filterAdventuresByPermissions = (
   adventures: Models.Document[],
   user: IUser
@@ -47,7 +87,6 @@ export const filterAdventuresByPermissions = (
   return adventures.filter(adventure => adventure.status === 'active');
 };
 
-// Filtrar itens por termo de busca em múltiplos campos
 export const filterBySearchTerm = (
   items: Models.Document[],
   searchTerm: string,
@@ -66,7 +105,6 @@ export const filterBySearchTerm = (
   );
 };
 
-// Filtrar posts por tag específica
 export const filterPostsByTag = (
   posts: Models.Document[],
   tagName: string
@@ -84,7 +122,6 @@ export const filterPostsByTag = (
   });
 };
 
-// Filtrar por status (ativo/inativo)
 export const filterByStatus = (
   items: Models.Document[],
   status: 'active' | 'inactive' | 'all'
@@ -94,7 +131,6 @@ export const filterByStatus = (
   return items.filter(item => item.status === status);
 };
 
-// Ordenar aventuras (ativas primeiro, depois por data)
 export const sortAdventures = (adventures: Models.Document[]): Models.Document[] => {
   return [...adventures].sort((a, b) => {
     // Primeiro por status (ativas primeiro)
@@ -107,14 +143,12 @@ export const sortAdventures = (adventures: Models.Document[]): Models.Document[]
   });
 };
 
-// Ordenar posts por data (mais recentes primeiro)
 export const sortPostsByDate = (posts: Models.Document[]): Models.Document[] => {
   return [...posts].sort((a, b) => 
     new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime()
   );
 };
 
-// Combinar múltiplos filtros
 export const combineFilters = (
   items: Models.Document[],
   filters: {
@@ -153,6 +187,7 @@ export const combineFilters = (
     filtered = filterPostsByUserAdventures(
       filtered, 
       filters.userAdventureIds, 
+      [],
       filters.isAdmin
     );
   }
@@ -169,7 +204,6 @@ export const combineFilters = (
   return filtered;
 };
 
-// Obter estatísticas de filtragem
 export const getFilteringStats = (
   originalItems: Models.Document[],
   filteredItems: Models.Document[]
@@ -184,31 +218,6 @@ export const getFilteringStats = (
   };
 };
 
-// Verificar se usuário pode ver posts de aventuras específicas
-export const canUserSeePostsFromAdventures = (
-  postAdventures: string[],
-  userAdventureIds: string[],
-  isAdmin: boolean = false
-): { canSee: boolean; reason: string } => {
-  if (isAdmin) {
-    return { canSee: true, reason: 'admin' };
-  }
-
-  if (userAdventureIds.length === 0) {
-    return { canSee: false, reason: 'no_adventures' };
-  }
-
-  const hasMatchingAdventure = postAdventures.some(adventureId => 
-    userAdventureIds.includes(adventureId)
-  );
-
-  return {
-    canSee: hasMatchingAdventure,
-    reason: hasMatchingAdventure ? 'participant' : 'not_participant'
-  };
-};
-
-// Agrupar posts por aventura
 export const groupPostsByAdventure = (
   posts: Models.Document[],
   adventures: Models.Document[]
@@ -237,7 +246,6 @@ export const groupPostsByAdventure = (
   return grouped;
 };
 
-// Obter mensagem de estado vazio baseada no contexto
 export const getEmptyStateMessage = (
   context: 'posts' | 'adventures' | 'search',
   hasAdventures: boolean,
@@ -286,7 +294,6 @@ export const getEmptyStateMessage = (
   }
 };
 
-// Validar se filtros estão ativos
 export const hasActiveFilters = (filters: {
   search?: string;
   tag?: string;

@@ -66,10 +66,14 @@ const PostForm = ({ post, action }: PostFormProps) => {
       title: post ? post.title : "",
       captions: post ? (Array.isArray(post.captions) ? post.captions.join('<br>') : post.captions || "") : "",
       file: [],
-      adventures: post ? (post.adventures || []) : [], // MUDOU de location
+      adventures: post ? (post.adventures || []) : [], 
       tags: post ? post.tags || [] : [],
     },
   });
+
+  // Observar mudanças no campo adventures para mostrar/esconder aviso
+  const watchedAdventures = form.watch("adventures");
+  const isPublicPost = !watchedAdventures || watchedAdventures.length === 0;
 
   async function onSubmit(values: z.infer<typeof PostSchema>) {
     const allowedIds = [
@@ -85,10 +89,13 @@ const PostForm = ({ post, action }: PostFormProps) => {
       });
     }
 
+    // Garantir que adventures é um array (vazio para posts públicos)
+    const adventures = values.adventures || [];
+
     // VALIDAR SE USUÁRIO PODE POSTAR NAS AVENTURAS SELECIONADAS
-    if (!isAdmin(user)) {
+    if (!isAdmin(user) && adventures.length > 0) {
       const userAdventureIds = userAdventures?.documents.map(a => a.$id) || [];
-      const canPost = values.adventures.every(adventureId => 
+      const canPost = adventures.every(adventureId => 
         userAdventureIds.includes(adventureId)
       );
       
@@ -107,6 +114,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
         postId: post.$id,
         imageId: post.imageId,
         imageUrl: post.imageUrl,
+        adventures: adventures,
         // Converte o array de tags para string separada por vírgula
         tags: values.tags.join(","),
       });
@@ -124,6 +132,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
       ...values,
       captions: prepareCaptions(values.captions),
       userId: user.id,
+      adventures: adventures,
       // Converte o array de tags para string separada por vírgula
       tags: values.tags.join(","),
     });
@@ -193,13 +202,15 @@ const PostForm = ({ post, action }: PostFormProps) => {
           )}
         />
 
-        {/* CAMPO AVENTURAS - SUBSTITUIU LOCATION */}
+        {/* CAMPO AVENTURAS - AGORA OPCIONAL */}
         <FormField
           control={form.control}
           name="adventures"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="shad-form_label">Aventuras</FormLabel>
+              <FormLabel className="shad-form_label">
+                Aventuras (Opcional)
+              </FormLabel>
               <FormControl>
                 {isLoadingAdventures ? (
                   <div className="flex items-center justify-center h-12 bg-dark-4 rounded-md">
@@ -207,19 +218,48 @@ const PostForm = ({ post, action }: PostFormProps) => {
                     <span className="ml-2 text-light-4 text-sm">Carregando aventuras...</span>
                   </div>
                 ) : (
-                  <AdventureMultiSelect
-                    adventures={userAdventures?.documents || []}
-                    value={field.value || []}
-                    onChange={field.onChange}
-                    placeholder="Selecione as aventuras para este post..."
-                    error={form.formState.errors.adventures?.message}
-                  />
+                  <div className="space-y-3">
+                    <AdventureMultiSelect
+                      adventures={userAdventures?.documents || []}
+                      value={field.value || []}
+                      onChange={field.onChange}
+                      placeholder="Selecione aventuras específicas ou deixe vazio para post público..."
+                      error={form.formState.errors.adventures?.message}
+                    />
+                    
+                    {/* Indicador de Visibilidade */}
+                    <div className={`p-3 rounded-lg border transition-colors ${
+                      isPublicPost 
+                        ? 'bg-blue-500/10 border-blue-500/30' 
+                        : 'bg-green-500/10 border-green-500/30'
+                    }`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg">
+                          {isPublicPost ? '🌍' : '🔒'}
+                        </span>
+                        <span className={`font-medium ${
+                          isPublicPost ? 'text-blue-400' : 'text-green-400'
+                        }`}>
+                          {isPublicPost ? 'Post Público' : 'Post Restrito'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-light-4">
+                        {isPublicPost 
+                          ? 'Este post será visível para todos os usuários da plataforma'
+                          : `Este post será visível apenas para participantes das ${field.value?.length || 0} aventura(s) selecionada(s)`
+                        }
+                      </p>
+                    </div>
+                  </div>
                 )}
               </FormControl>
               <FormMessage className="shad-form_message" />
               {!isAdmin(user) && (
                 <p className="text-light-4 text-sm mt-1">
-                  Você só pode postar em aventuras onde participa
+                  {isPublicPost 
+                    ? 'Posts públicos são visíveis para todos'
+                    : 'Você só pode postar em aventuras onde participa'
+                  }
                 </p>
               )}
             </FormItem>

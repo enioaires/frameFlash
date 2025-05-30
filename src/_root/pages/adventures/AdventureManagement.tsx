@@ -5,9 +5,11 @@ import {
   Edit,
   Eye,
   EyeOff,
+  Globe,
+  Lock,
   Settings,
   Trash2,
-  Users
+  Users,
 } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import React, { useState } from 'react';
@@ -64,19 +66,52 @@ const AdventureManagement = () => {
       description: adventure.description,
       file: [],
       status: newStatus,
+      isPublic: adventure.isPublic,
       imageId: adventure.imageId,
       imageUrl: adventure.imageUrl,
     }, {
       onSuccess: () => {
         toast({
           title: `Aventura ${newStatus === 'active' ? 'ativada' : 'desativada'}`,
-          description: `A aventura agora está ${newStatus === 'active' ? 'visível para todos os participantes' : 'visível apenas para admins'}.`
+          description: `A aventura agora está ${newStatus === 'active' ? 'funcional' : 'visível apenas para admins'}.`
         });
       },
       onError: (error: any) => {
         toast({
           title: "Erro ao alterar status",
           description: error.message || "Não foi possível alterar o status da aventura."
+        });
+      }
+    });
+  };
+
+  const handleToggleVisibility = () => {
+    if (!adventure) return;
+
+    const newVisibility = !adventure.isPublic;
+
+    updateAdventure({
+      adventureId: adventure.$id,
+      title: adventure.title,
+      description: adventure.description,
+      file: [],
+      status: adventure.status,
+      isPublic: newVisibility,
+      imageId: adventure.imageId,
+      imageUrl: adventure.imageUrl,
+    }, {
+      onSuccess: () => {
+        toast({
+          title: `Aventura agora é ${newVisibility ? 'pública' : 'privada'}`,
+          description: newVisibility 
+            ? "Todos os usuários podem ver esta aventura e seus posts automaticamente."
+            : "Apenas participantes adicionados manualmente podem ver esta aventura."
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Erro ao alterar visibilidade",
+          description: error.message || "Não foi possível alterar a visibilidade da aventura."
         });
       }
     });
@@ -142,7 +177,14 @@ const AdventureManagement = () => {
       : { text: 'Inativa', className: 'bg-red-500/20 text-red-400 border-red-500/30' };
   };
 
+  const getVisibilityBadge = (isPublic: boolean) => {
+    return isPublic
+      ? { text: 'Pública', className: 'bg-blue-500/20 text-blue-400 border-blue-500/30', icon: <Globe className="w-4 h-4" /> }
+      : { text: 'Privada', className: 'bg-orange-500/20 text-orange-400 border-orange-500/30', icon: <Lock className="w-4 h-4" /> };
+  };
+
   const statusBadge = getStatusBadge(adventure.status);
+  const visibilityBadge = getVisibilityBadge(adventure.isPublic);
 
   const tabs = [
     { id: 'overview', label: 'Visão Geral', icon: Eye },
@@ -191,12 +233,21 @@ const AdventureManagement = () => {
                     <h2 className="text-2xl font-bold text-light-1">
                       {adventure.title}
                     </h2>
-                    <span className={cn(
-                      "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border",
-                      statusBadge.className
-                    )}>
-                      {statusBadge.text}
-                    </span>
+                    <div className="flex gap-2">
+                      <span className={cn(
+                        "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border",
+                        statusBadge.className
+                      )}>
+                        {statusBadge.text}
+                      </span>
+                      <span className={cn(
+                        "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border",
+                        visibilityBadge.className
+                      )}>
+                        {visibilityBadge.icon}
+                        {visibilityBadge.text}
+                      </span>
+                    </div>
                   </div>
 
                   {adventure.description && (
@@ -211,9 +262,11 @@ const AdventureManagement = () => {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-primary-500">
-                    {participants?.documents.length || 0}
+                    {adventure.isPublic ? 'Todos' : (participants?.documents.length || 0)}
                   </p>
-                  <p className="text-light-4 text-sm">Participantes</p>
+                  <p className="text-light-4 text-sm">
+                    {adventure.isPublic ? 'Usuários' : 'Participantes'}
+                  </p>
                 </div>
 
                 <div className="text-center">
@@ -265,6 +318,7 @@ const AdventureManagement = () => {
           {activeTab === 'overview' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Status Card */}
                 <div className="bg-dark-2 rounded-lg p-6 border border-dark-4">
                   <div className="flex items-center gap-3 mb-4">
                     <Activity className="w-5 h-5 text-primary-500" />
@@ -272,7 +326,7 @@ const AdventureManagement = () => {
                   </div>
                   <p className="text-light-3 mb-4">
                     {adventure.status === 'active'
-                      ? "Esta aventura está ativa e visível para todos os participantes."
+                      ? "Esta aventura está ativa e funcional."
                       : "Esta aventura está inativa e visível apenas para administradores."
                     }
                   </p>
@@ -299,34 +353,82 @@ const AdventureManagement = () => {
                         </>
                       )}
                     </Button>
-
                   </div>
                 </div>
 
+                {/* Visibility Card */}
                 <div className="bg-dark-2 rounded-lg p-6 border border-dark-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <Calendar className="w-5 h-5 text-primary-500" />
-                    <h3 className="font-semibold text-light-1">Informações</h3>
+                    {adventure.isPublic ? (
+                      <Globe className="w-5 h-5 text-blue-500" />
+                    ) : (
+                      <Lock className="w-5 h-5 text-orange-500" />
+                    )}
+                    <h3 className="font-semibold text-light-1">Visibilidade</h3>
                   </div>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-light-4 min-w-[120px]">Criada em:</span>
-                      <span className="text-light-1 text-right">
-                        {new Date(adventure.$createdAt).toLocaleDateString('pt-BR')}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-light-4 min-w-[120px]">Última atualização:</span>
-                      <span className="text-light-1 text-right">
-                        {new Date(adventure.$updatedAt).toLocaleDateString('pt-BR')}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-light-4 min-w-[120px]">ID da Aventura:</span>
-                      <span className="text-light-1 font-mono text-xs text-right">
-                        {adventure.$id}
-                      </span>
-                    </div>
+                  <p className="text-light-3 mb-4">
+                    {adventure.isPublic
+                      ? "Esta aventura é pública. Todos os usuários podem ver seus posts automaticamente."
+                      : "Esta aventura é privada. Apenas participantes adicionados manualmente podem ver os posts."
+                    }
+                  </p>
+                  <div className='flex w-full justify-end'>
+                    <Button
+                      onClick={handleToggleVisibility}
+                      disabled={isUpdating}
+                      className={cn(
+                        adventure.isPublic
+                          ? "bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 border border-orange-500/30"
+                          : "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/30"
+                      )}
+                    >
+                      {isUpdating ? (
+                        <Loader size="sm" />
+                      ) : (
+                        <>
+                          {adventure.isPublic ? (
+                            <Lock className="w-4 h-4 mr-2" />
+                          ) : (
+                            <Globe className="w-4 h-4 mr-2" />
+                          )}
+                          Tornar {adventure.isPublic ? 'Privada' : 'Pública'}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Information Card */}
+              <div className="bg-dark-2 rounded-lg p-6 border border-dark-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <Calendar className="w-5 h-5 text-primary-500" />
+                  <h3 className="font-semibold text-light-1">Informações</h3>
+                </div>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-light-4 min-w-[120px]">Criada em:</span>
+                    <span className="text-light-1 text-right">
+                      {new Date(adventure.$createdAt).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-light-4 min-w-[120px]">Última atualização:</span>
+                    <span className="text-light-1 text-right">
+                      {new Date(adventure.$updatedAt).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-light-4 min-w-[120px]">ID da Aventura:</span>
+                    <span className="text-light-1 font-mono text-xs text-right">
+                      {adventure.$id}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-light-4 min-w-[120px]">Alcance:</span>
+                    <span className="text-light-1 text-right">
+                      {adventure.isPublic ? 'Todos os usuários' : `${participants?.documents.length || 0} participantes`}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -334,11 +436,31 @@ const AdventureManagement = () => {
           )}
 
           {activeTab === 'participants' && (
-            <AdventureParticipantsList
-              adventureId={adventure.$id}
-              participants={participants?.documents || []}
-              isLoading={isLoadingParticipants}
-            />
+            <div className="space-y-6">
+              {adventure.isPublic ? (
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Globe className="w-6 h-6 text-blue-400" />
+                    <h3 className="font-semibold text-blue-400">Aventura Pública</h3>
+                  </div>
+                  <p className="text-light-3 mb-4">
+                    Esta aventura é pública, então todos os usuários da plataforma têm acesso automaticamente.
+                    Você ainda pode gerenciar participantes específicos abaixo, mas isso é opcional.
+                  </p>
+                  <div className="bg-dark-3 rounded-lg p-4">
+                    <p className="text-light-4 text-sm">
+                      <strong className="text-blue-400">Alcance Total:</strong> Todos os usuários registrados na plataforma
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+              
+              <AdventureParticipantsList
+                adventureId={adventure.$id}
+                participants={participants?.documents || []}
+                isLoading={isLoadingParticipants}
+              />
+            </div>
           )}
 
           {activeTab === 'settings' && (
@@ -353,7 +475,7 @@ const AdventureManagement = () => {
                   <div>
                     <h4 className="font-medium text-light-1 mb-2">Editar Aventura</h4>
                     <p className="text-light-4 text-sm mb-3">
-                      Altere o título, descrição, imagem ou status da aventura.
+                      Altere o título, descrição, imagem, status ou visibilidade da aventura.
                     </p>
                     <Link to={`/adventures/${adventure.$id}/edit`}>
                       <Button className="shad-button_primary">
