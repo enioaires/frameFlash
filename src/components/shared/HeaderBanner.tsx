@@ -11,7 +11,7 @@ interface HeaderBannerProps {
 }
 
 const HeaderBanner: React.FC<HeaderBannerProps> = ({
-  title = "FrameFlash",
+  title = "Obziammos",
   subtitle = "Compartilhe suas aventuras épicas",
   backgroundImage,
   height = 'md',

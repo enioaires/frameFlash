@@ -11,22 +11,10 @@ export const getAvailableTags = () => {
       value: link.label.toLowerCase()
     }));
   
-  // Adiciona tags extras que podem não estar no menu
-  const extraTags = [
-    { label: 'Aventura', value: 'aventura' },
-    { label: 'História', value: 'historia' },
-    { label: 'Crônica', value: 'cronica' },
-    { label: 'Campanha', value: 'campanha' },
-    { label: 'NPC', value: 'npc' },
-    { label: 'Monstro', value: 'monstro' },
-    { label: 'Artefato', value: 'artefato' },
-    { label: 'Local', value: 'local' },
-    { label: 'Evento', value: 'evento' },
-    { label: 'Organização', value: 'organizacao' },
-  ];
+
   
   // Combina e remove duplicatas
-  const allTags = [...validTags, ...extraTags];
+  const allTags = [...validTags];
   const uniqueTags = allTags.filter((tag, index, array) => 
     array.findIndex(t => t.value === tag.value) === index
   );
