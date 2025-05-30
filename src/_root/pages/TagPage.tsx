@@ -5,6 +5,7 @@ import { CompactAdventureSelect } from "@/components/shared/AdventureSelect";
 import HeaderBanner from "@/components/shared/HeaderBanner";
 import { Models } from "appwrite";
 import PostCard from "@/components/shared/PostCard";
+import { allMenuCategories } from "@/contants";
 import { useGetPostsByTag } from "@/lib/react-query/posts";
 import { useParams } from "react-router-dom";
 import { useState } from "react";
@@ -139,7 +140,11 @@ const TagPage = () => {
                 type="no_results"
                 title={`Nenhum post com a tag "${capitalizeTag(tag)}"`}
                 description="Não encontramos nenhum post com esta tag ainda."
-                icon="🏷️"
+                icon={typeof allMenuCategories.find(category =>
+                  category.route === `/tag/${tag}`
+                )?.icon === 'string' ? allMenuCategories.find(category =>
+                  category.route === `/tag/${tag}`
+                )?.icon as string || "🏷️" : "🏷️"}
               />
             ) : (
               <EmptyState

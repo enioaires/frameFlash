@@ -111,8 +111,12 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         {shouldShowLoader ? (
           <Loader text="" />
         ) : (
-          <div className="text-6xl mb-2" role="img" aria-label={finalTitle}>
-            {finalIcon}
+          <div className="mb-2" role="img" aria-label={finalTitle}>
+            {finalIcon.startsWith('http') ? (
+              <img src={finalIcon} alt={finalTitle} className="size-42 object-contain" />
+            ) : (
+              <span className="text-6xl">{finalIcon}</span>
+            )}
           </div>
         )}
       </div>
