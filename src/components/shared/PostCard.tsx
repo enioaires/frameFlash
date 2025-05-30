@@ -120,19 +120,6 @@ const PostCard = ({ post }: PostCardProps) => {
         </Link>
       </div>
 
-      {/* Indicador de Visibilidade */}
-      <div className={`flex items-center gap-2 p-2 rounded-lg border mb-3 ${visibilityInfo.bgColor} ${visibilityInfo.borderColor}`}>
-        {visibilityInfo.icon}
-        <div className="flex-1">
-          <span className={`text-sm font-medium ${visibilityInfo.textColor}`}>
-            {visibilityInfo.text}
-          </span>
-          <p className="text-xs text-light-4 mt-0.5">
-            {visibilityInfo.description}
-          </p>
-        </div>
-      </div>
-
       <Link to={`/posts/${post.$id}`}>
         <div className="font-semibold text-2xl text-center py-5">
           <p>{post.title}</p>
