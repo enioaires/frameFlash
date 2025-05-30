@@ -1,5 +1,3 @@
-import { Globe, Lock, Users } from "lucide-react";
-
 import { Link } from "react-router-dom";
 import { Models } from "appwrite";
 import PostStats from "./PostStats";
@@ -14,10 +12,6 @@ const PostCard = ({ post }: PostCardProps) => {
   const { user } = useUserContext();
 
   if (!post.creator) return null;
-
-  // Verificar se o post é público (sem aventuras)
-  const isPublicPost = !post.adventures || post.adventures.length === 0;
-
   // Função para renderizar o conteúdo da legenda
   const renderCaptions = (captions: string[] | string) => {
     if (Array.isArray(captions)) {
@@ -40,47 +34,6 @@ const PostCard = ({ post }: PostCardProps) => {
     }
     return null;
   };
-
-  // Função para obter informações de visibilidade
-  const getVisibilityInfo = () => {
-    if (isPublicPost) {
-      return {
-        icon: <Globe className="w-4 h-4 text-blue-400" />,
-        text: "Post Público",
-        description: "Visível para todos os usuários",
-        bgColor: "bg-blue-500/10",
-        borderColor: "border-blue-500/30",
-        textColor: "text-blue-400"
-      };
-    }
-
-    // Post com aventuras - verificar se há aventuras públicas
-    const hasPublicAdventures = post.adventures?.some((adventure: any) => 
-      adventure.isPublic === true
-    );
-
-    if (hasPublicAdventures) {
-      return {
-        icon: <Users className="w-4 h-4 text-green-400" />,
-        text: "Post Semi-Público",
-        description: `${post.adventures.length} aventura(s) • Algumas públicas`,
-        bgColor: "bg-green-500/10",
-        borderColor: "border-green-500/30",
-        textColor: "text-green-400"
-      };
-    }
-
-    return {
-      icon: <Lock className="w-4 h-4 text-orange-400" />,
-      text: "Post Privado",
-      description: `${post.adventures.length} aventura(s) privada(s)`,
-      bgColor: "bg-orange-500/10",
-      borderColor: "border-orange-500/30",
-      textColor: "text-orange-400"
-    };
-  };
-
-  const visibilityInfo = getVisibilityInfo();
 
   return (
     <div className="post-card">
