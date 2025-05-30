@@ -138,8 +138,6 @@ const TagPage = () => {
             ) : allTagPosts?.documents.length === 0 ? (
               <EmptyState
                 type="no_results"
-                title={`Nenhum post com a tag "${capitalizeTag(tag)}"`}
-                description="Não encontramos nenhum post com esta tag ainda."
                 icon={typeof allMenuCategories.find(category =>
                   category.route === `/tag/${tag}`
                 )?.icon === 'string' ? allMenuCategories.find(category =>

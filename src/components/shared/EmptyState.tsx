@@ -81,7 +81,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       case 'no_results':
         return {
           title: 'Nenhum resultado encontrado',
-          description: 'Tente ajustar os filtros de busca ou remover alguns critérios.',
+          description: '',
           icon: '🔍',
         };
 
