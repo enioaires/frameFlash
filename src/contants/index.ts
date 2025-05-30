@@ -1,8 +1,10 @@
 import {
+  Backpack,
   Book,
   Bookmark,
   Castle,
   Crown,
+  Earth,
   Home,
   Map,
   Plus,
@@ -95,51 +97,45 @@ export const allMenuCategories = [
   },
   // RPG Core
   {
-    icon: Users,
-    route: "/tag/classe",
+    icon: Earth,
+    route: "/tag/mundo",
+    label: "O Mundo",
+    category: "rpg"
+  },
+  {
+    icon: Crown,
+    route: "/tag/personagens",
+    label: "Personagens",
+    category: "rpg"
+  },
+  {
+    icon: User,
+    route: "/tag/classes",
     label: "Classes",
     category: "rpg"
   },
   {
     icon: User,
-    route: "/tag/raca",
+    route: "/tag/racas",
     label: "Raças",
     category: "rpg"
   },
   {
     icon: Crown,
-    route: "/tag/personagem",
-    label: "Personagens",
-    category: "rpg"
-  },
-  {
-    icon: Sparkles,
-    route: "/tag/talento",
-    label: "Talentos",
-    category: "rpg"
-  },
-  {
-    icon: Zap,
-    route: "/tag/magia",
-    label: "Magias",
-    category: "rpg"
-  },
-  {
-    icon: Crown,
-    route: "/tag/deus",
+    route: "/tag/deuses",
     label: "Deuses",
     category: "rpg"
   },
   {
-    icon: Book,
-    route: "/tag/lore",
-    label: "Lore",
+    icon: Sword,
+    route: "/tag/artefatos",
+    label: "Artefatos",
     category: "rpg"
   },
   {
-    icon: Sword,
-    route: "/tag/item",
-    label: "Items",
+    icon: Castle,
+    route: "/tag/aventuras",
+    label: "Aventuras",
     category: "rpg"
   },
   {
@@ -148,6 +144,49 @@ export const allMenuCategories = [
     label: "Relatos",
     category: "rpg"
   },
+  {
+    icon: Scroll,
+    route: "/tag/rpg",
+    label: "RPG",
+    category: "rpg"
+  },
+  {
+    icon: Users,
+    route: "/tag/jogadores",
+    label: "Jogadores",
+    category: "rpg"
+  },
+  {
+    icon: Zap,
+    route: "/tag/magias",
+    label: "Magias",
+    category: "rpg"
+  },
+  {
+    icon: Sparkles,
+    route: "/tag/talentos",
+    label: "Talentos",
+    category: "rpg"
+  },
+  {
+    icon: Backpack,
+    route: "/tag/inventario",
+    label: "Inventário",
+    category: "rpg"
+  },
+  {
+    icon: Users,
+    route: "/tag/irmandades",
+    label: "Irmandades",
+    category: "rpg"
+  },
+  {
+    icon: Book,
+    route: "/tag/produtos",
+    label: "Produtos",
+    category: "rpg"
+  },
+
   // Sistema
   {
     icon: Bookmark,

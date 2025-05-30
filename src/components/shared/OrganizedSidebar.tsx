@@ -42,7 +42,7 @@ const OrganizedSidebar = () => {
   };
 
   const categoryTitles = {
-    rpg: '🎭 RPG',
+    rpg: '🎭 OBZ',
     system: '⚙️ Sistema'
   };
 
