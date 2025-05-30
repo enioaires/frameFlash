@@ -1,8 +1,5 @@
 import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -11,18 +8,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { SigninSchema } from "@/lib/validation";
-import Loader from "@/components/shared/Loader";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Loader from "@/components/shared/Loader";
+import { SigninSchema } from "@/lib/validation";
+import { useForm } from "react-hook-form";
+import { useSignInAccount } from "@/lib/react-query/auth";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
-import { useSignInAccount } from "@/lib/react-query/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const SigninForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { checkAuthUser, isLoading } = useUserContext();
 
   const { mutateAsync: signInAccount, isPending: isSigningIn } =
@@ -37,30 +38,49 @@ const SigninForm = () => {
   });
 
   async function onSubmit(values: z.infer<typeof SigninSchema>) {
-    const session = await signInAccount({
-      email: values.email,
-      password: values.password,
-    });
+    try {
+      // Limpar sessão existente se houver
+      try {
+        const { account } = await import("@/lib/appwrite/config");
+        await account.deleteSession('current');
+      } catch (error) {
+        // Ignorar erro se não houver sessão
+      }
 
-    if (!session) {
-      return toast({
-        title: "Erro ao entrar",
-        description:
-          "Verifique suas credenciais e tente novamente, ou crie uma conta.",
+      const session = await signInAccount({
+        email: values.email,
+        password: values.password,
       });
-    }
 
-    const isLoggedIn = await checkAuthUser();
+      if (!session) {
+        return toast({
+          title: "Erro ao entrar",
+          description: "Verifique suas credenciais e tente novamente.",
+        });
+      }
 
-    if (isLoggedIn) {
-      form.reset();
+      const isLoggedIn = await checkAuthUser();
 
-      navigate("/");
-    } else {
-      return toast({
+      if (isLoggedIn) {
+        form.reset();
+        const from = (location.state as any)?.from?.pathname || "/";
+        navigate(from, { replace: true });
+      } else {
+        return toast({
+          title: "Erro ao entrar",
+          description: "Não foi possível entrar com sua conta, tente novamente.",
+        });
+      }
+    } catch (error: any) {
+      let message = "Ocorreu um erro inesperado.";
+      
+      if (error.message?.includes("Invalid credentials") || error.code === 401) {
+        message = "Email ou senha incorretos.";
+      }
+      
+      toast({
         title: "Erro ao entrar",
-        description:
-          "Não foi possível entrar com sua conta, tente novamente mais tarde.",
+        description: message,
       });
     }
   }
@@ -72,6 +92,7 @@ const SigninForm = () => {
         <p className="text-light-3 small-medium md:base-regular mt-2">
           Para entrar, digite suas credenciais.
         </p>
+
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="flex-col flex gap-5 w-full mt-4"
@@ -89,6 +110,7 @@ const SigninForm = () => {
               </FormItem>
             )}
           />
+          
           <FormField
             control={form.control}
             name="password"
@@ -102,7 +124,12 @@ const SigninForm = () => {
               </FormItem>
             )}
           />
-          <Button type="submit" className="shad-button_primary">
+          
+          <Button 
+            type="submit" 
+            className="shad-button_primary"
+            disabled={isSigningIn || isLoading}
+          >
             {isSigningIn || isLoading ? (
               <div className="flex-center">
                 <Loader />
@@ -111,6 +138,7 @@ const SigninForm = () => {
               "Entrar"
             )}
           </Button>
+          
           <p className="text-small-regular text-light-2 text-center mt-2">
             Não possui uma conta?{" "}
             <Link

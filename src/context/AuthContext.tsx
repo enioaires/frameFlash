@@ -7,9 +7,6 @@ import { getCurrentUser } from "@/lib/appwrite/auth/api";
 import { isAdminById } from "@/lib/adventures";
 import { useNavigate } from "react-router-dom";
 
-// IMPORTAÇÃO PARA VERIFICAÇÃO DE ADMIN
-
-
 export const INITIAL_USER = {
   id: "",
   name: "",
@@ -33,8 +30,9 @@ const AuthContext = createContext<IContextType>(INITIAL_STATE);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<IUser>(INITIAL_USER);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Começa como true
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [hasInitialized, setHasInitialized] = useState<boolean>(false); // Novo estado
 
   const navigate = useNavigate();
 
@@ -72,21 +70,52 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return false;
     } finally {
       setIsLoading(false);
+      setHasInitialized(true); // Marca como inicializado
     }
   };
 
   useEffect(() => {
-    const cookieFallback = localStorage.getItem("cookieFallback");
-    if (
-      cookieFallback === "[]" ||
-      cookieFallback === null ||
-      cookieFallback === undefined
-    ) {
-      navigate("/sign-in");
-    }
+    // Verificar autenticação na inicialização
+    const initializeAuth = async () => {
+      const cookieFallback = localStorage.getItem("cookieFallback");
+      
+      // Se não tem cookie de sessão, não está autenticado
+      if (
+        cookieFallback === "[]" ||
+        cookieFallback === null ||
+        cookieFallback === undefined
+      ) {
+        setIsLoading(false);
+        setHasInitialized(true);
+        return;
+      }
 
-    checkAuthUser();
-  }, []);
+      // Verificar autenticação
+      const isAuth = await checkAuthUser();
+      
+      // Se não conseguiu autenticar com cookie válido, limpar e redirecionar
+      if (!isAuth && cookieFallback && cookieFallback !== "[]") {
+        localStorage.removeItem("cookieFallback");
+        navigate("/sign-in");
+      }
+    };
+
+    initializeAuth();
+  }, []); // Remove navigate das dependências para evitar loops
+
+  // Só navegar para sign-in se já inicializou e não está autenticado
+  useEffect(() => {
+    if (hasInitialized && !isAuthenticated && !isLoading) {
+      const cookieFallback = localStorage.getItem("cookieFallback");
+      if (
+        cookieFallback === "[]" ||
+        cookieFallback === null ||
+        cookieFallback === undefined
+      ) {
+        navigate("/sign-in");
+      }
+    }
+  }, [hasInitialized, isAuthenticated, isLoading, navigate]);
 
   const value = {
     user,

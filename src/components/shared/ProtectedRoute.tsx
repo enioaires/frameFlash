@@ -26,30 +26,34 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const isAdmin = useIsAdmin();
   const location = useLocation();
 
-  // Mostrar loader enquanto carrega autenticação
+  // AGUARDAR CARREGAMENTO INICIAL (evita flash)
   if (isLoading && showLoader) {
     return (
-      <div className="flex-center w-full h-screen">
-        <Loader text="Verificando permissões..." />
+      <div className="flex-center w-full h-screen bg-dark-1">
+        <Loader text="Carregando..." />
       </div>
     );
   }
 
-  // Verificar se precisa estar autenticado
-  if (requireAuth && !isAuthenticated) {
+  // VERIFICAR AUTENTICAÇÃO SOMENTE APÓS CARREGAMENTO
+  if (!isLoading && requireAuth && !isAuthenticated) {
+    // Salvar a rota atual para redirecionar após login
     return <Navigate to="/sign-in" state={{ from: location }} replace />;
   }
 
-  // Verificar se precisa ser admin
-  if (requireAdmin && !isAdmin) {
-    return <Navigate to={fallbackPath} replace />;
-  }
-
-  // Verificar roles específicos
-  if (allowedRoles && allowedRoles.length > 0) {
-    const hasAllowedRole = allowedRoles.includes(user.role);
-    if (!hasAllowedRole) {
+  // VERIFICAR PERMISSÕES SOMENTE SE AUTENTICADO
+  if (!isLoading && isAuthenticated) {
+    // Verificar se precisa ser admin
+    if (requireAdmin && !isAdmin) {
       return <Navigate to={fallbackPath} replace />;
+    }
+
+    // Verificar roles específicos
+    if (allowedRoles && allowedRoles.length > 0) {
+      const hasAllowedRole = allowedRoles.includes(user.role);
+      if (!hasAllowedRole) {
+        return <Navigate to={fallbackPath} replace />;
+      }
     }
   }
 
@@ -77,8 +81,11 @@ export const PermissionGate: React.FC<{
   fallback = null,
   show = true
 }) => {
-  const { user } = useUserContext();
+  const { user, isLoading } = useUserContext();
   const isAdmin = useIsAdmin();
+
+  // Aguardar carregamento
+  if (isLoading) return <>{fallback}</>;
 
   if (!show) return <>{fallback}</>;
 
@@ -103,8 +110,11 @@ export const useCanRender = (
   requireAdmin = false,
   allowedRoles?: ('admin' | 'user')[]
 ) => {
-  const { user } = useUserContext();
+  const { user, isLoading } = useUserContext();
   const isAdmin = useIsAdmin();
+
+  // Durante carregamento, não renderizar
+  if (isLoading) return false;
 
   if (requireAdmin && !isAdmin) return false;
   
@@ -121,8 +131,11 @@ export const RoleBasedRender: React.FC<{
   userContent?: React.ReactNode;
   guestContent?: React.ReactNode;
 }> = ({ adminContent, userContent, guestContent }) => {
-  const { isAuthenticated } = useUserContext();
+  const { isAuthenticated, isLoading } = useUserContext();
   const isAdmin = useIsAdmin();
+
+  // Durante carregamento, não renderizar nada
+  if (isLoading) return null;
 
   if (!isAuthenticated) {
     return <>{guestContent}</>;

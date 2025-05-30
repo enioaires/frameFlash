@@ -1,19 +1,32 @@
-import { Outlet, Navigate } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useUserContext } from "@/context/AuthContext";
 
 export default function AuthLayout() {
-  const { isAuthenticated } = useUserContext();
+  const { isAuthenticated, isLoading } = useUserContext();
+  const location = useLocation();
+
+  // Aguardar carregamento para evitar flash
+  if (isLoading) {
+    return (
+      <div className="flex-center w-full h-screen bg-dark-1">
+        <div className="animate-pulse">
+          <div className="w-16 h-16 bg-primary-500/20 rounded-full mb-4"></div>
+          <div className="text-light-4 text-sm">Carregando...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Se já está autenticado, redirecionar para onde estava tentando ir
+  if (isAuthenticated) {
+    const from = (location.state as any)?.from?.pathname || "/";
+    return <Navigate to={from} replace />;
+  }
 
   return (
-    <>
-      {isAuthenticated ? (
-        <Navigate to="/" />
-      ) : (
-        <section className="flex flex-1 justify-center items-center flex-col py-10">
-          <Outlet />
-        </section>
-      )}
-    </>
+    <section className="flex flex-1 justify-center items-center flex-col py-10">
+      <Outlet />
+    </section>
   );
 }
