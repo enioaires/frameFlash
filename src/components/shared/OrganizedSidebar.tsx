@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { Button } from "../ui/button";
+import { TwoColorIcon } from "./TwoColorIcon";
 import { allMenuCategories } from "@/contants";
 import { isAdmin } from "@/lib/adventures";
 import { useSignOutAccount } from "@/lib/react-query/auth";
@@ -34,6 +35,32 @@ const OrganizedSidebar = () => {
     }));
   };
 
+  // Função para renderizar ícones (Lucide ou PNG customizado)
+  const renderIcon = (icon: any, isActive: boolean, size: number = 40) => {
+    if (typeof icon === 'string') {
+      // É um PNG customizado
+      return (
+        <TwoColorIcon
+          src={icon}
+          alt="menu icon"
+          isActive={isActive}
+          size={size}
+          hoverEffect="glow"
+        />
+      );
+    } else {
+      // É um componente Lucide
+      const IconComponent = icon;
+      return (
+        <IconComponent 
+          className={`w-5 h-5 group-hover:text-white transition-colors ${
+            isActive ? "text-white" : "text-primary-500"
+          }`}
+        />
+      );
+    }
+  };
+
   // Organiza os links por categoria
   const linksByCategory = {
     main: allMenuCategories.filter(link => link.category === 'main'),
@@ -42,8 +69,8 @@ const OrganizedSidebar = () => {
   };
 
   const categoryTitles = {
-    rpg: '🎭 OBZ',
-    system: '⚙️ Sistema'
+    rpg: 'RPG',
+    system: 'Sistema'
   };
 
   const renderLinks = (links: typeof allMenuCategories) => (
@@ -58,20 +85,16 @@ const OrganizedSidebar = () => {
         })
         .map((link) => {
           const isActive = pathname === link.route;
-          const IconComponent = link.icon;
           
           return (
             <li key={link.label}>
               <NavLink
                 to={link.route}
-                className={`leftsidebar-link group flex gap-4 items-center p-3 rounded-lg transition-all ${isActive && "bg-primary-500"
-                  }`}
+                className={`leftsidebar-link group flex gap-4 items-center p-3 rounded-lg transition-all ${
+                  isActive && "bg-primary-500"
+                }`}
               >
-                <IconComponent 
-                  className={`w-5 h-5 group-hover:text-white ${
-                    isActive ? "text-white" : "text-primary-500"
-                  }`}
-                />
+                {renderIcon(link.icon, isActive)}
                 <span className="text-sm font-medium">{link.label}</span>
               </NavLink>
             </li>

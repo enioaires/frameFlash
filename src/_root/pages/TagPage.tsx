@@ -97,9 +97,6 @@ const TagPage = () => {
           {/* Header com filtro */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full mb-6">
             <div>
-              <h2 className="h3-bold md:h2-bold text-left">
-                Posts com a tag "{capitalizeTag(tag)}"
-              </h2>
               {selectedAdventure && selectedAdventureData && (
                 <p className="text-light-4 text-sm mt-1">
                   Filtrados por aventura: <span className="text-primary-500">{selectedAdventureData.title}</span>
