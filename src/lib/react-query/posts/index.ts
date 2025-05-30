@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-
 import { INewPost, IUpdatePost } from "@/types";
 import {
   createPost,
@@ -12,6 +9,7 @@ import {
   getPostsByAdventures,
   getPostsByTag,
   getPostsByTagForUser,
+  getPublicPosts,
   getRecentPosts,
   getUserPosts,
   likePost,
@@ -24,12 +22,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "../queryKeys";
 import { getCurrentUser } from "@/lib/appwrite/auth/api";
 
-// ATUALIZADO: invalidar novas queries relacionadas a aventuras
+// ==================== HOOKS DE POSTS EXISTENTES ====================
+
 export const useCreatePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (post: INewPost) => createPost(post),
-    onSuccess: () => {
+    onSuccess: (newPost) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
       });
@@ -39,6 +38,13 @@ export const useCreatePost = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER],
       });
+      
+      // 🆕 Se for post público, invalidar posts públicos
+      if (!newPost?.adventures || newPost.adventures.length === 0) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_PUBLIC_POSTS],
+        });
+      }
     },
   });
 };
@@ -111,12 +117,11 @@ export const useDeleteSavedPost = () => {
   });
 };
 
-// ATUALIZADO: invalidar queries relacionadas a aventuras
 export const useUpdatePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (post: IUpdatePost) => updatePost(post),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id],
       });
@@ -129,11 +134,20 @@ export const useUpdatePost = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER],
       });
+      
+      // 🆕 Verificar se post era/ficou público e invalidar adequadamente
+      const wasPublic = !data?.adventures || data.adventures.length === 0;
+      const isPublic = !variables.adventures || variables.adventures.length === 0;
+      
+      if (wasPublic || isPublic) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_PUBLIC_POSTS],
+        });
+      }
     },
   });
 }
 
-// ATUALIZADO: invalidar queries relacionadas a aventuras
 export const useDeletePost = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -151,6 +165,10 @@ export const useDeletePost = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER],
       });
+      // 🆕 Invalidar posts públicos também
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_PUBLIC_POSTS],
+      });
     },
   });
 }
@@ -162,6 +180,16 @@ export const useGetRecentPosts = () => {
   })
 }
 
+// 🆕 NOVO: Hook para posts públicos
+export const useGetPublicPosts = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_PUBLIC_POSTS],
+    queryFn: getPublicPosts,
+    staleTime: 2 * 60 * 1000, // 2 minutos (posts públicos podem ser criados frequentemente)
+    gcTime: 5 * 60 * 1000, // 5 minutos de cache
+  });
+};
+
 export const useGetPostsByTag = (tag: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_POSTS_BY_TAG, tag],
@@ -170,7 +198,6 @@ export const useGetPostsByTag = (tag: string) => {
   })
 }
 
-// NOVO: Hook para posts filtrados por aventuras
 export const useGetPostsByAdventures = (adventureIds: string[]) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_POSTS_BY_ADVENTURES, adventureIds],
@@ -179,20 +206,25 @@ export const useGetPostsByAdventures = (adventureIds: string[]) => {
   });
 };
 
-// NOVO: Hook para posts filtrados para usuário
-export const useGetFilteredPostsForUser = (userAdventureIds: string[], isAdmin: boolean = false) => {
+// 🆕 ATUALIZADO: Hook para posts filtrados considerando posts públicos
+export const useGetFilteredPostsForUser = (
+  userAdventureIds: string[], 
+  publicAdventureIds: string[] = [], 
+  isAdmin: boolean = false
+) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER, userAdventureIds, isAdmin],
-    queryFn: () => getFilteredPostsForUser(userAdventureIds, isAdmin),
-    enabled: isAdmin || (userAdventureIds && userAdventureIds.length > 0),
+    queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER, userAdventureIds, publicAdventureIds, isAdmin],
+    queryFn: () => getFilteredPostsForUser(userAdventureIds, publicAdventureIds, isAdmin),
+    enabled: isAdmin || (userAdventureIds && userAdventureIds.length > 0) || (publicAdventureIds && publicAdventureIds.length > 0),
+    staleTime: 1 * 60 * 1000, // 1 minuto para posts filtrados
+    gcTime: 3 * 60 * 1000, // 3 minutos de cache
   });
 };
 
-// ATUALIZADO: Hook para posts por tag considerando aventuras do usuário
 export const useGetPostsByTagForUser = (tag: string, userAdventureIds: string[], isAdmin: boolean = false) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_POSTS_BY_TAG_FOR_USER, tag, userAdventureIds, isAdmin],
-    queryFn: () => getPostsByTagForUser(tag, userAdventureIds, isAdmin),
+    queryFn: () => getPostsByTagForUser(tag, userAdventureIds, [], isAdmin),
     enabled: !!tag && (isAdmin || (userAdventureIds && userAdventureIds.length > 0)),
   });
 };
@@ -215,10 +247,9 @@ export const useGetpostById = (postId: string) => {
 export const useGetPosts = () => {
   // @ts-ignore
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.GET_INFINITE_POSTS], // Certifique-se de que isso é um array
+    queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
     queryFn: getInfinitePosts as any,
     getNextPageParam: (lastPage: any) => {
-      // Se não há dados, não há mais páginas.
       if (lastPage && lastPage.documents.length === 0) {
         return null;
       }

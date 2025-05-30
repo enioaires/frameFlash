@@ -8,6 +8,7 @@ import {
   getAdventureParticipants,
   getAdventures,
   getAdventuresForUser,
+  getPublicAdventures,
   getUserAdventures,
   isUserParticipantInAdventure,
   removeParticipant,
@@ -17,7 +18,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { QUERY_KEYS } from "../queryKeys";
 
-// ==================== ADVENTURE HOOKS ====================
+// ==================== ADVENTURE HOOKS EXISTENTES ====================
 
 export const useGetAdventures = () => {
   return useQuery({
@@ -30,6 +31,16 @@ export const useGetActiveAdventures = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_ACTIVE_ADVENTURES],
     queryFn: getActiveAdventures,
+  });
+};
+
+// 🆕 NOVO: Hook para aventuras públicas
+export const useGetPublicAdventures = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_PUBLIC_ADVENTURES],
+    queryFn: getPublicAdventures,
+    staleTime: 10 * 60 * 1000, // 10 minutos (aventuras públicas mudam raramente)
+    gcTime: 15 * 60 * 1000, // 15 minutos de cache
   });
 };
 
@@ -54,13 +65,20 @@ export const useCreateAdventure = () => {
   
   return useMutation({
     mutationFn: (adventure: INewAdventure) => createAdventure(adventure),
-    onSuccess: () => {
+    onSuccess: (newAdventure) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_ADVENTURES],
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_ACTIVE_ADVENTURES],
       });
+      
+      // 🆕 Invalidar aventuras públicas se a nova aventura for pública
+      if (newAdventure?.isPublic) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_PUBLIC_ADVENTURES],
+        });
+      }
     },
   });
 };
@@ -70,7 +88,7 @@ export const useUpdateAdventure = () => {
   
   return useMutation({
     mutationFn: (adventure: IUpdateAdventure) => updateAdventure(adventure),
-    onSuccess: (data) => {
+    onSuccess: (data, _variables) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_ADVENTURES],
       });
@@ -79,6 +97,19 @@ export const useUpdateAdventure = () => {
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_ADVENTURE_BY_ID, data?.$id],
+      });
+      
+      // 🆕 IMPORTANTE: Invalidar aventuras públicas quando visibility muda
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_PUBLIC_ADVENTURES],
+      });
+      
+      // 🆕 Invalidar posts filtrados pois visibilidade da aventura mudou
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS_BY_ADVENTURES],
       });
     },
   });
@@ -97,11 +128,15 @@ export const useDeleteAdventure = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_ACTIVE_ADVENTURES],
       });
+      // 🆕 Invalidar aventuras públicas
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_PUBLIC_ADVENTURES],
+      });
     },
   });
 };
 
-// ==================== PARTICIPANT HOOKS ====================
+// ==================== PARTICIPANT HOOKS EXISTENTES ====================
 
 export const useGetAdventureParticipants = (adventureId: string) => {
   return useQuery({
@@ -178,8 +213,6 @@ export const useRemoveParticipant = () => {
     },
   });
 };
-
-// ==================== BATCH OPERATIONS ====================
 
 export const useAddMultipleParticipants = () => {
   const queryClient = useQueryClient();
