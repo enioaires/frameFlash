@@ -39,8 +39,8 @@ const PostDetails = () => {
     if (Array.isArray(captions)) {
       // Se for array (formato antigo), renderiza cada item
       return captions.map((caption, index) => (
-        <div 
-          key={index} 
+        <div
+          key={index}
           dangerouslySetInnerHTML={{ __html: caption }}
           className="mb-2 last:mb-0"
         />
@@ -48,7 +48,7 @@ const PostDetails = () => {
     } else if (typeof captions === 'string') {
       // Se for string (novo formato), renderiza o HTML
       return (
-        <div 
+        <div
           dangerouslySetInnerHTML={{ __html: captions }}
           className="rich-text-content"
         />
@@ -131,8 +131,8 @@ const PostDetails = () => {
                 <Button
                   onClick={handleDeletePost}
                   variant="ghost"
-                  className={`post_details-delete_btn ${user.id !== post?.creator.$id && "hidden"}`}
-                  >
+                  className={`post_details-delete_btn ${user.id === post?.creator.$id ? "" : "hidden"}`}
+                >
                   <img
                     src={"/assets/icons/delete.svg"}
                     alt="delete"
