@@ -217,14 +217,183 @@
     @apply absolute bottom-0 p-5 flex-between w-full bg-gradient-to-t from-dark-3 to-transparent rounded-b-[24px] gap-2;
   }
 
-  /* Left sidebar */
-  .leftsidebar {
-    @apply hidden md:flex px-6 py-10 flex-col min-w-[270px] bg-dark-2 h-screen sticky top-0; /* Ensure it takes full screen height and stays sticky */
-  }
+/* Adicione estas classes ao seu globals.css, substituindo ou complementando as existentes */
 
-  .leftsidebar-link {
-    @apply rounded-lg base-medium hover:bg-primary-500 transition;
+/* Left sidebar - Responsivo */
+.leftsidebar {
+  @apply px-6 py-10 flex-col min-w-[270px] bg-dark-2 h-screen sticky top-0;
+  display: none; /* Default state for smaller screens */
+}
+
+/* Show sidebar on larger screens */
+@media (min-width: 1440px) {
+  .leftsidebar {
+    display: flex;
   }
+}
+
+/* Hide sidebar on smaller screens (controlled by JS) */
+@media (max-width: 1439px) {
+  .leftsidebar {
+    display: none;
+  }
+}
+
+/* Menu flutuante específico */
+.floating-sidebar {
+  @apply fixed top-0 left-0 h-screen w-80 bg-dark-2 border-r border-dark-4 z-50 shadow-2xl;
+  transition: transform 0.3s ease-in-out;
+}
+
+.floating-sidebar.open {
+  transform: translateX(0);
+}
+
+.floating-sidebar.closed {
+  transform: translateX(-100%);
+}
+
+/* Botão toggle do menu flutuante */
+.menu-toggle {
+  @apply fixed top-4 left-4 z-50 p-3 bg-dark-2 border border-dark-4 rounded-lg shadow-lg transition-all duration-300;
+  @apply hover:bg-dark-3 hover:border-primary-500/50;
+}
+
+.menu-toggle.active {
+  @apply bg-primary-500 border-primary-500;
+}
+
+/* Overlay para menu flutuante */
+.menu-overlay {
+  @apply fixed inset-0 bg-black/50 z-40 backdrop-blur-sm;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Ajustes para o conteúdo principal quando em modo flutuante */
+.main-content-floating {
+  @apply w-full;
+  margin-left: 0 !important;
+}
+
+/* Scrollbar customizada para o menu flutuante */
+.floating-sidebar .custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.floating-sidebar .custom-scrollbar::-webkit-scrollbar-track {
+  background: #09090a;
+}
+
+.floating-sidebar .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #5c5c7b;
+  border-radius: 50px;
+}
+
+.floating-sidebar .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #7878a3;
+}
+
+/* Animações para os itens do menu */
+.floating-sidebar .leftsidebar-link {
+  @apply transition-all duration-200;
+}
+
+.floating-sidebar .leftsidebar-link:hover {
+  @apply transform translate-x-1;
+}
+
+/* Responsividade para telas muito pequenas */
+@media (max-width: 640px) {
+  .floating-sidebar {
+    @apply w-full max-w-sm;
+  }
+}
+
+/* Estados de carregamento */
+.sidebar-loading {
+  @apply animate-pulse;
+}
+
+.sidebar-loading .user-avatar {
+  @apply bg-dark-3 rounded-full;
+}
+
+.sidebar-loading .menu-item {
+  @apply bg-dark-3 h-4 rounded;
+}
+
+/* Melhorias visuais */
+.floating-sidebar .menu-header {
+  @apply border-b border-dark-4 bg-dark-1/50 backdrop-blur-sm;
+}
+
+.floating-sidebar .menu-content {
+  @apply bg-gradient-to-b from-dark-2 to-dark-1;
+}
+
+/* Indicador visual quando o menu está aberto */
+.menu-open-indicator {
+  @apply absolute -top-1 -right-1 w-3 h-3 bg-primary-500 rounded-full animate-pulse;
+}
+
+/* Transições suaves para mudanças de layout */
+.layout-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Ajustes para o header em modo flutuante */
+@media (max-width: 1439px) {
+  .topbar {
+    @apply pl-20; /* Espaço para o botão do menu */
+  }
+}
+
+/* Efeitos hover melhorados */
+.floating-menu-item {
+  @apply relative overflow-hidden;
+}
+
+.floating-menu-item::before {
+  content: '';
+  @apply absolute left-0 top-0 h-full w-1 bg-primary-500 transform -translate-x-full transition-transform duration-200;
+}
+
+.floating-menu-item:hover::before {
+  @apply transform translate-x-0;
+}
+
+.floating-menu-item.active::before {
+  @apply transform translate-x-0 bg-white;
+}
+
+/* Estados de foco para acessibilidade */
+.menu-toggle:focus-visible {
+  @apply ring-2 ring-primary-500 ring-offset-2 ring-offset-dark-1;
+}
+
+.floating-sidebar .leftsidebar-link:focus-visible {
+  @apply ring-2 ring-primary-500 ring-offset-2 ring-offset-dark-2;
+}
+
+/* Otimizações de performance */
+.floating-sidebar {
+  will-change: transform;
+  contain: layout style paint;
+}
+
+.menu-overlay {
+  will-change: opacity;
+  contain: layout style paint;
+}
 
   /* Post Card */
   .post-card {
