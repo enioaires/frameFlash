@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import BannerEditor from './BannerEditor';
 import { Edit3 } from 'lucide-react';
@@ -25,9 +25,18 @@ const HeaderBanner: React.FC<HeaderBannerProps> = ({
 }) => {
   const { user } = useUserContext();
   const [showEditor, setShowEditor] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(false);
+  const [failedUrls, setFailedUrls] = useState<Set<string>>(new Set());
   const userIsAdmin = isAdmin(user);
 
   const { data: banner, isLoading } = useGetBannerByTypeAndIdentifier(type, identifier);
+
+  // Reset states when banner data changes
+  useEffect(() => {
+    setImageError(false);
+    setIsImageLoading(false);
+  }, [banner?.imageUrl, type, identifier]);
 
   const heightClasses = {
     sm: 'h-32 md:h-40',
@@ -48,18 +57,75 @@ const HeaderBanner: React.FC<HeaderBannerProps> = ({
 
   // Get banner image URL with fallback
   const bannerImage = banner?.imageUrl || DEFAULT_BANNER_IMAGE;
+  
+  // Check if this specific banner image URL has failed before
+  const hasImageFailed = bannerImage !== DEFAULT_BANNER_IMAGE && failedUrls.has(bannerImage);
+  const shouldUseFallback = imageError || !banner?.imageUrl || hasImageFailed;
+
+  const handleImageError = () => {
+    console.log(`Banner image failed to load: ${bannerImage}`);
+    if (bannerImage !== DEFAULT_BANNER_IMAGE) {
+      setFailedUrls(prev => new Set(prev).add(bannerImage));
+    }
+    setImageError(true);
+    setIsImageLoading(false);
+  };
+
+  const handleImageLoad = () => {
+    setImageError(false);
+    setIsImageLoading(false);
+    // Remove from failed URLs if it loads successfully
+    if (failedUrls.has(bannerImage)) {
+      setFailedUrls(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(bannerImage);
+        return newSet;
+      });
+    }
+  };
+
+  const handleImageStart = () => {
+    setIsImageLoading(true);
+  };
+
+  // Force consistent URL parameters for uploaded images
+  const getConsistentImageUrl = (url: string) => {
+    if (url === DEFAULT_BANNER_IMAGE) return url;
+    
+    // If it's an uploaded image without mode=admin, add it
+    if (url.includes('fra.cloud.appwrite.io') && !url.includes('mode=admin')) {
+      return url + (url.includes('?') ? '&' : '?') + 'mode=admin';
+    }
+    
+    return url;
+  };
+
+  const finalImageUrl = shouldUseFallback 
+    ? DEFAULT_BANNER_IMAGE 
+    : getConsistentImageUrl(bannerImage);
 
   return (
     <>
-      <div className={`relative w-full ${heightClasses[height]} overflow-hidden rounded-lg mb-6 group ${className}`}>
-        {/* Banner Image */}
-        <img 
-          src={bannerImage} 
+      <div className={`relative w-full ${heightClasses[height]} overflow-hidden rounded-lg mb-6 group bg-dark-3 ${className}`}>
+        {/* Loading skeleton */}
+        {isImageLoading && (
+          <div className="absolute inset-0 bg-dark-3 animate-pulse flex items-center justify-center">
+            <Loader size="md" />
+          </div>
+        )}
+        
+        <img
+          key={finalImageUrl} // Force re-render when URL changes
+          src={finalImageUrl}
           alt={banner?.title || `Banner ${identifier}`}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            // Fallback to default image if banner image fails to load
-            (e.target as HTMLImageElement).src = DEFAULT_BANNER_IMAGE;
+          className="w-full h-full object-cover object-center"
+          onError={handleImageError}
+          onLoad={handleImageLoad}
+          onLoadStart={handleImageStart}
+          style={{
+            objectPosition: 'center center', // Force center positioning
+            opacity: isImageLoading ? 0 : 1,
+            transition: 'opacity 0.3s ease-in-out'
           }}
         />
 
@@ -94,7 +160,7 @@ const HeaderBanner: React.FC<HeaderBannerProps> = ({
 // Hook para facilitar o uso em diferentes páginas
 export const usePageBanner = (type: 'home' | 'tag', identifier: string) => {
   const { data: banner, isLoading, isError } = useGetBannerByTypeAndIdentifier(type, identifier);
-  
+
   return {
     banner,
     isLoading,

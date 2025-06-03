@@ -2,10 +2,21 @@
 
 import { INewBanner, IUpdateBanner } from "@/types";
 import { appwriteConfig, database } from "../config";
-import { deleteFile, getFilePreview, uploadFile } from "../posts/api";
+import { deleteFile, uploadFile } from "../posts/api";
 
 import { Query } from "appwrite";
 import { v4 } from "uuid";
+
+// Custom getFilePreview function for banners to ensure consistency
+function getBannerFilePreview(fileId: string) {
+  try {
+    const fileUrl = `https://fra.cloud.appwrite.io/v1/storage/buckets/${appwriteConfig.storageId}/files/${fileId}/view?project=${appwriteConfig.projectId}&mode=admin`;
+    return fileUrl;
+  } catch (error) {
+    console.log("Error getting file preview:", error);
+    return null;
+  }
+}
 
 // ==================== BANNERS CRUD ====================
 
@@ -16,8 +27,8 @@ export async function createBanner(banner: INewBanner) {
 
     if (!uploadedFile) throw Error;
 
-    // Get file url
-    const fileUrl = getFilePreview(uploadedFile.$id);
+    // Get file url with consistent parameters
+    const fileUrl = getBannerFilePreview(uploadedFile.$id);
     if (!fileUrl) {
       await deleteFile(uploadedFile.$id);
       throw Error;
@@ -63,8 +74,8 @@ export async function updateBanner(banner: IUpdateBanner) {
       const uploadedFile = await uploadFile(banner.file[0]);
       if (!uploadedFile) throw Error;
 
-      // Get new file url
-      const fileUrl = getFilePreview(uploadedFile.$id);
+      // Get new file url with consistent parameters
+      const fileUrl = getBannerFilePreview(uploadedFile.$id);
       if (!fileUrl) {
         await deleteFile(uploadedFile.$id);
         throw Error;
