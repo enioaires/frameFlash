@@ -25,8 +25,8 @@ export function getFilePreview(fileId: string) {
     const fileUrl = storage.getFilePreview(
       appwriteConfig.storageId,
       fileId,
-      2000,
-      2000,
+      0, // width: 0 = tamanho original
+      0, // height: 0 = tamanho original
       "top",
       100
     );
