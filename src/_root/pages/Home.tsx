@@ -6,8 +6,6 @@ import { CompactAdventureSelect } from "@/components/shared/AdventureSelect";
 import HeaderBanner from "@/components/shared/HeaderBanner";
 import { Models } from "appwrite";
 import PostCard from "@/components/shared/PostCard";
-import UserCard from "@/components/shared/UserCard";
-import { UserLoader } from "@/components/shared/Loader";
 import { useGetRecentPosts } from "@/lib/react-query/posts";
 import { useGetUsers } from "@/lib/react-query/user";
 import { useState } from "react";
@@ -32,8 +30,6 @@ const Home = () => {
   } = useGetRecentPosts();
 
   const {
-    data: creators,
-    isLoading: isUserLoading,
     isError: isErrorCreators,
   } = useGetUsers(10);
 
@@ -101,26 +97,6 @@ const Home = () => {
             description="Algo deu errado ao carregar os posts. Tente recarregar a página."
             onRetry={() => window.location.reload()}
           />
-        </div>
-        <div className="home-creators">
-          {isErrorCreators ? (
-            <p className="body-medium text-light-1">Erro ao carregar usuários</p>
-          ) : (
-            <>
-              <h3 className="h3-bold text-light-1">Usuários</h3>
-              {isUserLoading ? (
-                <UserLoader count={4} />
-              ) : (
-                <ul className="grid 2xl:grid-cols-2 gap-6">
-                  {creators?.documents.map((creator: Models.Document) => (
-                    <li key={creator?.$id}>
-                      <UserCard user={creator} />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
-          )}
         </div>
       </div>
     );
@@ -295,21 +271,6 @@ const Home = () => {
             </div>
           )}
         </div>
-      </div>
-
-      <div className="home-creators">
-        <h3 className="h3-bold text-light-1">Usuários</h3>
-        {isUserLoading ? (
-          <UserLoader count={4} />
-        ) : (
-          <ul className="grid 2xl:grid-cols-2 gap-6">
-            {creators?.documents.map((creator: Models.Document) => (
-              <li key={creator?.$id}>
-                <UserCard user={creator} />
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
     </div>
   );
