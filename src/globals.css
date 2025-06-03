@@ -140,7 +140,7 @@
   }
 
   .home-posts {
-    @apply max-w-screen-lg flex flex-col items-center w-full gap-6 md:gap-9;
+    @apply max-w-screen-xl flex flex-col items-center w-full gap-6 md:gap-9;
   }
 
   .home-creators {
@@ -397,7 +397,7 @@
 
   /* Post Card */
   .post-card {
-    @apply bg-dark-2 rounded-3xl border border-dark-4 p-5 lg:p-7 w-full max-w-screen-lg;
+    @apply bg-dark-2 rounded-3xl border border-dark-4 p-5 lg:p-7 w-full max-w-screen-xl;
   }
 
   .post-card_img {
