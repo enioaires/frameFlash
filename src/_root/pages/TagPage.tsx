@@ -28,6 +28,7 @@ const TagPage = () => {
     isLoading: isPostLoading,
     isError: isErrorPosts,
   } = useGetPostsByTag(tag || "");
+  
   // Filtrar posts baseado nas aventuras do usuário
   const { filteredPosts } = usePostFiltering(allTagPosts?.documents || []);
 
@@ -54,8 +55,8 @@ const TagPage = () => {
       <div className="flex flex-1">
         <div className="home-container">
           <HeaderBanner
-            backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
-            imageOnly={true}
+            type="tag"
+            identifier={tag || ""}
             height="md"
           />
           <EmptyState
@@ -88,8 +89,8 @@ const TagPage = () => {
       <div className="flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar">
         <div className="w-full max-w-6xl">
           <HeaderBanner
-            backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
-            imageOnly={true}
+            type="tag"
+            identifier={tag}
             height="md"
           />
         </div>

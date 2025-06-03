@@ -54,13 +54,13 @@ const Home = () => {
   if (visibilityFilter !== 'all') {
     finalPosts = finalPosts.filter((post: Models.Document) => {
       const isPublicPost = !post.adventures || post.adventures.length === 0;
-      
+
       if (visibilityFilter === 'public') {
         return isPublicPost;
       } else if (visibilityFilter === 'private') {
         return !isPublicPost;
       }
-      
+
       return true;
     });
   }
@@ -74,10 +74,10 @@ const Home = () => {
   const postsStats = {
     total: allPosts?.documents.length || 0,
     visible: filteredPosts.length,
-    public: filteredPosts.filter((post: Models.Document) => 
+    public: filteredPosts.filter((post: Models.Document) =>
       !post.adventures || post.adventures.length === 0
     ).length,
-    private: filteredPosts.filter((post: Models.Document) => 
+    private: filteredPosts.filter((post: Models.Document) =>
       post.adventures && post.adventures.length > 0
     ).length,
     final: finalPosts.length
@@ -90,8 +90,8 @@ const Home = () => {
         <div className="flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar">
           <div className="w-full max-w-5xl">
             <HeaderBanner
-              backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
-              imageOnly={true}
+              type="home"
+              identifier={"main"}
               height="md"
             />
           </div>
@@ -107,7 +107,7 @@ const Home = () => {
             <p className="body-medium text-light-1">Erro ao carregar usuários</p>
           ) : (
             <>
-              <h3 className="h3-bold text-light-1">Usuários Ativos</h3>
+              <h3 className="h3-bold text-light-1">Usuários</h3>
               {isUserLoading ? (
                 <UserLoader count={4} />
               ) : (
@@ -131,8 +131,8 @@ const Home = () => {
       <div className="flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar">
         <div className="w-full max-w-6xl">
           <HeaderBanner
-            backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
-            imageOnly={true}
+            type="home"
+            identifier={"main"}
             height="md"
           />
         </div>
@@ -160,33 +160,30 @@ const Home = () => {
               <div className="flex gap-2">
                 <button
                   onClick={() => setVisibilityFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    visibilityFilter === 'all'
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${visibilityFilter === 'all'
                       ? 'bg-primary-500 text-white'
                       : 'bg-dark-4 text-light-3 hover:bg-dark-3'
-                  }`}
+                    }`}
                 >
                   <Users className="w-3 h-3 inline mr-1" />
                   Todos
                 </button>
                 <button
                   onClick={() => setVisibilityFilter('public')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    visibilityFilter === 'public'
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${visibilityFilter === 'public'
                       ? 'bg-blue-500 text-white'
                       : 'bg-dark-4 text-light-3 hover:bg-dark-3'
-                  }`}
+                    }`}
                 >
                   <Globe className="w-3 h-3 inline mr-1" />
                   Públicos
                 </button>
                 <button
                   onClick={() => setVisibilityFilter('private')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    visibilityFilter === 'private'
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${visibilityFilter === 'private'
                       ? 'bg-orange-500 text-white'
                       : 'bg-dark-4 text-light-3 hover:bg-dark-3'
-                  }`}
+                    }`}
                 >
                   <Lock className="w-3 h-3 inline mr-1" />
                   Restritos
@@ -251,9 +248,8 @@ const Home = () => {
                   </span>
                 )}
                 {visibilityFilter !== 'all' && (
-                  <span className={`font-medium ml-1 ${
-                    visibilityFilter === 'public' ? 'text-blue-400' : 'text-orange-400'
-                  }`}>
+                  <span className={`font-medium ml-1 ${visibilityFilter === 'public' ? 'text-blue-400' : 'text-orange-400'
+                    }`}>
                     • {visibilityFilter === 'public' ? 'Públicos' : 'Restritos'}
                   </span>
                 )}
@@ -302,7 +298,7 @@ const Home = () => {
       </div>
 
       <div className="home-creators">
-        <h3 className="h3-bold text-light-1">Usuários Ativos</h3>
+        <h3 className="h3-bold text-light-1">Usuários</h3>
         {isUserLoading ? (
           <UserLoader count={4} />
         ) : (

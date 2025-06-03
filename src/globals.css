@@ -144,7 +144,7 @@
   }
 
   .home-creators {
-    @apply hidden xl:flex flex-col w-72 2xl:w-465 px-6 py-10 gap-10  overflow-scroll custom-scrollbar;
+    @apply hidden xl:flex flex-col w-60 2xl:w-60 px-2 py-10 gap-10  overflow-scroll custom-scrollbar;
   }
 
   /* Post Details */
@@ -242,7 +242,7 @@
 
   /* User card */
   .user-card {
-    @apply flex-center flex-col gap-4 border border-dark-4 rounded-[20px] px-5 py-8;
+    @apply flex-center flex-col gap-4 border border-dark-4 rounded-[20px] px-2 py-4;
   }
 }
 

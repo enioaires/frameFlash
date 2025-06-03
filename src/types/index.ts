@@ -120,3 +120,34 @@ export type IUserAdventures = {
   userId: string;
   adventures: string[];
 };
+
+export type IBanner = {
+  id: string;
+  type: 'home' | 'tag';
+  identifier: string;
+  imageUrl: string;
+  imageId: string;
+  title?: string;
+  $createdAt: string;
+  $updatedAt: string;
+};
+
+export type INewBanner = {
+  type: 'home' | 'tag';
+  identifier: string;
+  file: File[];
+  title?: string;
+};
+
+export type IUpdateBanner = {
+  bannerId: string;
+  type: 'home' | 'tag';
+  identifier: string;
+  imageId: string;
+  imageUrl: URL | string;
+  file: File[];
+  title?: string;
+};
+
+export type BannerType = 'home' | 'tag';
+export type BannerIdentifier = 'main' | 'mundo' | 'personagens' | 'classes' | 'racas' | 'deuses' | 'artefatos' | 'aventuras' | 'relato' | 'rpg' | 'jogadores' | 'magias' | 'talentos' | 'inventario' | 'irmandades' | 'produtos';

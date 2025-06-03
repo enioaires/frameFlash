@@ -10,6 +10,7 @@ export const appwriteConfig = {
   savesCollectionId: import.meta.env.VITE_APPWRITE_SAVES_COLLECTION_ID,
   adventureCollectionId: import.meta.env.VITE_APPWRITE_ADVENTURE_COLLECTION_ID,
   adventureParticipantsCollectionId: import.meta.env.VITE_APPWRITE_ADVENTURE_PARTICIPANTS_COLLECTION_ID,
+  bannersCollectionId: import.meta.env.VITE_APPWRITE_BANNERS_COLLECTION_ID,
 }
 
 export const client = new Client()
