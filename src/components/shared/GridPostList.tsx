@@ -1,8 +1,8 @@
 import { FC } from "react";
-import { Models } from "appwrite";
-import { useUserContext } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
+import { Models } from "appwrite";
 import PostStats from "./PostStats";
+import { useUserContext } from "@/context/AuthContext";
 
 type Props = {
   posts?: Models.Document[];
@@ -21,10 +21,10 @@ const GridPostList: FC<Props> = ({
       {posts?.map((post) => (
         <li key={post.$id} className="relative min-w-80 h-80">
           <Link to={`/posts/${post.$id}`} className="grid-post_link">
-            <img
+          <img
               src={post.imageUrl}
               alt="post-image"
-              className="h-full w-full object-cover"
+              className="w-full h-auto object-contain"
             />
           </Link>
 
