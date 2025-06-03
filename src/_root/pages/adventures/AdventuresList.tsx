@@ -90,9 +90,9 @@ const AdventuresList = () => {
     return (
       <div className="flex flex-1">
         <div className="common-container">
-          <HeaderBanner
-            backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
-            imageOnly={true}
+        <HeaderBanner
+            type="home"
+            identifier={"main"}
             height="md"
           />
           <div className="flex-center flex-col gap-4">
@@ -109,9 +109,9 @@ const AdventuresList = () => {
       <div className="common-container">
         {/* Header Banner */}
         <div className="w-full max-w-6xl">
-          <HeaderBanner
-            backgroundImage="https://fra.cloud.appwrite.io/v1/storage/buckets/6838e3a400362003b2ce/files/6838e3c700212167feae/view?project=653bbdb36f4fd0fbd9f7&mode=admin"
-            imageOnly={true}
+        <HeaderBanner
+            type="home"
+            identifier={"main"}
             height="md"
           />
         </div>
