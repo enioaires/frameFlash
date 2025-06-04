@@ -2,6 +2,7 @@ import CollapsibleCaption from "./CollapsibleCaption";
 import { Link } from "react-router-dom";
 import { Models } from "appwrite";
 import PostStats from "./PostStats";
+import { isAdmin } from "@/lib/adventures";
 import { timeAgo } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
 
@@ -11,8 +12,12 @@ interface PostCardProps {
 
 const PostCard = ({ post }: PostCardProps) => {
   const { user } = useUserContext();
+  const userIsAdmin = isAdmin(user);
 
   if (!post.creator) return null;
+
+  // CORREÇÃO: Verificar se o usuário pode editar o post
+  const canEdit = user.id === post.creator.$id || userIsAdmin;
 
   return (
     <div className="post-card">
@@ -40,16 +45,17 @@ const PostCard = ({ post }: PostCardProps) => {
             </div>
           </div>
         </div>
-        <Link
-          to={`/update-post/${post.$id}`}
-          className={`${user.id !== post.creator.$id && "hidden"}`}
-        >
-          <img
-            src="/assets/icons/edit.svg"
-            alt="edit-icon"
-            className="w-5 h-5"
-          />
-        </Link>
+        
+        {/* CORREÇÃO: Só mostrar botão de editar se o usuário puder editar */}
+        {canEdit && (
+          <Link to={`/update-post/${post.$id}`}>
+            <img
+              src="/assets/icons/edit.svg"
+              alt="edit-icon"
+              className="w-5 h-5"
+            />
+          </Link>
+        )}
       </div>
 
       <Link to={`/posts/${post.$id}`}>
