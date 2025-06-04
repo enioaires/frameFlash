@@ -43,10 +43,15 @@ const OrganizedSidebar = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Fechar menu quando rota muda (apenas em modo flutuante)
+  // Fechar menu quando rota muda (apenas em modo flutuante) - SEM resetar scroll
   useEffect(() => {
     if (isFloating) {
-      setIsOpen(false);
+      // Usar setTimeout para não interferir com a navegação
+      const timer = setTimeout(() => {
+        setIsOpen(false);
+      }, 150);
+
+      return () => clearTimeout(timer);
     }
   }, [pathname, isFloating]);
 
@@ -80,20 +85,34 @@ const OrganizedSidebar = () => {
     } else {
       const IconComponent = icon;
       return (
-        <IconComponent 
-          className={`w-5 h-5 group-hover:text-white transition-colors ${
-            isActive ? "text-white" : "text-primary-500"
-          }`}
+        <IconComponent
+          className={`w-5 h-5 group-hover:text-white transition-colors ${isActive ? "text-white" : "text-primary-500"
+            }`}
         />
       );
     }
   };
 
-  // Organiza os links por categoria
-  const linksByCategory = {
-    main: allMenuCategories.filter(link => link.category === 'main'),
-    rpg: allMenuCategories.filter(link => link.category === 'rpg'),
-    system: allMenuCategories.filter(link => link.category === 'system'),
+  // MODIFICADO: Filtrar links baseado no role do usuário
+  const getFilteredLinksByCategory = () => {
+    const linksByCategory = {
+      main: allMenuCategories.filter(link => link.category === 'main'),
+      rpg: allMenuCategories.filter(link => link.category === 'rpg'),
+      system: allMenuCategories.filter(link => {
+        // SISTEMA: apenas para admins
+        if (link.category === 'system') {
+          // Aventuras sempre requer admin
+          if (link.route === '/adventures') {
+            return userIsAdmin;
+          }
+          // Outros itens do sistema também apenas para admins
+          return userIsAdmin;
+        }
+        return false;
+      }),
+    };
+
+    return linksByCategory;
   };
 
   const categoryTitles = {
@@ -101,44 +120,68 @@ const OrganizedSidebar = () => {
     system: 'Sistema'
   };
 
+  // Função para lidar com cliques nos links - PRESERVAR SCROLL
+  const handleLinkClick = (_event: React.MouseEvent, _route: string) => {
+    // Salvar posição atual do scroll
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+    // Se estiver no modo flutuante, fechar menu com delay para não interferir na navegação
+    if (isFloating) {
+      setTimeout(() => {
+        setIsOpen(false);
+      }, 100);
+    }
+
+    // Salvar scroll position no sessionStorage para restaurar depois
+    sessionStorage.setItem('scrollPosition', scrollPosition.toString());
+    sessionStorage.setItem('preserveScroll', 'true');
+  };
+
+  // Restaurar scroll position após navegação
+  useEffect(() => {
+    const shouldPreserveScroll = sessionStorage.getItem('preserveScroll');
+    const savedScrollPosition = sessionStorage.getItem('scrollPosition');
+
+    if (shouldPreserveScroll === 'true' && savedScrollPosition) {
+      // Usar requestAnimationFrame para garantir que o DOM foi atualizado
+      requestAnimationFrame(() => {
+        window.scrollTo(0, parseInt(savedScrollPosition, 10));
+        // Limpar flags
+        sessionStorage.removeItem('preserveScroll');
+        sessionStorage.removeItem('scrollPosition');
+      });
+    }
+  }, [pathname]);
+
   const renderLinks = (links: typeof allMenuCategories) => (
     <ul className="flex flex-col gap-2">
-      {links
-        .filter(link => {
-          if (link.route === '/adventures') {
-            return userIsAdmin;
-          }
-          return true;
-        })
-        .map((link) => {
-          const isActive = pathname === link.route;
-          
-          return (
-            <li key={link.label}>
-              <NavLink
-                to={link.route}
-                className={`leftsidebar-link group flex gap-4 items-center p-3 rounded-lg transition-all ${
-                  isActive && "bg-primary-500"
+      {links.map((link) => {
+        const isActive = pathname === link.route;
+
+        return (
+          <li key={link.label}>
+            <NavLink
+              to={link.route}
+              className={`leftsidebar-link group flex gap-4 items-center p-3 rounded-lg transition-all ${isActive && "bg-primary-500"
                 }`}
-              >
-                {renderIcon(link.icon, isActive)}
-                <span className="text-sm font-medium">{link.label}</span>
-              </NavLink>
-            </li>
-          );
-        })}
+              onClick={(e) => handleLinkClick(e, link.route)}
+            >
+              {renderIcon(link.icon, isActive)}
+              <span className="text-sm font-medium">{link.label}</span>
+            </NavLink>
+          </li>
+        );
+      })}
     </ul>
   );
 
   const renderSection = (categoryKey: string, title: string, links: typeof allMenuCategories) => {
-    const filteredLinks = links.filter(link => {
-      if (link.route === '/adventures') {
-        return userIsAdmin;
-      }
-      return true;
-    });
+    // MODIFICADO: Não renderizar seção sistema se usuário não é admin
+    if (categoryKey === 'system' && !userIsAdmin) {
+      return null;
+    }
 
-    if (filteredLinks.length === 0) {
+    if (links.length === 0) {
       return null;
     }
 
@@ -157,7 +200,7 @@ const OrganizedSidebar = () => {
         </button>
         {expandedSections[categoryKey] && (
           <div className="ml-4 mt-2">
-            {renderLinks(filteredLinks)}
+            {renderLinks(links)}
           </div>
         )}
       </div>
@@ -165,54 +208,59 @@ const OrganizedSidebar = () => {
   };
 
   // Menu Content Component
-  const MenuContent = () => (
-    <div className="flex flex-col justify-between h-full">
-      <div className="flex-grow overflow-y-auto custom-scrollbar pr-2">
-        <div className="flex flex-col gap-6">
-          {/* Perfil do usuário */}
-          <Link 
-            to={`/profile/${user.id}`} 
-            className="flex gap-3 items-center p-4 bg-dark-3 rounded-lg"
-            onClick={() => isFloating && setIsOpen(false)}
-          >
-            <img
-              src={user.imageUrl || "/assets/images/profile-placeholder.svg"}
-              alt="avatar"
-              className="h-12 w-12 rounded-full"
-            />
-            <div className="flex flex-col">
-              <p className="body-bold text-white">{user.name}</p>
-              <div className="flex items-center gap-1">
-                <p className="small-regular text-light-3">@{user.username}</p>
-                {userIsAdmin && (
-                  <span className="text-xs bg-primary-500/20 text-primary-400 px-1.5 py-0.5 rounded">
-                    Admin
-                  </span>
-                )}
+  const MenuContent = () => {
+    const filteredLinks = getFilteredLinksByCategory();
+
+    return (
+      <div className="flex flex-col justify-between h-full">
+        <div className="flex-grow overflow-y-auto custom-scrollbar pr-2">
+          <div className="flex flex-col gap-6">
+            {/* Perfil do usuário */}
+            <Link
+              to={`/profile/${user.id}`}
+              className="flex gap-3 items-center p-4 bg-dark-3 rounded-lg"
+              onClick={(e) => handleLinkClick(e, `/profile/${user.id}`)}
+            >
+              <img
+                src={user.imageUrl || "/assets/images/profile-placeholder.svg"}
+                alt="avatar"
+                className="h-12 w-12 rounded-full"
+              />
+              <div className="flex flex-col">
+                <p className="body-bold text-white">{user.name}</p>
+                <div className="flex items-center gap-1">
+                  <p className="small-regular text-light-3">@{user.username}</p>
+                  {userIsAdmin && (
+                    <span className="text-xs bg-primary-500/20 text-primary-400 px-1.5 py-0.5 rounded">
+                      Admin
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          </Link>
+            </Link>
 
-          {/* Links principais (Início) */}
-          {renderLinks(linksByCategory.main)}
+            {/* Links principais (Início) */}
+            {renderLinks(filteredLinks.main)}
 
-          {/* Seções categorizadas */}
-          {renderSection('rpg', categoryTitles.rpg, linksByCategory.rpg)}
-          {renderSection('system', categoryTitles.system, linksByCategory.system)}
+            {/* Seções categorizadas */}
+            {renderSection('rpg', categoryTitles.rpg, filteredLinks.rpg)}
+            {/* MODIFICADO: Sistema apenas aparece se for admin */}
+            {userIsAdmin && renderSection('system', categoryTitles.system, filteredLinks.system)}
+          </div>
         </div>
-      </div>
 
-      {/* Botão de sair */}
-      <Button
-        variant={"ghost"}
-        className="shad-button_ghost mt-6"
-        onClick={() => signOut()}
-      >
-        <LogOut className="w-5 h-5" />
-        <p className="small-medium lg:base-medium">Sair</p>
-      </Button>
-    </div>
-  );
+        {/* Botão de sair */}
+        <Button
+          variant={"ghost"}
+          className="shad-button_ghost mt-6"
+          onClick={() => signOut()}
+        >
+          <LogOut className="w-5 h-5" />
+          <p className="small-medium lg:base-medium">Sair</p>
+        </Button>
+      </div>
+    );
+  };
 
   // Se não é flutuante (tela >= 1440px), renderiza como antes
   if (!isFloating) {

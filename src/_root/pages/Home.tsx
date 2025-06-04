@@ -84,11 +84,11 @@ const Home = () => {
     return (
       <div className="flex flex-1">
         <div className="flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar">
-          <div className="w-full max-w-5xl">
+          <div className="w-full max-w-7xl">
             <HeaderBanner
               type="home"
               identifier={"main"}
-              height="md"
+              height="lg"
             />
           </div>
           <EmptyState
@@ -105,11 +105,11 @@ const Home = () => {
   return (
     <div className="flex flex-1">
       <div className="flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar">
-        <div className="w-full max-w-6xl">
+        <div className="w-full max-w-7xl">
           <HeaderBanner
             type="home"
             identifier={"main"}
-            height="md"
+            height="lg"
           />
         </div>
 

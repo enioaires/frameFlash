@@ -7,11 +7,11 @@ import {
   X,
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 import { TwoColorIcon } from './TwoColorIcon';
 import { cn } from '@/lib/utils';
 import { isAdmin } from '@/lib/adventures';
-import { useState } from 'react';
 import { useUserContext } from '@/context/AuthContext';
 
 const SlideOutMenu = () => {
@@ -19,6 +19,35 @@ const SlideOutMenu = () => {
   const { user } = useUserContext();
   const { pathname } = useLocation();
   const userIsAdmin = isAdmin(user);
+
+  // Função para lidar com cliques nos links - PRESERVAR SCROLL
+  const handleLinkClick = (_event: React.MouseEvent, _route: string) => {
+    // Salvar posição atual do scroll
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+    // Fechar menu
+    setIsOpen(false);
+
+    // Salvar scroll position no sessionStorage para restaurar depois
+    sessionStorage.setItem('scrollPosition', scrollPosition.toString());
+    sessionStorage.setItem('preserveScroll', 'true');
+  };
+
+  // Restaurar scroll position após navegação
+  useEffect(() => {
+    const shouldPreserveScroll = sessionStorage.getItem('preserveScroll');
+    const savedScrollPosition = sessionStorage.getItem('scrollPosition');
+
+    if (shouldPreserveScroll === 'true' && savedScrollPosition) {
+      // Usar requestAnimationFrame para garantir que o DOM foi atualizado
+      requestAnimationFrame(() => {
+        window.scrollTo(0, parseInt(savedScrollPosition, 10));
+        // Limpar flags
+        sessionStorage.removeItem('preserveScroll');
+        sessionStorage.removeItem('scrollPosition');
+      });
+    }
+  }, [pathname]);
 
   // Todas as categorias do OrganizedSidebar
   const menuCategories = [
@@ -29,96 +58,97 @@ const SlideOutMenu = () => {
       ]
     },
     {
-      title: "RPG", 
+      title: "RPG",
       items: [
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fac80000f71982f3/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/mundo", 
-          label: "O Mundo" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fac80000f71982f3/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/mundo",
+          label: "O Mundo"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fad2002b2704740c/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/personagens", 
-          label: "Personagens" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fad2002b2704740c/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/personagens",
+          label: "Personagens"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa900015b0c7f7cb/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/classes", 
-          label: "Classes" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa900015b0c7f7cb/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/classes",
+          label: "Classes"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fadb0013ee894d37/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/racas", 
-          label: "Raças" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fadb0013ee894d37/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/racas",
+          label: "Raças"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa96003c5883eade/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/deuses", 
-          label: "Deuses" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa96003c5883eade/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/deuses",
+          label: "Deuses"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa81001769e00c73/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/artefatos", 
-          label: "Artefatos" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa81001769e00c73/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/artefatos",
+          label: "Artefatos"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa8a002f803f1acc/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/aventuras", 
-          label: "Aventuras" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa8a002f803f1acc/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/aventuras",
+          label: "Aventuras"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fade0031b898aff2/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/relato", 
-          label: "Relatos" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fade0031b898aff2/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/relato",
+          label: "Relatos"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fae60019d142dc6f/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/rpg", 
-          label: "RPG" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fae60019d142dc6f/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/rpg",
+          label: "RPG"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839faa6002492050434/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/jogadores", 
-          label: "Jogadores" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839faa6002492050434/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/jogadores",
+          label: "Jogadores"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839faad001dc83bf15d/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/magias", 
-          label: "Magias" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839faad001dc83bf15d/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/magias",
+          label: "Magias"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839faed0008b77d04ab/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/talentos", 
-          label: "Talentos" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839faed0008b77d04ab/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/talentos",
+          label: "Talentos"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa9a00396a877a41/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/inventario", 
-          label: "Inventário" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa9a00396a877a41/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/inventario",
+          label: "Inventário"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa9f000af690c9ed/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/irmandades", 
-          label: "Irmandades" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa9f000af690c9ed/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/irmandades",
+          label: "Irmandades"
         },
-        { 
-          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fad600128cc08c0b/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-          route: "/tag/produtos", 
-          label: "Produtos" 
+        {
+          icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fad600128cc08c0b/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+          route: "/tag/produtos",
+          label: "Produtos"
         }
       ]
-    },
-    {
+    }
+  ];
+
+  // MODIFICADO: Adicionar categoria Sistema apenas se for admin
+  if (userIsAdmin) {
+    menuCategories.push({
       title: "SISTEMA",
       items: [
         { icon: Bookmark, route: "/saved", label: "Salvos" },
         { icon: Plus, route: "/create-post", label: "Novo" }
       ]
-    }
-  ];
+    });
 
-  // Adicionar categoria Admin se for admin
-  if (userIsAdmin) {
     menuCategories.push({
       title: "ADMIN",
       items: [
@@ -138,10 +168,10 @@ const SlideOutMenu = () => {
         />
       );
     }
-    
+
     const IconComponent = icon;
     return (
-      <IconComponent 
+      <IconComponent
         className={cn(
           `w-6 h-6 transition-colors`,
           isActive ? "text-white" : "text-primary-500"
@@ -162,7 +192,7 @@ const SlideOutMenu = () => {
 
       {/* Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-50"
           onClick={() => setIsOpen(false)}
         />
@@ -209,20 +239,20 @@ const SlideOutMenu = () => {
                 {category.title === "ADMIN" && "👑"}
                 {category.title}
               </h3>
-              
+
               <div className="grid grid-cols-3 gap-3">
                 {category.items.map((item) => {
                   const isActive = pathname === item.route;
-                  
+
                   return (
                     <Link
                       key={item.route}
                       to={item.route}
-                      onClick={() => setIsOpen(false)}
+                      onClick={(e) => handleLinkClick(e, item.route)}
                       className={cn(
                         "flex flex-col items-center gap-2 p-3 rounded-lg transition-all duration-200 min-h-[80px] justify-center",
-                        isActive 
-                          ? "bg-primary-500 text-white shadow-lg transform scale-105" 
+                        isActive
+                          ? "bg-primary-500 text-white shadow-lg transform scale-105"
                           : "bg-dark-3 hover:bg-dark-4 text-light-3 hover:scale-102"
                       )}
                     >
@@ -237,17 +267,19 @@ const SlideOutMenu = () => {
             </div>
           ))}
 
-          {/* Quick Create Action */}
-          <div className="border-t border-dark-4 pt-6 mt-6">
-            <Link
-              to="/create-post"
-              onClick={() => setIsOpen(false)}
-              className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white py-4 rounded-xl flex items-center justify-center gap-3 font-semibold shadow-lg transition-all duration-200 transform hover:scale-105"
-            >
-              <Plus className="w-5 h-5" />
-              Criar Novo Post
-            </Link>
-          </div>
+          {/* Quick Create Action - Apenas para admins */}
+          {userIsAdmin && (
+            <div className="border-t border-dark-4 pt-6 mt-6">
+              <Link
+                to="/create-post"
+                onClick={(e) => handleLinkClick(e, "/create-post")}
+                className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white py-4 rounded-xl flex items-center justify-center gap-3 font-semibold shadow-lg transition-all duration-200 transform hover:scale-105"
+              >
+                <Plus className="w-5 h-5" />
+                Criar Novo Post
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </>
@@ -261,53 +293,78 @@ export const CompactSlideMenu = () => {
   const { pathname } = useLocation();
   const userIsAdmin = isAdmin(user);
 
+  // Função para lidar com cliques nos links - PRESERVAR SCROLL
+  const handleLinkClick = (_event: React.MouseEvent, _route: string) => {
+    // Salvar posição atual do scroll
+    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+
+    // Fechar menu
+    setIsOpen(false);
+
+    // Salvar scroll position no sessionStorage para restaurar depois
+    sessionStorage.setItem('scrollPosition', scrollPosition.toString());
+    sessionStorage.setItem('preserveScroll', 'true');
+  };
+
+  // Restaurar scroll position após navegação
+  useEffect(() => {
+    const shouldPreserveScroll = sessionStorage.getItem('preserveScroll');
+    const savedScrollPosition = sessionStorage.getItem('scrollPosition');
+
+    if (shouldPreserveScroll === 'true' && savedScrollPosition) {
+      // Usar requestAnimationFrame para garantir que o DOM foi atualizado
+      requestAnimationFrame(() => {
+        window.scrollTo(0, parseInt(savedScrollPosition, 10));
+        // Limpar flags
+        sessionStorage.removeItem('preserveScroll');
+        sessionStorage.removeItem('scrollPosition');
+      });
+    }
+  }, [pathname]);
+
   // Todas as opções em uma lista única para scroll horizontal
   const allMenuItems = [
     { icon: Home, route: "/", label: "Início", category: "main" },
     // RPG items
-    { 
-      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fac80000f71982f3/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-      route: "/tag/mundo", 
+    {
+      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fac80000f71982f3/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+      route: "/tag/mundo",
       label: "O Mundo",
       category: "rpg"
     },
-    { 
-      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fad2002b2704740c/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-      route: "/tag/personagens", 
+    {
+      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fad2002b2704740c/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+      route: "/tag/personagens",
       label: "Personagens",
       category: "rpg"
     },
-    { 
-      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa90015b0c7f7cb/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-      route: "/tag/classes", 
+    {
+      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa900015b0c7f7cb/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+      route: "/tag/classes",
       label: "Classes",
       category: "rpg"
     },
-    { 
-      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fadb0013ee894d37/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-      route: "/tag/racas", 
+    {
+      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fadb0013ee894d37/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+      route: "/tag/racas",
       label: "Raças",
       category: "rpg"
     },
-    { 
-      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa81001769e00c73/view?project=653bbdb36f4fd0fbd9f7&mode=admin", 
-      route: "/tag/artefatos", 
+    {
+      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fa81001769e00c73/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
+      route: "/tag/artefatos",
       label: "Artefatos",
       category: "rpg"
-    },
-    // Sistema
-    { icon: Bookmark, route: "/saved", label: "Salvos", category: "system" },
-    { icon: Plus, route: "/create-post", label: "Novo", category: "system" }
+    }
   ];
 
-  // Adicionar admin se necessário
+  // MODIFICADO: Adicionar itens do sistema apenas se for admin
   if (userIsAdmin) {
-    allMenuItems.push({ 
-      icon: Crown, 
-      route: "/adventures", 
-      label: "Admin", 
-      category: "admin" 
-    });
+    allMenuItems.push(
+      { icon: Bookmark, route: "/saved", label: "Salvos", category: "system" },
+      { icon: Plus, route: "/create-post", label: "Novo", category: "system" },
+      { icon: Crown, route: "/adventures", label: "Admin", category: "admin" }
+    );
   }
 
   return (
@@ -322,7 +379,7 @@ export const CompactSlideMenu = () => {
 
       {/* Overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-50"
           onClick={() => setIsOpen(false)}
         />
@@ -354,16 +411,16 @@ export const CompactSlideMenu = () => {
           <div className="flex gap-3 p-4 min-w-max">
             {allMenuItems.map((item) => {
               const isActive = pathname === item.route;
-              
+
               return (
                 <Link
                   key={item.route}
                   to={item.route}
-                  onClick={() => setIsOpen(false)}
+                  onClick={(e) => handleLinkClick(e, item.route)}
                   className={cn(
                     "flex flex-col items-center gap-2 p-3 rounded-lg transition-all duration-200 min-w-[70px]",
-                    isActive 
-                      ? "bg-primary-500 text-white" 
+                    isActive
+                      ? "bg-primary-500 text-white"
                       : "bg-dark-3 hover:bg-dark-4 text-light-3"
                   )}
                 >

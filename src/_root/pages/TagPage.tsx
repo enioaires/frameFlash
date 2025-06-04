@@ -57,7 +57,7 @@ const TagPage = () => {
           <HeaderBanner
             type="tag"
             identifier={tag || ""}
-            height="md"
+            height="lg"
           />
           <EmptyState
             type="empty"
@@ -91,7 +91,7 @@ const TagPage = () => {
           <HeaderBanner
             type="tag"
             identifier={tag}
-            height="md"
+            height="lg"
           />
         </div>
 

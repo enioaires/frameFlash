@@ -93,7 +93,7 @@ const AdventuresList = () => {
         <HeaderBanner
             type="home"
             identifier={"main"}
-            height="md"
+            height="lg"
           />
           <div className="flex-center flex-col gap-4">
             <p className="body-medium text-light-1">Erro ao carregar aventuras</p>
@@ -112,7 +112,7 @@ const AdventuresList = () => {
         <HeaderBanner
             type="home"
             identifier={"main"}
-            height="md"
+            height="lg"
           />
         </div>
 
