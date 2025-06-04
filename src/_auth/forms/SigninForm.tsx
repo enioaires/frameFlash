@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Loader from "@/components/shared/Loader";
 import { SigninSchema } from "@/lib/validation";
+import { account } from "@/lib/appwrite/config"; // MUDANÇA: import estático
 import { useForm } from "react-hook-form";
 import { useSignInAccount } from "@/lib/react-query/auth";
 import { useToast } from "@/components/ui/use-toast";
@@ -41,8 +42,7 @@ const SigninForm = () => {
     try {
       // Limpar sessão existente se houver
       try {
-        const { account } = await import("@/lib/appwrite/config");
-        await account.deleteSession('current');
+        await account.deleteSession('current'); // MUDANÇA: usar import estático
       } catch (error) {
         // Ignorar erro se não houver sessão
       }
