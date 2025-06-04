@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { getCurrentUser } from "@/lib/appwrite/auth/api";
 import { isAdminById } from "@/lib/adventures";
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const INITIAL_USER = {
   id: "",
@@ -103,6 +104,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     initializeAuth();
   }, []); // Remove navigate das dependências para evitar loops
+
+  useOnlineStatus({
+    updateInterval: 2, // 2 minutos
+    enableVisibilityTracking: true,
+    enableBeforeUnload: true
+  });
 
   // MODIFICADO: Só navegar para sign-in se não estiver em rota de auth
   useEffect(() => {

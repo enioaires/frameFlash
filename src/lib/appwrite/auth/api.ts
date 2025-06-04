@@ -36,7 +36,6 @@ export async function createUserAccount(user: INewUser) {
   }
 }
 
-// ATUALIZADO: incluir role
 export async function saveUserToDatabase(user: {
   accountId: string,
   email: string,
@@ -197,7 +196,6 @@ export async function updateUser(user: IUpdateUser) {
   }
 }
 
-// NOVA: Buscar usuários por role
 export async function getUsersByRole(role: 'admin' | 'user') {
   try {
     const users = await database.listDocuments(
@@ -218,7 +216,6 @@ export async function getUsersByRole(role: 'admin' | 'user') {
   }
 }
 
-// NOVA: Verificar se usuário é admin
 export async function checkIfUserIsAdmin(userId: string): Promise<boolean> {
   try {
     const user = await getUserById(userId);
@@ -229,7 +226,6 @@ export async function checkIfUserIsAdmin(userId: string): Promise<boolean> {
   }
 }
 
-// NOVA: Atualizar role do usuário (apenas para migração)
 export async function updateUserRole(userId: string, role: 'admin' | 'user') {
   try {
     const updatedUser = await database.updateDocument(
@@ -246,6 +242,45 @@ export async function updateUserRole(userId: string, role: 'admin' | 'user') {
     return updatedUser;
   } catch (error) {
     console.log("Error updating user role:", error);
+    throw error;
+  }
+}
+
+export async function updateUserLastSeen(userId: string) {
+  try {
+    const updatedUser = await database.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId,
+      {
+        lastSeen: new Date().toISOString()
+      }
+    );
+
+    return updatedUser;
+  } catch (error) {
+    console.log("Error updating last seen:", error);
+    // Não lançar erro para não quebrar a aplicação
+    return null;
+  }
+}
+
+export async function getUsersWithLastSeen() {
+  try {
+    const users = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [
+        Query.orderDesc("lastSeen"),
+        Query.limit(100)
+      ]
+    );
+
+    if (!users) throw Error;
+
+    return users;
+  } catch (error) {
+    console.log("Error getting users with last seen:", error);
     throw error;
   }
 }

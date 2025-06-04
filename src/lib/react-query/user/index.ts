@@ -3,7 +3,9 @@ import {
   getUserById,
   getUsers,
   getUsersByRole,
+  getUsersWithLastSeen,
   updateUser,
+  updateUserLastSeen,
   updateUserRole
 } from "@/lib/appwrite/auth/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -76,6 +78,31 @@ export const useUpdateUserRole = () => {
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.CHECK_IF_USER_IS_ADMIN, data?.$id],
+      });
+    },
+  });
+};
+
+export const useGetUsersWithLastSeen = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USERS_WITH_LAST_SEEN],
+    queryFn: getUsersWithLastSeen,
+    refetchInterval: 30000, // Atualizar a cada 30 segundos
+    staleTime: 15000, // Considerar stale após 15 segundos
+  });
+};
+
+export const useUpdateUserLastSeen = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (userId: string) => updateUserLastSeen(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USERS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USERS_WITH_LAST_SEEN],
       });
     },
   });

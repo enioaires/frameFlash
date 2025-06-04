@@ -173,3 +173,8 @@ export type IUpdateComment = {
   commentId: string;
   content: string;
 };
+
+export interface IUserWithOnlineStatus extends IUser {
+  lastSeen?: string;
+  isOnline?: boolean;
+}

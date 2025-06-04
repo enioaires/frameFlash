@@ -42,6 +42,9 @@ export enum QUERY_KEYS {
   GET_COMMENTS_COUNT = "getCommentsCount",
 
   SEARCH_POSTS = "getSearchPosts",
+
+  GET_USERS_WITH_LAST_SEEN = "getUsersWithLastSeen",
+  UPDATE_USER_LAST_SEEN = "updateUserLastSeen",
 }
 
 export const queryKeys = {
