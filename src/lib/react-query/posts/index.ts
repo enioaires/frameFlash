@@ -206,7 +206,6 @@ export const useGetPostsByAdventures = (adventureIds: string[]) => {
   });
 };
 
-// 🆕 ATUALIZADO: Hook para posts filtrados considerando posts públicos
 export const useGetFilteredPostsForUser = (
   userAdventureIds: string[], 
   publicAdventureIds: string[] = [], 
@@ -215,17 +214,22 @@ export const useGetFilteredPostsForUser = (
   return useQuery({
     queryKey: [QUERY_KEYS.GET_FILTERED_POSTS_FOR_USER, userAdventureIds, publicAdventureIds, isAdmin],
     queryFn: () => getFilteredPostsForUser(userAdventureIds, publicAdventureIds, isAdmin),
-    enabled: isAdmin || (userAdventureIds && userAdventureIds.length > 0) || (publicAdventureIds && publicAdventureIds.length > 0),
+    // 🆕 MODIFICADO: Sempre tentar buscar posts, mesmo sem aventuras (por causa dos públicos)
+    enabled: true, // Sempre habilitado para buscar posts públicos
     staleTime: 1 * 60 * 1000, // 1 minuto para posts filtrados
     gcTime: 3 * 60 * 1000, // 3 minutos de cache
   });
 };
 
-export const useGetPostsByTagForUser = (tag: string, userAdventureIds: string[], isAdmin: boolean = false) => {
+// 🆕 HOOK MELHORADO: Posts por tag que considera acesso público
+export const useGetPostsByTagForUser = (tag: string, userAdventureIds: string[], publicAdventureIds: string[] = [], isAdmin: boolean = false) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.GET_POSTS_BY_TAG_FOR_USER, tag, userAdventureIds, isAdmin],
-    queryFn: () => getPostsByTagForUser(tag, userAdventureIds, [], isAdmin),
-    enabled: !!tag && (isAdmin || (userAdventureIds && userAdventureIds.length > 0)),
+    queryKey: [QUERY_KEYS.GET_POSTS_BY_TAG_FOR_USER, tag, userAdventureIds, publicAdventureIds, isAdmin],
+    queryFn: () => getPostsByTagForUser(tag, userAdventureIds, publicAdventureIds, isAdmin),
+    // 🆕 MODIFICADO: Habilitado se há tag (posts públicos sempre acessíveis)
+    enabled: !!tag,
+    staleTime: 2 * 60 * 1000, // 2 minutos para tags
+    gcTime: 5 * 60 * 1000, // 5 minutos de cache
   });
 };
 

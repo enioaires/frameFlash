@@ -34,20 +34,42 @@ export const useAdventureFiltering = () => {
     });
   }, [availableAdventures, userIsAdmin, userAdventureIds]);
 
+  // 🆕 NOVO: Aventuras públicas disponíveis
+  const publicAdventures = useMemo(() => {
+    if (!availableAdventures?.documents) return [];
+    return availableAdventures.documents.filter(adventure => 
+      adventure.isPublic === true && adventure.status === 'active'
+    );
+  }, [availableAdventures]);
+
+  // 🆕 MODIFICADO: Incluir aventuras públicas automaticamente
+  const allAccessibleAdventureIds = useMemo(() => {
+    const privateAdventureIds = userAdventureIds;
+    const publicAdventureIds = publicAdventures.map(a => a.$id);
+    return [...new Set([...privateAdventureIds, ...publicAdventureIds])];
+  }, [userAdventureIds, publicAdventures]);
+
   return {
     userAdventureIds,
     availableAdventures: availableAdventures?.documents || [],
     activeUserAdventures,
+    publicAdventures, // 🆕 NOVO
+    allAccessibleAdventureIds, // 🆕 NOVO
     isLoadingParticipations,
     isLoadingAdventures,
     isLoading: isLoadingParticipations || isLoadingAdventures,
-    hasAdventures: userAdventureIds.length > 0 || userIsAdmin,
+    hasAdventures: allAccessibleAdventureIds.length > 0 || userIsAdmin, // 🆕 MODIFICADO
     isAdmin: userIsAdmin,
   };
 };
 
+// 🆕 CORRIGIDO: Lógica de filtragem de posts para incluir posts públicos
 export const usePostFiltering = (posts: Models.Document[] = []) => {
-  const { userAdventureIds, isAdmin: userIsAdmin, activeUserAdventures } = useAdventureFiltering();
+  const { 
+    userAdventureIds, 
+    publicAdventures,
+    isAdmin: userIsAdmin 
+  } = useAdventureFiltering();
 
   const filteredPosts = useMemo(() => {
     if (!posts.length) return [];
@@ -55,26 +77,61 @@ export const usePostFiltering = (posts: Models.Document[] = []) => {
     // Admin vê todos os posts
     if (userIsAdmin) return posts;
 
-    // Obter IDs das aventuras públicas
-    const publicAdventureIds = activeUserAdventures
-      .filter(adventure => adventure.isPublic === true)
-      .map(adventure => adventure.$id);
-
     return posts.filter(post => {
-      // Post público (sem aventuras)
+      // 🆕 PRIORIDADE 1: Posts públicos (sem aventuras) - TODOS podem ver
       if (!post.adventures || !Array.isArray(post.adventures) || post.adventures.length === 0) {
         return true;
       }
       
-      // Post com aventuras: verificar se usuário tem acesso
-      const allAccessibleAdventures = [...new Set([...userAdventureIds, ...publicAdventureIds])];
-      
-      // Usuário vê post se estiver em pelo menos uma aventura do post
-      return post.adventures.some((adventureId: string) => 
-        allAccessibleAdventures.includes(adventureId)
+      // 🆕 PRIORIDADE 2: Posts em aventuras públicas - TODOS podem ver
+      const publicAdventureIds = publicAdventures.map(a => a.$id);
+      const hasPublicAdventures = post.adventures.some((adventureId: string) => 
+        publicAdventureIds.includes(adventureId)
       );
+      
+      if (hasPublicAdventures) {
+        return true;
+      }
+      
+      // 🆕 PRIORIDADE 3: Posts em aventuras privadas onde o usuário participa
+      const hasUserAdventures = post.adventures.some((adventureId: string) => 
+        userAdventureIds.includes(adventureId)
+      );
+      
+      return hasUserAdventures;
     });
-  }, [posts, userAdventureIds, userIsAdmin, activeUserAdventures]);
+  }, [posts, userAdventureIds, publicAdventures, userIsAdmin]);
+
+  // 🆕 NOVO: Estatísticas detalhadas
+  const stats = useMemo(() => {
+    const totalPosts = posts.length;
+    const visiblePosts = filteredPosts.length;
+    const hiddenPosts = totalPosts - visiblePosts;
+    
+    const publicPosts = posts.filter(post => 
+      !post.adventures || !Array.isArray(post.adventures) || post.adventures.length === 0
+    ).length;
+    
+    const publicAdventureIds = publicAdventures.map(a => a.$id);
+    const publicAdventurePosts = posts.filter(post => 
+      post.adventures && Array.isArray(post.adventures) && 
+      post.adventures.some((id: string) => publicAdventureIds.includes(id))
+    ).length;
+    
+    const privatePosts = posts.filter(post => 
+      post.adventures && Array.isArray(post.adventures) && post.adventures.length > 0 &&
+      !post.adventures.some((id: string) => publicAdventureIds.includes(id))
+    ).length;
+
+    return {
+      totalPosts,
+      visiblePosts,
+      hiddenPosts,
+      publicPosts,
+      publicAdventurePosts,
+      privatePosts,
+    };
+  }, [posts, filteredPosts, publicAdventures]);
 
   return {
     filteredPosts,
@@ -82,6 +139,7 @@ export const usePostFiltering = (posts: Models.Document[] = []) => {
     visiblePosts: filteredPosts.length,
     hiddenPosts: posts.length - filteredPosts.length,
     canSeeAll: userIsAdmin,
+    stats, // 🆕 NOVO
   };
 };
 
@@ -123,9 +181,15 @@ export const useAdventuresFiltering = () => {
   };
 };
 
-// Hook para estados de filtragem (empty states)
+// 🆕 CORRIGIDO: Estados de filtragem melhorados
 export const useFilteringStates = () => {
-  const { hasAdventures, isAdmin: userIsAdmin, isLoading } = useAdventureFiltering();
+  const { 
+    hasAdventures, 
+    isAdmin: userIsAdmin, 
+    isLoading,
+    publicAdventures,
+    allAccessibleAdventureIds 
+  } = useAdventureFiltering();
 
   const getEmptyState = (context: 'posts' | 'adventures' | 'filtered') => {
     if (isLoading) {
@@ -137,11 +201,17 @@ export const useFilteringStates = () => {
       };
     }
 
-    if (!hasAdventures && !userIsAdmin) {
+    // 🆕 CORRIGIDO: Usuários podem ver conteúdo mesmo sem aventuras privadas
+    // se houver aventuras públicas ou posts públicos
+    const hasAccessToContent = userIsAdmin || 
+                              allAccessibleAdventureIds.length > 0 || 
+                              publicAdventures.length > 0;
+
+    if (!hasAccessToContent) {
       return {
         type: 'no_adventures',
         title: 'Você não está em nenhuma aventura',
-        description: 'Entre em contato com um mestre para ser adicionado a uma aventura e começar a ver conteúdo.',
+        description: 'Entre em contato com um mestre para ser adicionado a uma aventura. Você ainda pode ver posts públicos se houver.',
         showContactInfo: true,
         icon: '🏰',
       };
@@ -154,7 +224,7 @@ export const useFilteringStates = () => {
           title: 'Nenhum post encontrado',
           description: hasAdventures 
             ? 'Ainda não há posts nas suas aventuras.' 
-            : 'Você precisa participar de uma aventura para ver posts.',
+            : 'Ainda não há posts públicos disponíveis.',
           icon: '📝',
         };
 
@@ -164,7 +234,7 @@ export const useFilteringStates = () => {
           title: userIsAdmin ? 'Nenhuma aventura criada' : 'Nenhuma aventura disponível',
           description: userIsAdmin 
             ? 'Comece criando sua primeira aventura.' 
-            : 'Aguarde ser convidado para uma aventura.',
+            : 'Procure por aventuras públicas ou aguarde ser convidado.',
           icon: '🎭',
         };
 
@@ -189,8 +259,10 @@ export const useFilteringStates = () => {
   return {
     getEmptyState,
     hasAdventures,
+    hasAccessToContent: userIsAdmin || allAccessibleAdventureIds.length > 0 || publicAdventures.length > 0, // 🆕 NOVO
     isAdmin: userIsAdmin,
     isLoading,
+    publicAdventuresCount: publicAdventures.length, // 🆕 NOVO
   };
 };
 

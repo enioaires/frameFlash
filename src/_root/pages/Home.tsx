@@ -1,4 +1,4 @@
-import EmptyState, { LoadingState, NoAdventuresState, NoPostsState } from "@/components/shared/EmptyState";
+import EmptyState, { LoadingState } from "@/components/shared/EmptyState";
 import { Filter, Globe, Lock, Users } from "lucide-react";
 import { useAdventureFiltering, usePostFiltering } from "@/hooks/useFiltering";
 
@@ -17,6 +17,7 @@ const Home = () => {
   // Sistema de filtragem por aventuras
   const {
     activeUserAdventures,
+    publicAdventures, // 🆕 NOVO
     hasAdventures,
     isAdmin,
     isLoading: isLoadingAdventures
@@ -33,8 +34,8 @@ const Home = () => {
     isError: isErrorCreators,
   } = useGetUsers(10);
 
-  // Filtragem de posts
-  const { filteredPosts } = usePostFiltering(allPosts?.documents || []);
+  // 🆕 CORRIGIDO: Filtragem de posts que inclui públicos
+  const { filteredPosts, stats } = usePostFiltering(allPosts?.documents || []);
 
   // Aplicar filtros adicionais
   let finalPosts = filteredPosts;
@@ -66,18 +67,11 @@ const Home = () => {
     adventure => adventure.$id === selectedAdventure
   );
 
-  // Estatísticas de posts
-  const postsStats = {
-    total: allPosts?.documents.length || 0,
-    visible: filteredPosts.length,
-    public: filteredPosts.filter((post: Models.Document) =>
-      !post.adventures || post.adventures.length === 0
-    ).length,
-    private: filteredPosts.filter((post: Models.Document) =>
-      post.adventures && post.adventures.length > 0
-    ).length,
-    final: finalPosts.length
-  };
+  // 🆕 NOVO: Verificar se usuário tem acesso a conteúdo
+  const hasAccessToContent = isAdmin || 
+                            hasAdventures || 
+                            publicAdventures.length > 0 || 
+                            stats.publicPosts > 0;
 
   // Estados de erro
   if (isErrorPosts || isErrorCreators) {
@@ -119,10 +113,10 @@ const Home = () => {
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <h2 className="h3-bold md:h2-bold text-left">Publicações Recentes</h2>
 
-              {/* Filtro por aventura */}
-              {activeUserAdventures.length > 0 && (
+              {/* Filtro por aventura - só mostra se há aventuras */}
+              {(activeUserAdventures.length > 0 || publicAdventures.length > 0) && (
                 <CompactAdventureSelect
-                  adventures={activeUserAdventures}
+                  adventures={[...activeUserAdventures, ...publicAdventures]}
                   value={selectedAdventure}
                   onChange={setSelectedAdventure}
                   className="w-full sm:w-64"
@@ -171,8 +165,6 @@ const Home = () => {
           {/* Conteúdo principal */}
           {isPostLoading || isLoadingAdventures ? (
             <LoadingState text="Carregando posts..." />
-          ) : !hasAdventures && !isAdmin ? (
-            <NoAdventuresState />
           ) : finalPosts.length === 0 ? (
             selectedAdventure ? (
               <EmptyState
@@ -201,7 +193,17 @@ const Home = () => {
                 </button>
               </EmptyState>
             ) : (
-              <NoPostsState hasAdventures={hasAdventures} />
+              // 🆕 CORRIGIDO: Não mostrar "NoAdventuresState" se há posts públicos
+              <EmptyState
+                type="no_posts"
+                title="Nenhum post encontrado"
+                description={hasAccessToContent 
+                  ? "Ainda não há posts disponíveis para você." 
+                  : "Não há posts públicos disponíveis no momento. Entre em contato com um mestre para ser adicionado a uma aventura."
+                }
+                icon="📝"
+                showContactInfo={!hasAccessToContent}
+              />
             )
           ) : (
             <ul className="flex flex-col flex-1 gap-9 w-full">
@@ -250,23 +252,57 @@ const Home = () => {
               <p className="text-light-4 text-xs text-center mb-2">
                 <span className="text-primary-500 font-medium">Admin - Estatísticas:</span>
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
                 <div>
-                  <p className="text-lg font-bold text-light-1">{postsStats.total}</p>
+                  <p className="text-lg font-bold text-light-1">{stats.totalPosts}</p>
                   <p className="text-xs text-light-4">Total</p>
                 </div>
                 <div>
-                  <p className="text-lg font-bold text-green-400">{postsStats.visible}</p>
+                  <p className="text-lg font-bold text-green-400">{stats.visiblePosts}</p>
                   <p className="text-xs text-light-4">Visíveis</p>
                 </div>
                 <div>
-                  <p className="text-lg font-bold text-blue-400">{postsStats.public}</p>
+                  <p className="text-lg font-bold text-blue-400">{stats.publicPosts}</p>
                   <p className="text-xs text-light-4">Públicos</p>
                 </div>
                 <div>
-                  <p className="text-lg font-bold text-orange-400">{postsStats.private}</p>
-                  <p className="text-xs text-light-4">Restritos</p>
+                  <p className="text-lg font-bold text-cyan-400">{stats.publicAdventurePosts}</p>
+                  <p className="text-xs text-light-4">Aventuras Públicas</p>
                 </div>
+                <div>
+                  <p className="text-lg font-bold text-orange-400">{stats.privatePosts}</p>
+                  <p className="text-xs text-light-4">Privados</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 🆕 NOVO: Informações sobre aventuras públicas disponíveis */}
+          {!isAdmin && publicAdventures.length > 0 && (
+            <div className="mt-6 p-4 bg-blue-500/10 rounded-lg border border-blue-500/30">
+              <h3 className="text-blue-400 font-medium mb-2 flex items-center gap-2">
+                <Globe className="w-4 h-4" />
+                Aventuras Públicas Disponíveis
+              </h3>
+              <p className="text-light-4 text-sm mb-3">
+                Estas aventuras estão abertas para todos verem posts:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {publicAdventures.slice(0, 3).map((adventure) => (
+                  <div key={adventure.$id} className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/20 rounded-full text-sm">
+                    <img
+                      src={adventure.imageUrl || '/assets/icons/profile-placeholder.svg'}
+                      alt={adventure.title}
+                      className="w-4 h-4 rounded object-cover"
+                    />
+                    <span className="text-blue-300">{adventure.title}</span>
+                  </div>
+                ))}
+                {publicAdventures.length > 3 && (
+                  <span className="text-blue-400 text-sm py-1.5">
+                    +{publicAdventures.length - 3} mais
+                  </span>
+                )}
               </div>
             </div>
           )}

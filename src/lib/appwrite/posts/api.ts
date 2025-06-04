@@ -239,7 +239,6 @@ export async function getPostsByAdventures(adventureIds: string[]) {
   }
 }
 
-// ATUALIZADA: Buscar posts filtrados por aventuras do usuário + posts públicos
 export async function getFilteredPostsForUser(userAdventureIds: string[], publicAdventureIds: string[] = [], isAdmin: boolean = false) {
   try {
     if (isAdmin) {
@@ -247,33 +246,43 @@ export async function getFilteredPostsForUser(userAdventureIds: string[], public
       return await getRecentPosts();
     }
 
-    // Buscar posts públicos (sem aventuras)
+    // 🆕 PASSO 1: Buscar TODOS os posts públicos (sem aventuras)
     const publicPosts = await getPublicPosts();
 
-    let userPosts: any = { documents: [] }; // Fix: usar any ao invés de never[]
+    // 🆕 PASSO 2: Buscar posts de aventuras que o usuário tem acesso
+    let adventurePosts: any = { documents: [] };
     
-    // Buscar posts das aventuras do usuário (privadas + públicas)
-    const allUserAdventureIds = [...new Set([...userAdventureIds, ...publicAdventureIds])];
+    // Combinar IDs de aventuras privadas (onde participa) + públicas
+    const allAccessibleAdventureIds = [...new Set([...userAdventureIds, ...publicAdventureIds])];
     
-    if (allUserAdventureIds.length > 0) {
-      userPosts = await getPostsByAdventures(allUserAdventureIds);
+    if (allAccessibleAdventureIds.length > 0) {
+      adventurePosts = await getPostsByAdventures(allAccessibleAdventureIds);
     }
 
-    // Combinar posts públicos + posts das aventuras
+    // 🆕 PASSO 3: Combinar posts públicos + posts de aventuras
     const allPosts = [
       ...publicPosts.documents,
-      ...userPosts.documents
+      ...adventurePosts.documents
     ];
 
-    // Remover duplicatas por ID
+    // 🆕 PASSO 4: Remover duplicatas por ID
     const uniquePosts = allPosts.filter((post, index, array) =>
       array.findIndex(p => p.$id === post.$id) === index
     );
 
-    // Ordenar por data (mais recentes primeiro)
+    // 🆕 PASSO 5: Ordenar por data (mais recentes primeiro)
     const sortedPosts = uniquePosts.sort((a, b) => 
       new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime()
     );
+
+    console.log('🔍 Posts filtrados:', {
+      publicPosts: publicPosts.documents.length,
+      adventurePosts: adventurePosts.documents.length,
+      totalUnique: uniquePosts.length,
+      userAdventureIds,
+      publicAdventureIds,
+      allAccessibleAdventureIds
+    });
 
     return {
       ...publicPosts,
@@ -497,13 +506,15 @@ export async function getPublicPosts() {
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
       [
-        Query.equal('adventures', []), // Posts sem aventuras
+        Query.equal('adventures', []), // Posts sem aventuras (públicos)
         Query.orderDesc('$createdAt'),
         Query.limit(50)
       ]
     );
 
     if (!posts) throw Error;
+
+    console.log('🌍 Posts públicos encontrados:', posts.documents.length);
 
     return posts;
   } catch (error) {
