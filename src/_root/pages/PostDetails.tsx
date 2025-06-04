@@ -24,7 +24,7 @@ const PostDetails = () => {
   const { id } = useParams();
   const { user } = useUserContext();
   const { toast } = useToast();
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(true);
 
   const { data: post, isLoading } = useGetPostById(id);
   const { data: userPosts, isLoading: isUserPostLoading } = useGetUserPosts(
