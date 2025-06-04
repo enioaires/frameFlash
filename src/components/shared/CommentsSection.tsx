@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, MessageCircle, Reply, Send, Trash2 } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useCreateComment, useDeleteComment, useGetCommentsByPostId } from '@/lib/react-query/comments';
 
 import Loader from './Loader';
