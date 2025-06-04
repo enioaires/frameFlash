@@ -1,3 +1,4 @@
+import { Bookmark, Heart, MessageCircle } from "lucide-react";
 import {
   useDeleteSavedPost,
   useGetCurrentUser,
@@ -7,25 +8,31 @@ import {
 import { useEffect, useState } from "react";
 
 import CommentsModal from "./CommentsModal";
-import CommentsSection from "./CommentsSection";
-import { MessageCircle } from "lucide-react";
 import { Models } from "appwrite";
 import { checkIsLiked } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useGetCommentsCount } from "@/lib/react-query/comments";
 import { useLocation } from "react-router-dom";
 
 type PostStatsProps = {
   post: Models.Document;
   userId: string;
+  showCommentsInline?: boolean;
+  onCommentsToggle?: () => void;
+  isCommentsExpanded?: boolean;
 };
 
-const PostStats = ({ post, userId }: PostStatsProps) => {
+const PostStats = ({ 
+  post, 
+  userId, 
+  onCommentsToggle,
+  isCommentsExpanded = false 
+}: PostStatsProps) => {
   const location = useLocation();
   const likesList = post.likes.map((user: Models.Document) => user.$id);
 
   const [likes, setLikes] = useState<string[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
-  const [showComments, setShowComments] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
 
   const { mutate: likePost } = useLikePost();
@@ -35,9 +42,9 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   const { data: currentUser } = useGetCurrentUser();
   const { data: commentsCount } = useGetCommentsCount(post.$id);
 
-  // Determinar se estamos na página de detalhes ou na home
+  // Determinar se estamos na página de detalhes
   const isDetailPage = location.pathname.startsWith('/posts/');
-
+  
   const savedPostRecord = currentUser?.save.find(
     (record: Models.Document) => record.post.$id === post.$id
   );
@@ -46,9 +53,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     setIsSaved(!!savedPostRecord);
   }, [currentUser]);
 
-  const handleLikePost = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>
-  ) => {
+  const handleLikePost = (e: React.MouseEvent) => {
     e.stopPropagation();
 
     let likesArray = [...likes];
@@ -63,9 +68,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     likePost({ postId: post.$id, likesArray });
   };
 
-  const handleSavePost = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>
-  ) => {
+  const handleSavePost = (e: React.MouseEvent) => {
     e.stopPropagation();
 
     if (savedPostRecord) {
@@ -80,81 +83,90 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   const handleCommentsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    if (isDetailPage) {
-      // Na página de detalhes, expandir/colapsar inline
-      setShowComments(!showComments);
-    } else {
-      // Na home, abrir modal
+    if (isDetailPage && onCommentsToggle) {
+      // Na página de detalhes, toggle inline
+      onCommentsToggle();
+    } else if (!isDetailPage) {
+      // Fora da página de detalhes, abrir modal
       setShowCommentsModal(true);
     }
   };
 
-  const containerStyles = location.pathname.startsWith("/profile")
-    ? "w-full"
-    : "";
+  const isLiked = checkIsLiked(likes, userId);
 
   return (
     <>
-      <div
-        className={`flex justify-between items-center z-20 ${containerStyles}`}
-      >
-        <div className="flex gap-4 mr-5">
+      <div className="flex items-center justify-between w-full">
+        {/* Actions principais */}
+        <div className="flex items-center gap-6">
           {/* Likes */}
-          <div className="flex gap-2">
-            <img
-              src={`${
-                checkIsLiked(likes, userId)
-                  ? "/assets/icons/liked.svg"
-                  : "/assets/icons/like.svg"
-              }`}
-              alt="like"
-              width={20}
-              height={20}
-              onClick={(e) => handleLikePost(e)}
-              className="cursor-pointer"
-            />
-            <p className="small-medium lg:base-medium">{likes.length}</p>
-          </div>
+          <button
+            onClick={handleLikePost}
+            className="flex items-center gap-2 hover:scale-105 transition-transform"
+          >
+            <div className={cn(
+              "p-2 rounded-full transition-all duration-200",
+              isLiked 
+                ? "bg-red-500/20 text-red-500" 
+                : "hover:bg-dark-3 text-light-3 hover:text-red-400"
+            )}>
+              <Heart 
+                className={cn(
+                  "w-5 h-5 transition-all duration-200",
+                  isLiked && "fill-current"
+                )} 
+              />
+            </div>
+            <span className={cn(
+              "font-medium transition-colors",
+              isLiked ? "text-red-500" : "text-light-1"
+            )}>
+              {likes.length}
+            </span>
+          </button>
 
           {/* Comments */}
-          <div className="flex gap-2">
-            <button
-              onClick={handleCommentsClick}
-              className="flex items-center gap-1 hover:opacity-70 transition-opacity"
-            >
-              <MessageCircle className="w-5 h-5 text-light-3" />
-              <p className="small-medium lg:base-medium text-light-3">
-                {commentsCount || 0}
-              </p>
-            </button>
-          </div>
+          <button
+            onClick={handleCommentsClick}
+            className="flex items-center gap-2 hover:scale-105 transition-transform"
+          >
+            <div className={cn(
+              "p-2 rounded-full transition-all duration-200",
+              isDetailPage && isCommentsExpanded
+                ? "bg-primary-500/20 text-primary-500"
+                : "hover:bg-dark-3 text-light-3 hover:text-primary-500"
+            )}>
+              <MessageCircle className="w-5 h-5" />
+            </div>
+            <span className="font-medium text-light-1">
+              {commentsCount || 0}
+            </span>
+          </button>
         </div>
 
-        <div className="flex gap-2">
-          <img
-            src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
-            alt="save"
-            width={20}
-            height={20}
-            className="cursor-pointer"
-            onClick={(e) => handleSavePost(e)}
-          />
-        </div>
+        {/* Save */}
+        <button
+          onClick={handleSavePost}
+          className="hover:scale-105 transition-transform"
+        >
+          <div className={cn(
+            "p-2 rounded-full transition-all duration-200",
+            isSaved 
+              ? "bg-primary-500/20 text-primary-500" 
+              : "hover:bg-dark-3 text-light-3 hover:text-primary-500"
+          )}>
+            <Bookmark 
+              className={cn(
+                "w-5 h-5 transition-all duration-200",
+                isSaved && "fill-current"
+              )} 
+            />
+          </div>
+        </button>
       </div>
 
-      {/* Comments Section - apenas na página de detalhes */}
-      {isDetailPage && (
-        <div className="mt-4">
-          <CommentsSection
-            postId={post.$id}
-            isExpanded={showComments}
-            onToggle={() => setShowComments(!showComments)}
-          />
-        </div>
-      )}
-
-      {/* Comments Modal - apenas na home */}
-      {showCommentsModal && (
+      {/* Modal de comentários para páginas que não são detalhes */}
+      {showCommentsModal && !isDetailPage && (
         <CommentsModal
           post={post}
           isOpen={showCommentsModal}
