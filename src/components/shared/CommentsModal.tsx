@@ -50,18 +50,18 @@ const CommentsModal: React.FC<CommentsModalProps> = ({
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={handleOverlayClick}
     >
-      <div className="bg-dark-2 rounded-2xl border border-dark-4 max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header do Modal */}
+      <div className="bg-dark-2 rounded-2xl border border-dark-4 w-full max-w-4xl h-[90vh] overflow-hidden flex flex-col">
+        {/* Header do Modal - FIXO */}
         <div className="flex items-center justify-between p-6 border-b border-dark-4 flex-shrink-0">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <img
               src={post.creator?.imageUrl || '/assets/icons/profile-placeholder.svg'}
               alt={post.creator?.name}
-              className="w-10 h-10 rounded-full object-cover"
+              className="w-10 h-10 rounded-full object-cover flex-shrink-0"
             />
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <h2 className="font-semibold text-light-1">{post.creator?.name}</h2>
+                <h2 className="font-semibold text-light-1 truncate">{post.creator?.name}</h2>
                 <span className="text-light-4 text-sm">•</span>
                 <span className="text-light-4 text-sm">{timeAgo(post.$createdAt)}</span>
               </div>
@@ -77,13 +77,13 @@ const CommentsModal: React.FC<CommentsModalProps> = ({
           
           <button
             onClick={onClose}
-            className="p-2 hover:bg-dark-3 rounded-lg transition-colors text-light-3 hover:text-light-1"
+            className="p-2 hover:bg-dark-3 rounded-lg transition-colors text-light-3 hover:text-light-1 flex-shrink-0 ml-4"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Preview do Post */}
+        {/* Preview do Post - FIXO */}
         <div className="p-6 border-b border-dark-4 flex-shrink-0">
           <h3 className="font-semibold text-lg text-light-1 mb-3 line-clamp-2">
             {post.title}
@@ -133,15 +133,17 @@ const CommentsModal: React.FC<CommentsModalProps> = ({
           </div>
         </div>
 
-        {/* Seção de Comentários */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto custom-scrollbar p-6">
-            <CommentsSection
-              postId={post.$id}
-              isExpanded={true}
-              onToggle={() => {}} // Não usa toggle no modal
-              isModal={true}
-            />
+        {/* Seção de Comentários - SCROLLÁVEL */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="h-full overflow-y-auto custom-scrollbar">
+            <div className="p-6">
+              <CommentsSection
+                postId={post.$id}
+                isExpanded={true}
+                onToggle={() => {}} // Não usa toggle no modal
+                isModal={true}
+              />
+            </div>
           </div>
         </div>
       </div>

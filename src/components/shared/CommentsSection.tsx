@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, MessageCircle, Reply, Send, Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useCreateComment, useDeleteComment, useGetCommentsByPostId } from '@/lib/react-query/comments';
 
 import Loader from './Loader';
@@ -26,8 +26,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
   const { user } = useUserContext();
   const { toast } = useToast();
   const [newComment, setNewComment] = useState('');
-  const [replyTo, setReplyTo] = useState<string | null>(null);
-  const [replyContent, setReplyContent] = useState('');
+  const [activeReplyId, setActiveReplyId] = useState<string | null>(null);
+  const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
   const { data: commentsData, isLoading: isLoadingComments } = useGetCommentsByPostId(postId);
   const { data: usersData } = useGetUsers();
@@ -79,18 +79,21 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
     });
   };
 
-  const handleCreateReply = (parentCommentId: string) => {
-    if (!replyContent.trim()) return;
+  const handleCreateReply = () => {
+    const replyContent = replyInputRef.current?.value;
+    if (!replyContent?.trim() || !activeReplyId) return;
 
     createComment({
       content: replyContent.trim(),
       postId,
       userId: user.id,
-      parentCommentId,
+      parentCommentId: activeReplyId,
     }, {
       onSuccess: () => {
-        setReplyContent('');
-        setReplyTo(null);
+        if (replyInputRef.current) {
+          replyInputRef.current.value = '';
+        }
+        setActiveReplyId(null);
         toast({
           title: "Resposta enviada!",
           description: "Sua resposta foi publicada com sucesso."
@@ -126,6 +129,21 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
     }
   };
 
+  const toggleReply = (commentId: string) => {
+    if (activeReplyId === commentId) {
+      setActiveReplyId(null);
+      if (replyInputRef.current) {
+        replyInputRef.current.value = '';
+      }
+    } else {
+      setActiveReplyId(commentId);
+      // Focar no input após um pequeno delay
+      setTimeout(() => {
+        replyInputRef.current?.focus();
+      }, 100);
+    }
+  };
+
   const CommentItem: React.FC<{ comment: Models.Document; isReply?: boolean }> = ({
     comment,
     isReply = false
@@ -133,6 +151,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
     const commentUser = getUserData(comment.userId);
     const isOwner = comment.userId === user.id;
     const canDelete = isOwner || userIsAdmin;
+    const isShowingReplyForm = activeReplyId === comment.$id;
 
     if (!commentUser) {
       return (
@@ -177,11 +196,15 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
             <div className="flex items-center gap-3">
               {!isReply && (
                 <button
-                  onClick={() => setReplyTo(replyTo === comment.$id ? null : comment.$id)}
-                  className="flex items-center gap-1 text-light-4 hover:text-primary-500 transition-colors text-xs"
+                  onClick={() => toggleReply(comment.$id)}
+                  className={`flex items-center gap-1 text-xs transition-colors ${
+                    isShowingReplyForm 
+                      ? 'text-primary-500' 
+                      : 'text-light-4 hover:text-primary-500'
+                  }`}
                 >
                   <Reply className="w-3 h-3" />
-                  <span>Responder</span>
+                  <span>{isShowingReplyForm ? 'Cancelar' : 'Responder'}</span>
                 </button>
               )}
 
@@ -199,8 +222,8 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
           </div>
         </div>
 
-        {/* Form de resposta */}
-        {replyTo === comment.$id && (
+        {/* Form de resposta - APENAS UM ATIVO POR VEZ */}
+        {!isReply && isShowingReplyForm && (
           <div className="mt-3 ml-8">
             <div className="flex gap-3 p-3 bg-dark-2 rounded-lg border border-dark-4">
               <img
@@ -210,8 +233,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
               />
               <div className="flex-1">
                 <textarea
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
+                  ref={replyInputRef}
                   placeholder={`Respondendo para @${commentUser.username}...`}
                   className="w-full bg-dark-4 border border-dark-4 rounded-lg p-3 text-light-1 placeholder-light-4 resize-none focus:outline-none focus:ring-1 focus:ring-primary-500 text-sm"
                   rows={2}
@@ -219,21 +241,18 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({
                 />
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-xs text-light-4">
-                    {replyContent.length}/500
+                    {replyInputRef.current?.value?.length || 0}/500
                   </span>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => {
-                        setReplyTo(null);
-                        setReplyContent('');
-                      }}
+                      onClick={() => toggleReply(comment.$id)}
                       className="px-3 py-1 text-xs text-light-4 hover:text-light-1 transition-colors"
                     >
                       Cancelar
                     </button>
                     <button
-                      onClick={() => handleCreateReply(comment.$id)}
-                      disabled={!replyContent.trim() || isCreating}
+                      onClick={handleCreateReply}
+                      disabled={isCreating}
                       className="px-4 py-1.5 bg-primary-500 hover:bg-primary-600 disabled:bg-primary-500/50 text-white text-xs rounded-md transition-colors flex items-center gap-1"
                     >
                       {isCreating ? <Loader size="sm" /> : <Send className="w-3 h-3" />}
