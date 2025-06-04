@@ -149,47 +149,110 @@
 
   /* Post Details */
   .post_details-container {
-    @apply flex flex-col flex-1 gap-10 overflow-scroll py-10 px-5 md:p-14 custom-scrollbar items-center;
+    @apply flex flex-col flex-1 gap-10 py-10 px-5 md:p-14 items-center;
+    /* REMOVIDO: overflow-scroll para permitir scroll natural no mobile */
+    overflow-y: auto; /* Apenas para desktop */
+  }
+  
+  /* Mobile: Scroll natural da página */
+  @media (max-width: 1279px) {
+    .post_details-container {
+      overflow: visible; /* Permitir scroll natural */
+      height: auto; /* Altura automática */
+      min-height: 100vh; /* Ocupar pelo menos a altura da tela */
+    }
+    
+    .post_details-card {
+      flex-direction: column;
+      max-height: none !important; /* Sem limite de altura */
+      min-height: auto;
+      height: auto;
+    }
+    
+    /* Imagem no mobile */
+    .post_details-card > div:first-child {
+      width: 100% !important;
+      max-height: 50vh; /* Limite razoável para a imagem */
+      overflow: hidden;
+    }
+    
+    /* Conteúdo no mobile */
+    .post_details-card > div:last-child {
+      width: 100% !important;
+      max-height: none !important;
+      height: auto !important;
+      flex: none; /* Remover flex para permitir crescimento natural */
+    }
+    
+    /* Área de conteúdo no mobile */
+    .post_details-card .mobile-content {
+      max-height: none !important;
+      overflow: visible !important;
+      height: auto !important;
+    }
+  }
+  
+  /* Desktop: Layout controlado */
+  @media (min-width: 1280px) {
+    .post_details-container {
+      overflow-y: auto;
+      height: 100vh;
+    }
+    
+    .post_details-card {
+      max-width: 1400px;
+      min-height: 700px;
+      max-height: 90vh;
+      flex-direction: row;
+    }
+    
+    .post_details-card > div:first-child {
+      width: 55%;
+      max-height: 85vh;
+      overflow: hidden;
+    }
+    
+    .post_details-card > div:last-child {
+      width: 45%;
+      max-height: 85vh;
+    }
   }
   
   .post_details-card {
-    @apply bg-dark-2 w-full max-w-screen-lg rounded-[30px] flex flex-col xl:flex-row border border-dark-4 xl:rounded-l-[24px] overflow-hidden;
-    min-height: 600px;
-    max-height: 85vh; /* Limitar altura máxima */
+    @apply bg-dark-2 w-full rounded-[30px] flex border border-dark-4 xl:rounded-l-[24px] overflow-hidden;
   }
   
   .post_details-img {
     @apply w-full h-auto object-cover;
-    min-height: 400px;
-    max-height: 600px;
   }
   
   .post_details-info {
     @apply bg-dark-2 flex flex-col gap-5 lg:gap-7 items-start rounded-[30px] xl:rounded-l-none;
-    min-height: 400px;
   }
   
   .post_details-delete_btn {
     @apply p-0 flex gap-3 hover:bg-transparent hover:text-light-1 text-light-1 small-medium lg:base-medium;
   }
   
-  /* Melhorar scroll customizado para post details */
-  .post_details-card .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-  }
+  /* Scroll customizado apenas para desktop */
+  @media (min-width: 1280px) {
+    .post_details-card .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
   
-  .post_details-card .custom-scrollbar::-webkit-scrollbar-track {
-    background: #09090a;
-    border-radius: 3px;
-  }
+    .post_details-card .custom-scrollbar::-webkit-scrollbar-track {
+      background: #09090a;
+      border-radius: 3px;
+    }
   
-  .post_details-card .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #5c5c7b;
-    border-radius: 3px;
-  }
+    .post_details-card .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #5c5c7b;
+      border-radius: 3px;
+    }
   
-  .post_details-card .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #7878a3;
+    .post_details-card .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #7878a3;
+    }
   }
 
   /* Profile */
