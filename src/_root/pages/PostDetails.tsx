@@ -57,94 +57,109 @@ const PostDetails = () => {
         <Loader />
       ) : (
         <div className="post_details-card">
-          <img
-            src={post?.imageUrl}
-            alt="creator"
-            className="post_details-img"
-          />
+          {/* IMAGEM - LADO ESQUERDO - FIXO */}
+          <div className="xl:w-[48%] flex-shrink-0 xl:max-h-[80vh] xl:overflow-hidden">
+            <img
+              src={post?.imageUrl}
+              alt="post image"
+              className="w-full h-auto xl:h-full rounded-t-[30px] xl:rounded-l-[24px] xl:rounded-tr-none object-cover p-5 bg-dark-1"
+            />
+          </div>
 
-          <div className="post_details-info">
-            <div className="flex-between w-full">
-              <Link
-                to={`/profile/${post?.creator.$id}`}
-                className="flex items-center gap-3"
-              >
-                <img
-                  src={
-                    post?.creator.imageUrl ||
-                    "/assets/icons/profile-placeholder.svg"
-                  }
-                  alt="creator"
-                  className="w-8 h-8 lg:w-12 lg:h-12 rounded-full"
-                />
-                <div className="flex gap-1 flex-col">
-                  <p className="base-medium lg:body-bold text-light-1">
-                    {post?.creator.name}
-                  </p>
-                  <div className="flex-center gap-2 text-light-3">
-                    <p className="subtle-semibold lg:small-regular ">
-                      {multiFormatDateString(post?.$createdAt)}
-                    </p>
-                    •
-                    <p className="subtle-semibold lg:small-regular">
-                      {post?.location}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-
-              <div className="flex-center gap-4">
+          {/* CONTEÚDO - LADO DIREITO - EXPANSÍVEL COM SCROLL */}
+          <div className="flex flex-col flex-1 xl:max-h-[80vh]">
+            {/* Header fixo */}
+            <div className="bg-dark-2 p-8 pb-4 rounded-t-[30px] xl:rounded-tl-none border-b border-dark-4 flex-shrink-0">
+              <div className="flex-between w-full mb-4">
                 <Link
-                  to={`/update-post/${post?.$id}`}
-                  className={`${user.id !== post?.creator.$id && "hidden"}`}
+                  to={`/profile/${post?.creator.$id}`}
+                  className="flex items-center gap-3"
                 >
                   <img
-                    src={"/assets/icons/edit.svg"}
-                    alt="edit"
-                    width={24}
-                    height={24}
+                    src={
+                      post?.creator.imageUrl ||
+                      "/assets/icons/profile-placeholder.svg"
+                    }
+                    alt="creator"
+                    className="w-8 h-8 lg:w-12 lg:h-12 rounded-full"
                   />
+                  <div className="flex gap-1 flex-col">
+                    <p className="base-medium lg:body-bold text-light-1">
+                      {post?.creator.name}
+                    </p>
+                    <div className="flex-center gap-2 text-light-3">
+                      <p className="subtle-semibold lg:small-regular ">
+                        {multiFormatDateString(post?.$createdAt)}
+                      </p>
+                      •
+                      <p className="subtle-semibold lg:small-regular">
+                        {post?.location}
+                      </p>
+                    </div>
+                  </div>
                 </Link>
 
-                <Button
-                  onClick={handleDeletePost}
-                  variant="ghost"
-                  className={`post_details-delete_btn ${user.id === post?.creator.$id ? "" : "hidden"}`}
-                >
-                  <img
-                    src={"/assets/icons/delete.svg"}
-                    alt="delete"
-                    width={24}
-                    height={24}
-                  />
-                </Button>
-              </div>
-            </div>
-            <p className="font-semibold text-2xl text-center">{post?.title}</p>
-            <hr className="border w-full border-dark-4/80" />
-
-            <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
-              <div className="flex flex-col gap-4 overflow-auto max-h-[600px] pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-dark-4 [&::-webkit-scrollbar-thumb]:bg-dark-3 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-dark-2">
-                <CollapsibleCaption
-                  captions={post.captions}
-                  maxLines={12}
-                  className="small-medium lg:base-regular"
-                />
-              </div>
-              <ul className="flex gap-1 mt-2">
-                {post?.tags.map((tag: string, index: string) => (
-                  <li
-                    key={`${tag}${index}`}
-                    className="text-light-3 small-regular"
+                <div className="flex-center gap-4">
+                  <Link
+                    to={`/update-post/${post?.$id}`}
+                    className={`${user.id !== post?.creator.$id && "hidden"}`}
                   >
-                    #{tag}
-                  </li>
-                ))}
-              </ul>
+                    <img
+                      src={"/assets/icons/edit.svg"}
+                      alt="edit"
+                      width={24}
+                      height={24}
+                    />
+                  </Link>
+
+                  <Button
+                    onClick={handleDeletePost}
+                    variant="ghost"
+                    className={`post_details-delete_btn ${user.id === post?.creator.$id ? "" : "hidden"}`}
+                  >
+                    <img
+                      src={"/assets/icons/delete.svg"}
+                      alt="delete"
+                      width={24}
+                      height={24}
+                    />
+                  </Button>
+                </div>
+              </div>
+
+              {/* TÍTULO */}
+              <p className="font-semibold text-2xl text-center">{post?.title}</p>
             </div>
 
-            <div className="w-full">
-              <PostStats post={post} userId={user.id} />
+            {/* Conteúdo scrollável */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar bg-dark-2">
+              <div className="p-8 pt-4 space-y-6">
+                {/* LEGENDA E TAGS */}
+                <div className="flex flex-col w-full small-medium lg:base-regular">
+                  <div className="flex flex-col gap-4">
+                    <CollapsibleCaption 
+                      captions={post.captions}
+                      maxLines={8}
+                      className="small-medium lg:base-regular"
+                    />
+                  </div>
+                  <ul className="flex gap-1 mt-4 flex-wrap">
+                    {post?.tags.map((tag: string, index: string) => (
+                      <li
+                        key={`${tag}${index}`}
+                        className="text-light-3 small-regular"
+                      >
+                        #{tag}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* POST STATS E COMENTÁRIOS */}
+                <div className="w-full">
+                  <PostStats post={post} userId={user.id} />
+                </div>
+              </div>
             </div>
           </div>
         </div>

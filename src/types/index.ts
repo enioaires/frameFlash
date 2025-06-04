@@ -151,3 +151,25 @@ export type IUpdateBanner = {
 
 export type BannerType = 'home' | 'tag';
 export type BannerIdentifier = 'main' | 'mundo' | 'personagens' | 'classes' | 'racas' | 'deuses' | 'artefatos' | 'aventuras' | 'relato' | 'rpg' | 'jogadores' | 'magias' | 'talentos' | 'inventario' | 'irmandades' | 'produtos';
+
+export type IComment = {
+  id: string;
+  content: string;
+  postId: string;
+  userId: string;
+  parentCommentId?: string;
+  $createdAt: string;
+  $updatedAt: string;
+};
+
+export type INewComment = {
+  content: string;
+  postId: string;
+  userId: string;
+  parentCommentId?: string;
+};
+
+export type IUpdateComment = {
+  commentId: string;
+  content: string;
+};

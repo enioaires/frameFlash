@@ -27,8 +27,8 @@ const CollapsibleCaption: React.FC<CollapsibleCaptionProps> = ({
     if (Array.isArray(captions)) {
       // Se for array (formato antigo), junta com <br>
       return captions.map((caption, index) => (
-        <div
-          key={index}
+        <div 
+          key={index} 
           dangerouslySetInnerHTML={{ __html: caption }}
           className="mb-2 last:mb-0"
         />
@@ -36,7 +36,7 @@ const CollapsibleCaption: React.FC<CollapsibleCaptionProps> = ({
     } else if (typeof captions === 'string') {
       // Se for string (novo formato), renderiza o HTML
       return (
-        <div
+        <div 
           dangerouslySetInnerHTML={{ __html: captions }}
           className="rich-text-content"
         />
@@ -52,21 +52,21 @@ const CollapsibleCaption: React.FC<CollapsibleCaptionProps> = ({
         // Temporariamente expandir para medir altura total
         const originalMaxHeight = contentRef.current.style.maxHeight;
         const originalOverflow = contentRef.current.style.overflow;
-
+        
         contentRef.current.style.maxHeight = 'none';
         contentRef.current.style.overflow = 'visible';
-
+        
         const computedStyle = getComputedStyle(contentRef.current);
         const lineHeight = parseFloat(computedStyle.lineHeight);
         const contentHeight = contentRef.current.scrollHeight;
-
+        
         // Restaurar estilos originais
         contentRef.current.style.maxHeight = originalMaxHeight;
         contentRef.current.style.overflow = originalOverflow;
-
+        
         const maxHeight = lineHeight * maxLines;
         const needsToggle = contentHeight > maxHeight;
-
+        
         setShowToggle(needsToggle);
         setIsInitialized(true);
       }
@@ -98,16 +98,16 @@ const CollapsibleCaption: React.FC<CollapsibleCaptionProps> = ({
           !isExpanded && showToggle && isInitialized && "relative"
         )}
         style={{
-          maxHeight: !isExpanded && showToggle && isInitialized
-            ? `${maxHeightValue}em`
+          maxHeight: !isExpanded && showToggle && isInitialized 
+            ? `${maxHeightValue}em` 
             : 'none'
         }}
       >
         {renderCaptions(captions)}
-
+        
         {/* Gradiente de fade quando colapsado */}
         {!isExpanded && showToggle && isInitialized && (
-          <div
+          <div 
             className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-dark-2 to-transparent pointer-events-none"
             style={{ background: 'linear-gradient(to top, var(--tw-gradient-from) 0%, transparent 100%)' }}
           />
