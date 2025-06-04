@@ -195,6 +195,12 @@ export const allMenuCategories = [
     category: "system"
   },
   {
+    icon: Users,
+    route: "/all-users",
+    label: "Usuários",
+    category: "system"
+  },
+  {
     icon: Castle,
     route: "/adventures",
     label: "Aventuras",
