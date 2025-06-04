@@ -18,15 +18,13 @@ export default function AuthLayout() {
     );
   }
 
-  // Se já está autenticado, permitir acesso apenas às rotas de auth
-  // Isso permite que admin crie contas para outros usuários
-  const authRoutes = ["/sign-in", "/sign-up"];
-  
-  if (isAuthenticated && !authRoutes.includes(location.pathname)) {
+  // MODIFICADO: Só redirecionar se estiver autenticado E tentando acessar sign-in
+  // Permitir sign-up mesmo quando autenticado (para admins criarem contas)
+  if (isAuthenticated && location.pathname === "/sign-in") {
     const from = (location.state as any)?.from?.pathname || "/";
     return <Navigate to={from} replace />;
   }
-  
+
   return (
     <section className="flex flex-1 justify-center items-center flex-col py-10">
       <Outlet />

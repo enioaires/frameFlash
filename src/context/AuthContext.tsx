@@ -2,10 +2,10 @@
 
 import { IContextType, IUser } from "@/types";
 import { createContext, useContext, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { getCurrentUser } from "@/lib/appwrite/auth/api";
 import { isAdminById } from "@/lib/adventures";
-import { useNavigate } from "react-router-dom";
 
 export const INITIAL_USER = {
   id: "",
@@ -35,6 +35,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [hasInitialized, setHasInitialized] = useState<boolean>(false); // Novo estado
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const checkAuthUser = async () => {
     setIsLoading(true);
@@ -96,16 +97,19 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Se não conseguiu autenticar com cookie válido, limpar e redirecionar
       if (!isAuth && cookieFallback && cookieFallback !== "[]") {
         localStorage.removeItem("cookieFallback");
-        navigate("/sign-in");
+        // REMOVIDO: navigate("/sign-in"); // Não forçar redirecionamento aqui
       }
     };
 
     initializeAuth();
   }, []); // Remove navigate das dependências para evitar loops
 
-  // Só navegar para sign-in se já inicializou e não está autenticado
+  // MODIFICADO: Só navegar para sign-in se não estiver em rota de auth
   useEffect(() => {
-    if (hasInitialized && !isAuthenticated && !isLoading) {
+    const authRoutes = ["/sign-in", "/sign-up"];
+    const isOnAuthRoute = authRoutes.includes(location.pathname);
+
+    if (hasInitialized && !isAuthenticated && !isLoading && !isOnAuthRoute) {
       const cookieFallback = localStorage.getItem("cookieFallback");
       if (
         cookieFallback === "[]" ||
@@ -115,7 +119,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         navigate("/sign-in");
       }
     }
-  }, [hasInitialized, isAuthenticated, isLoading, navigate]);
+  }, [hasInitialized, isAuthenticated, isLoading, location.pathname, navigate]);
 
   const value = {
     user,
