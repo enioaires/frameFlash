@@ -1,3 +1,4 @@
+import CollapsibleCaption from "./CollapsibleCaption";
 import { Link } from "react-router-dom";
 import { Models } from "appwrite";
 import PostStats from "./PostStats";
@@ -12,28 +13,6 @@ const PostCard = ({ post }: PostCardProps) => {
   const { user } = useUserContext();
 
   if (!post.creator) return null;
-  // Função para renderizar o conteúdo da legenda
-  const renderCaptions = (captions: string[] | string) => {
-    if (Array.isArray(captions)) {
-      // Se for array (formato antigo), junta com <br>
-      return captions.map((caption, index) => (
-        <div 
-          key={index} 
-          dangerouslySetInnerHTML={{ __html: caption }}
-          className="mb-2 last:mb-0"
-        />
-      ));
-    } else if (typeof captions === 'string') {
-      // Se for string (novo formato), renderiza o HTML
-      return (
-        <div 
-          dangerouslySetInnerHTML={{ __html: captions }}
-          className="rich-text-content"
-        />
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="post-card">
@@ -87,7 +66,10 @@ const PostCard = ({ post }: PostCardProps) => {
 
       <div className="text-md py-5">
         <div className="flex flex-col gap-4">
-          {renderCaptions(post.captions)}
+          <CollapsibleCaption 
+            captions={post.captions}
+            maxLines={12}
+          />
         </div>
         <ul className="flex gap-1 mt-2">
           {post.tags.map((tag: string) => (
