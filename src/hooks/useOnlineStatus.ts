@@ -1,3 +1,5 @@
+// ATUALIZAR src/hooks/useOnlineStatus.ts
+
 import { useCallback, useEffect, useRef } from 'react';
 
 import { updateUserLastSeen } from '@/lib/appwrite/auth/api';
@@ -23,19 +25,32 @@ export const useOnlineStatus = (options: UseOnlineStatusOptions = {}) => {
 
   // Função para atualizar last seen com throttle
   const updateLastSeen = useCallback(async (force = false) => {
-    if (!isAuthenticated || !user.id || isUpdatingRef.current) return;
+    // VERIFICAÇÕES MELHORADAS
+    if (!isAuthenticated || !user.id || isUpdatingRef.current) {
+      console.log('Skipping lastSeen update:', { 
+        isAuthenticated, 
+        userId: user.id, 
+        isUpdating: isUpdatingRef.current 
+      });
+      return;
+    }
 
     const now = Date.now();
     const timeSinceLastUpdate = now - lastUpdateRef.current;
     
     // Throttle: só atualiza se passou tempo suficiente ou forçado
-    if (!force && timeSinceLastUpdate < 60000) return; // 1 minuto mínimo
+    if (!force && timeSinceLastUpdate < 60000) {
+      console.log('Throttling lastSeen update, time since last:', timeSinceLastUpdate);
+      return;
+    }
 
     isUpdatingRef.current = true;
     
     try {
+      console.log('Updating lastSeen for user:', user.id);
       await updateUserLastSeen(user.id);
       lastUpdateRef.current = now;
+      console.log('LastSeen updated successfully');
     } catch (error) {
       console.log('Error updating last seen:', error);
     } finally {
@@ -43,9 +58,14 @@ export const useOnlineStatus = (options: UseOnlineStatusOptions = {}) => {
     }
   }, [isAuthenticated, user.id]);
 
-  // Configurar heartbeat
+  // Configurar heartbeat - SÓ QUANDO AUTENTICADO
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !user.id) {
+      console.log('Not setting up heartbeat - not authenticated or no user ID');
+      return;
+    }
+
+    console.log('Setting up online status heartbeat for user:', user.id);
 
     // Atualizar imediatamente
     updateLastSeen(true);
@@ -53,32 +73,40 @@ export const useOnlineStatus = (options: UseOnlineStatusOptions = {}) => {
     // Configurar heartbeat
     const intervalMs = updateInterval * 60 * 1000;
     heartbeatInterval.current = setInterval(() => {
+      console.log('Heartbeat tick - updating lastSeen');
       updateLastSeen();
     }, intervalMs);
 
     return () => {
       if (heartbeatInterval.current) {
+        console.log('Cleaning up heartbeat interval');
         clearInterval(heartbeatInterval.current);
       }
     };
-  }, [isAuthenticated, updateInterval, updateLastSeen]);
+  }, [isAuthenticated, user.id, updateInterval, updateLastSeen]); // ADICIONAR user.id nas dependências
 
   // Rastrear visibilidade da página
   useEffect(() => {
-    if (!enableVisibilityTracking || !isAuthenticated) return;
+    if (!enableVisibilityTracking || !isAuthenticated || !user.id) {
+      return;
+    }
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        // Página ficou visível
+        console.log('Page became visible - updating lastSeen');
         updateLastSeen();
       }
     };
 
-    const handleFocus = () => updateLastSeen();
+    const handleFocus = () => {
+      console.log('Window focused - updating lastSeen');
+      updateLastSeen();
+    };
+
     const handleActivity = () => {
-      // Throttle para atividade do usuário
       const now = Date.now();
       if (now - lastUpdateRef.current > 60000) { // 1 minuto
+        console.log('User activity detected - updating lastSeen');
         updateLastSeen();
       }
     };
@@ -98,23 +126,16 @@ export const useOnlineStatus = (options: UseOnlineStatusOptions = {}) => {
       document.removeEventListener('keydown', handleActivity);
       document.removeEventListener('scroll', handleActivity);
     };
-  }, [enableVisibilityTracking, isAuthenticated, updateLastSeen]);
+  }, [enableVisibilityTracking, isAuthenticated, user.id, updateLastSeen]); // ADICIONAR user.id
 
   // Atualizar antes de sair
   useEffect(() => {
-    if (!enableBeforeUnload || !isAuthenticated) return;
+    if (!enableBeforeUnload || !isAuthenticated || !user.id) {
+      return;
+    }
 
     const handleBeforeUnload = () => {
-      // Usar sendBeacon se disponível para garantir que seja enviado
-      if (navigator.sendBeacon('/api/updateLastSeen', JSON.stringify({ userId: user.id }))) {
-        const data = new FormData();
-        data.append('userId', user.id);
-        data.append('lastSeen', new Date().toISOString());
-        
-        // Aqui você precisaria de um endpoint específico para sendBeacon
-        // Por simplicidade, vamos usar o método normal
-      }
-      
+      console.log('Page unloading - updating lastSeen');
       updateLastSeen(true);
     };
 
@@ -127,6 +148,6 @@ export const useOnlineStatus = (options: UseOnlineStatusOptions = {}) => {
 
   return {
     updateLastSeen: () => updateLastSeen(true),
-    isTracking: isAuthenticated
+    isTracking: isAuthenticated && !!user.id
   };
 };

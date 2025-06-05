@@ -42,7 +42,7 @@ export async function saveUserToDatabase(user: {
   name: string,
   imageUrl: URL,
   username?: string,
-  role?: 'admin' | 'user' // NOVO CAMPO
+  role?: 'admin' | 'user'
 }) {
   try {
     const newUser = await database.createDocument(
@@ -51,7 +51,8 @@ export async function saveUserToDatabase(user: {
       v4(),
       {
         ...user,
-        role: user.role || 'user' // Default para 'user'
+        role: user.role || 'user',
+        lastSeen: new Date().toISOString() // ADICIONAR lastSeen na criação
       }
     )
 
@@ -282,5 +283,67 @@ export async function getUsersWithLastSeen() {
   } catch (error) {
     console.log("Error getting users with last seen:", error);
     throw error;
+  }
+}
+
+export async function initializeUserLastSeen(userId: string) {
+  try {
+    const user = await getUserById(userId);
+    
+    // Se o usuário não tem lastSeen, definir agora
+    if (!user?.lastSeen) {
+      const updatedUser = await database.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.userCollectionId,
+        userId,
+        {
+          lastSeen: new Date().toISOString()
+        }
+      );
+      return updatedUser;
+    }
+    
+    return user;
+  } catch (error) {
+    console.log("Error initializing user last seen:", error);
+    return null;
+  }
+}
+
+export async function initializeAllUsersLastSeen() {
+  try {
+    // Buscar todos os usuários
+    const users = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [Query.limit(1000)] // Ajustar limite conforme necessário
+    );
+
+    const promises = users.documents.map(async (user) => {
+      // Se o usuário não tem lastSeen, inicializar
+      if (!user.lastSeen) {
+        try {
+          await database.updateDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.userCollectionId,
+            user.$id,
+            {
+              lastSeen: new Date().toISOString()
+            }
+          );
+          console.log(`LastSeen inicializado para ${user.name}`);
+        } catch (error) {
+          console.log(`Erro ao inicializar lastSeen para ${user.name}:`, error);
+        }
+      }
+    });
+
+    await Promise.all(promises);
+    console.log('Inicialização de lastSeen concluída');
+    
+    return { success: true };
+  } catch (error) {
+    console.log("Error initializing all users last seen:", error);
+    return { success: false, error };
   }
 }

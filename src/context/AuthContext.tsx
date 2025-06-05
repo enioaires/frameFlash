@@ -1,10 +1,10 @@
-/* eslint-disable react-refresh/only-export-components */
+// ATUALIZAR src/context/AuthContext.tsx
 
 import { IContextType, IUser } from "@/types";
 import { createContext, useContext, useEffect, useState } from "react";
+import { getCurrentUser, initializeUserLastSeen } from "@/lib/appwrite/auth/api"; // IMPORTAR A NOVA FUNÇÃO
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { getCurrentUser } from "@/lib/appwrite/auth/api";
 import { isAdminById } from "@/lib/adventures";
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
@@ -15,7 +15,7 @@ export const INITIAL_USER = {
   username: "",
   imageUrl: "",
   bio: "",
-  role: "user" as "admin" | "user", // CAMPO ROLE ADICIONADO
+  role: "user" as "admin" | "user",
 };
 
 const INITIAL_STATE = {
@@ -31,9 +31,9 @@ const AuthContext = createContext<IContextType>(INITIAL_STATE);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<IUser>(INITIAL_USER);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Começa como true
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [hasInitialized, setHasInitialized] = useState<boolean>(false); // Novo estado
+  const [hasInitialized, setHasInitialized] = useState<boolean>(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,22 +44,32 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const currentAccount = await getCurrentUser();
 
       if (currentAccount) {
+        // VERIFICAR E INICIALIZAR lastSeen SE NECESSÁRIO
+        let userWithLastSeen = currentAccount;
+        if (!currentAccount.lastSeen) {
+          console.log('Inicializando lastSeen para usuário:', currentAccount.name);
+          const initialized = await initializeUserLastSeen(currentAccount.$id);
+          if (initialized) {
+            userWithLastSeen = initialized;
+          }
+        }
+
         // VERIFICAR SE O USUÁRIO TEM ROLE DEFINIDA
-        let userRole = currentAccount.role;
+        let userRole = userWithLastSeen.role;
         
         // FALLBACK: Se não tem role, verificar por ID (transição)
         if (!userRole) {
-          userRole = await isAdminById(currentAccount.$id) ? 'admin' : 'user';
+          userRole = await isAdminById(userWithLastSeen.$id) ? 'admin' : 'user';
         }
 
         setUser({
-          id: currentAccount.$id,
-          name: currentAccount.name,
-          email: currentAccount.email,
-          username: currentAccount.username || currentAccount.name,
-          imageUrl: currentAccount.imageUrl,
-          bio: currentAccount.bio || "",
-          role: userRole, // DEFINIR ROLE
+          id: userWithLastSeen.$id,
+          name: userWithLastSeen.name,
+          email: userWithLastSeen.email,
+          username: userWithLastSeen.username || userWithLastSeen.name,
+          imageUrl: userWithLastSeen.imageUrl,
+          bio: userWithLastSeen.bio || "",
+          role: userRole,
         });
 
         setIsAuthenticated(true);
@@ -72,16 +82,14 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return false;
     } finally {
       setIsLoading(false);
-      setHasInitialized(true); // Marca como inicializado
+      setHasInitialized(true);
     }
   };
 
   useEffect(() => {
-    // Verificar autenticação na inicialização
     const initializeAuth = async () => {
       const cookieFallback = localStorage.getItem("cookieFallback");
       
-      // Se não tem cookie de sessão, não está autenticado
       if (
         cookieFallback === "[]" ||
         cookieFallback === null ||
@@ -92,26 +100,23 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      // Verificar autenticação
       const isAuth = await checkAuthUser();
       
-      // Se não conseguiu autenticar com cookie válido, limpar e redirecionar
       if (!isAuth && cookieFallback && cookieFallback !== "[]") {
         localStorage.removeItem("cookieFallback");
-        // REMOVIDO: navigate("/sign-in"); // Não forçar redirecionamento aqui
       }
     };
 
     initializeAuth();
-  }, []); // Remove navigate das dependências para evitar loops
+  }, []);
 
+  // HOOKS DE ONLINE STATUS - SÓ EXECUTAR APÓS AUTENTICAÇÃO CONFIRMADA
   useOnlineStatus({
-    updateInterval: 2, // 2 minutos
+    updateInterval: 2,
     enableVisibilityTracking: true,
     enableBeforeUnload: true
   });
 
-  // MODIFICADO: Só navegar para sign-in se não estiver em rota de auth
   useEffect(() => {
     const authRoutes = ["/sign-in", "/sign-up"];
     const isOnAuthRoute = authRoutes.includes(location.pathname);
@@ -144,7 +149,6 @@ export default AuthProvider;
 
 export const useUserContext = () => useContext(AuthContext);
 
-// HOOKS AUXILIARES PARA VERIFICAÇÃO DE PERMISSÕES
 export const useIsAdmin = () => {
   const { user } = useUserContext();
   return user.role === 'admin';
@@ -152,6 +156,5 @@ export const useIsAdmin = () => {
 
 export const useCanAccessAdminFeatures = () => {
   const { user } = useUserContext();
-  // Verificação dupla: por role e por ID (durante transição)
   return user.role === 'admin' || isAdminById(user.id);
 };
