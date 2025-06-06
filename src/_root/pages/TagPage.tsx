@@ -1,6 +1,7 @@
 import EmptyState, { LoadingState, NoAdventuresState } from "@/components/shared/EmptyState";
 import { useAdventureFiltering, usePostFiltering } from "@/hooks/useFiltering";
 
+import BackToTopButton from "@/components/shared/BackToTopButton";
 import { CompactAdventureSelect } from "@/components/shared/AdventureSelect";
 import HeaderBanner from "@/components/shared/HeaderBanner";
 import { Models } from "appwrite";
@@ -264,6 +265,7 @@ const TagPage = () => {
               </button>
             </div>
           )}
+          <BackToTopButton postsCount={finalPosts.length} />
         </div>
       </div>
     </div>

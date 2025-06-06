@@ -2,6 +2,7 @@ import EmptyState, { LoadingState } from "@/components/shared/EmptyState";
 import { Filter, Globe, Lock, Users } from "lucide-react";
 import { useAdventureFiltering, usePostFiltering } from "@/hooks/useFiltering";
 
+import BackToTopButton from "@/components/shared/BackToTopButton";
 import { CompactAdventureSelect } from "@/components/shared/AdventureSelect";
 import HeaderBanner from "@/components/shared/HeaderBanner";
 import { Models } from "appwrite";
@@ -45,11 +46,11 @@ const Home = () => {
     const term = searchTerm.toLowerCase();
     searchFilteredPosts = filteredPosts.filter(post => {
       const title = post.title?.toLowerCase() || '';
-      const captions = Array.isArray(post.captions) 
-        ? post.captions.join(' ').toLowerCase() 
+      const captions = Array.isArray(post.captions)
+        ? post.captions.join(' ').toLowerCase()
         : (post.captions || '').toLowerCase();
       const tags = post.tags?.join(' ').toLowerCase() || '';
-      
+
       return title.includes(term) || captions.includes(term) || tags.includes(term);
     });
   }
@@ -85,10 +86,10 @@ const Home = () => {
   );
 
   // Verificar se usuário tem acesso a conteúdo
-  const hasAccessToContent = isAdmin || 
-                            hasAdventures || 
-                            publicAdventures.length > 0 || 
-                            stats.publicPosts > 0;
+  const hasAccessToContent = isAdmin ||
+    hasAdventures ||
+    publicAdventures.length > 0 ||
+    stats.publicPosts > 0;
 
   // Estados de erro
   if (isErrorPosts || isErrorCreators) {
@@ -112,6 +113,8 @@ const Home = () => {
       </div>
     );
   }
+
+
 
   return (
     <div className="flex flex-1">
@@ -157,8 +160,8 @@ const Home = () => {
                 <button
                   onClick={() => setVisibilityFilter('all')}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${visibilityFilter === 'all'
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-dark-4 text-light-3 hover:bg-dark-3'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-dark-4 text-light-3 hover:bg-dark-3'
                     }`}
                 >
                   <Users className="w-3 h-3 inline mr-1" />
@@ -167,8 +170,8 @@ const Home = () => {
                 <button
                   onClick={() => setVisibilityFilter('public')}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${visibilityFilter === 'public'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-dark-4 text-light-3 hover:bg-dark-3'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-dark-4 text-light-3 hover:bg-dark-3'
                     }`}
                 >
                   <Globe className="w-3 h-3 inline mr-1" />
@@ -177,8 +180,8 @@ const Home = () => {
                 <button
                   onClick={() => setVisibilityFilter('private')}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${visibilityFilter === 'private'
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-dark-4 text-light-3 hover:bg-dark-3'
+                    ? 'bg-orange-500 text-white'
+                    : 'bg-dark-4 text-light-3 hover:bg-dark-3'
                     }`}
                 >
                   <Lock className="w-3 h-3 inline mr-1" />
@@ -238,8 +241,8 @@ const Home = () => {
               <EmptyState
                 type="no_posts"
                 title="Nenhum post encontrado"
-                description={hasAccessToContent 
-                  ? "Ainda não há posts disponíveis para você." 
+                description={hasAccessToContent
+                  ? "Ainda não há posts disponíveis para você."
                   : "Não há posts públicos disponíveis no momento. Entre em contato com um mestre para ser adicionado a uma aventura."
                 }
                 icon="📝"
@@ -326,6 +329,7 @@ const Home = () => {
                     <p className="text-xs text-light-4">Busca</p>
                   </div>
                 )}
+
               </div>
             </div>
           )}
@@ -360,6 +364,7 @@ const Home = () => {
             </div>
           )}
         </div>
+        <BackToTopButton postsCount={finalPosts.length} />
       </div>
     </div>
   );
