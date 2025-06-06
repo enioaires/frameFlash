@@ -2,7 +2,6 @@ import { ChevronDown, ChevronRight, LogOut, X } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 
 import { Button } from "../ui/button";
-import NotificationBell from "./NotificationBell";
 import { TwoColorIcon } from "./TwoColorIcon";
 import { allMenuCategories } from "@/contants";
 import { cn } from "@/lib/utils";
@@ -153,18 +152,6 @@ const OrganizedSidebar = () => {
                 </div>
               </div>
             </Link>
-
-            {/* Notificações */}
-            <div className="flex items-center gap-3 px-4 py-3 bg-dark-3/50 rounded-lg border border-dark-4">
-              <NotificationBell 
-                className="hover:bg-dark-4" 
-                dropdownPosition="left"
-              />
-              <span className="text-sm font-medium text-light-1 flex-1">
-                Notificações
-              </span>
-            </div>
-
             {/* Links principais */}
             {renderLinks(filteredLinks.main)}
 
