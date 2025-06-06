@@ -9,6 +9,7 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
+import NotificationBell from './NotificationBell';
 import { TwoColorIcon } from './TwoColorIcon';
 import { cn } from '@/lib/utils';
 import { isAdmin } from '@/lib/adventures';
@@ -221,12 +222,17 @@ const SlideOutMenu = () => {
               <p className="text-sm text-light-3">@{user.username}</p>
             </div>
           </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="p-2 hover:bg-dark-3 rounded-full transition-colors"
-          >
-            <X className="w-5 h-5 text-light-3" />
-          </button>
+          
+          {/* 🆕 NOVO: Notification Bell no header mobile */}
+          <div className="flex items-center gap-2">
+            <NotificationBell className="hover:bg-dark-3/50" />
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-2 hover:bg-dark-3 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5 text-light-3" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -237,6 +243,7 @@ const SlideOutMenu = () => {
                 {category.title === "RPG" && "🎭"}
                 {category.title === "SISTEMA" && "⚙️"}
                 {category.title === "ADMIN" && "👑"}
+                {category.title === "PRINCIPAL" && "🏠"}
                 {category.title}
               </h3>
 
@@ -327,12 +334,6 @@ export const CompactSlideMenu = () => {
     { icon: Home, route: "/", label: "Início", category: "main" },
     // RPG items
     {
-      icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fac80000f71982f3/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
-      route: "/tag/mundo",
-      label: "O Mundo",
-      category: "rpg"
-    },
-    {
       icon: "https://fra.cloud.appwrite.io/v1/storage/buckets/6839fa5d002fe089d09b/files/6839fad2002b2704740c/view?project=653bbdb36f4fd0fbd9f7&mode=admin",
       route: "/tag/personagens",
       label: "Personagens",
@@ -398,12 +399,15 @@ export const CompactSlideMenu = () => {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-dark-4/50">
           <h2 className="text-lg font-bold text-light-1">Menu Rápido</h2>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="p-1 hover:bg-dark-3 rounded-full"
-          >
-            <X className="w-4 h-4 text-light-3" />
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationBell className="hover:bg-dark-3/50" />
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-1 hover:bg-dark-3 rounded-full"
+            >
+              <X className="w-4 h-4 text-light-3" />
+            </button>
+          </div>
         </div>
 
         {/* Horizontal Scroll Menu */}

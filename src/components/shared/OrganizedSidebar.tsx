@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import { Button } from "../ui/button";
+import NotificationBell from "./NotificationBell";
 import { TwoColorIcon } from "./TwoColorIcon";
 import { allMenuCategories } from "@/contants";
 import { cn } from "@/lib/utils";
@@ -238,6 +239,17 @@ const OrganizedSidebar = () => {
                 </div>
               </div>
             </Link>
+
+            {/* 🆕 NOVO: Notificações no menu lateral */}
+            <div className="flex items-center gap-3 px-4 py-3 bg-dark-3/50 rounded-lg border border-dark-4">
+              <NotificationBell 
+                className="hover:bg-dark-4" 
+                dropdownPosition="left"
+              />
+              <span className="text-sm font-medium text-light-1 flex-1">
+                Notificações
+              </span>
+            </div>
 
             {/* Links principais (Início) */}
             {renderLinks(filteredLinks.main)}

@@ -450,7 +450,6 @@
     @apply w-full h-auto rounded-[24px] object-fill mb-5;
   }
 
-  /* Topbar */
   .topbar {
     @apply sticky top-0 z-50 md:hidden bg-dark-2 w-full;
   }

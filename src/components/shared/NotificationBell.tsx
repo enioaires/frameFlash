@@ -8,9 +8,13 @@ import { useUserContext } from '@/context/AuthContext';
 
 interface NotificationBellProps {
   className?: string;
+  dropdownPosition?: 'left' | 'right' | 'center';
 }
 
-const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) => {
+const NotificationBell: React.FC<NotificationBellProps> = ({ 
+  className = '',
+  dropdownPosition = 'right'
+}) => {
   const { user } = useUserContext();
   const [isOpen, setIsOpen] = useState(false);
   
@@ -22,6 +26,18 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
 
   const closeDropdown = () => {
     setIsOpen(false);
+  };
+
+  const getDropdownPositionClass = () => {
+    switch (dropdownPosition) {
+      case 'left':
+        return 'left-0';
+      case 'center':
+        return 'left-1/2 transform -translate-x-1/2';
+      case 'right':
+      default:
+        return 'right-0';
+    }
   };
 
   return (
@@ -68,8 +84,14 @@ const NotificationBell: React.FC<NotificationBellProps> = ({ className = '' }) =
           />
           
           {/* Dropdown Content */}
-          <div className="absolute right-0 mt-2 z-50">
-            <NotificationDropdown onClose={closeDropdown} />
+          <div className={cn(
+            "absolute mt-2 z-50",
+            getDropdownPositionClass()
+          )}>
+            <NotificationDropdown 
+              onClose={closeDropdown} 
+              position={dropdownPosition}
+            />
           </div>
         </>
       )}

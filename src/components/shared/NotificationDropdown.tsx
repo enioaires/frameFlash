@@ -6,14 +6,19 @@ import { Link } from 'react-router-dom';
 import Loader from './Loader';
 import NotificationItem from './NotificationItem';
 import React from 'react';
+import { cn } from '@/lib/utils';
 import { useToast } from '@/components/ui/use-toast';
 import { useUserContext } from '@/context/AuthContext';
 
 interface NotificationDropdownProps {
   onClose: () => void;
+  position?: 'left' | 'right' | 'center';
 }
 
-const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onClose }) => {
+const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ 
+  onClose, 
+  position = 'right' 
+}) => {
   const { user } = useUserContext();
   const { toast } = useToast();
   
@@ -42,8 +47,44 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ onClose }) 
   const recentNotifications = notifications?.documents || [];
   const unreadNotifications = recentNotifications.filter(n => !n.isRead);
 
+  // Classes de posicionamento baseadas na prop position
+  const getPositionClasses = () => {
+    switch (position) {
+      case 'left':
+        return 'left-0 origin-top-left';
+      case 'center':
+        return 'left-1/2 transform -translate-x-1/2 origin-top';
+      case 'right':
+      default:
+        return 'right-0 origin-top-right';
+    }
+  };
+
+  // Ajustar largura baseado na posição para evitar corte
+  const getWidthClasses = () => {
+    switch (position) {
+      case 'left':
+        return 'w-80 sm:w-96 max-w-[calc(100vw-2rem)]';
+      case 'center':
+        return 'w-80 sm:w-96 max-w-[calc(100vw-2rem)]';
+      case 'right':
+      default:
+        return 'w-80 sm:w-96';
+    }
+  };
+
   return (
-    <div className="w-80 sm:w-96 bg-dark-2 border border-dark-4 rounded-xl shadow-2xl overflow-hidden">
+    <div 
+      className={cn(
+        "bg-dark-2 border border-dark-4 rounded-xl shadow-2xl overflow-hidden",
+        getWidthClasses(),
+        getPositionClasses()
+      )}
+      style={{
+        // Garantir que não saia da viewport
+        maxWidth: position === 'left' ? 'calc(100vw - 20px)' : undefined
+      }}
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-dark-4 bg-dark-1/50">
         <div className="flex items-center gap-2">

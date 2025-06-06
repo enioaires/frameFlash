@@ -19,22 +19,36 @@ const Topbar = () => {
   return (
     <section className="topbar">
       <div className="flex-between py-4 px-5">
-        <div className="flex gap-4 items-center">
+        {/* Logo/Brand (vazio por enquanto) */}
+        <div className="flex-1">
+          {/* Espaço para logo se necessário */}
+        </div>
+
+        {/* Navigation Actions */}
+        <div className="flex gap-3 items-center">
+          {/* Notification Bell */}
           <NotificationBell />
           
+          {/* Sign Out Button */}
           <Button
             variant={"ghost"}
             className="shad-button_ghost"
             onClick={() => signOut()}
+            title="Sair"
           >
             <LogOut className="w-5 h-5" />
           </Button>
           
-          <Link to={`/profile/${user.id}`} className="flex-center gap-3">
+          {/* Profile Link */}
+          <Link 
+            to={`/profile/${user.id}`} 
+            className="flex-center gap-3 hover:opacity-80 transition-opacity"
+            title={`Perfil de ${user.name}`}
+          >
             <img
               src={user.imageUrl || "/assets/images/profile-placeholder.svg"}
-              alt="avatar"
-              className="h-8 w-8 rounded-full"
+              alt={`Avatar de ${user.name}`}
+              className="h-8 w-8 rounded-full object-cover border border-dark-4"
             />
           </Link>
         </div>
