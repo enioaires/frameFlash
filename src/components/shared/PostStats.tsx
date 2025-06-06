@@ -22,11 +22,11 @@ type PostStatsProps = {
   isCommentsExpanded?: boolean;
 };
 
-const PostStats = ({ 
-  post, 
-  userId, 
+const PostStats = ({
+  post,
+  userId,
   onCommentsToggle,
-  isCommentsExpanded = false 
+  isCommentsExpanded = false
 }: PostStatsProps) => {
   const location = useLocation();
   const likesList = post.likes.map((user: Models.Document) => user.$id);
@@ -44,7 +44,7 @@ const PostStats = ({
 
   // Determinar se estamos na página de detalhes
   const isDetailPage = location.pathname.startsWith('/posts/');
-  
+
   const savedPostRecord = currentUser?.save.find(
     (record: Models.Document) => record.post.$id === post.$id
   );
@@ -82,7 +82,7 @@ const PostStats = ({
 
   const handleCommentsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
+
     if (isDetailPage && onCommentsToggle) {
       // Na página de detalhes, toggle inline
       onCommentsToggle();
@@ -106,15 +106,15 @@ const PostStats = ({
           >
             <div className={cn(
               "p-2 rounded-full transition-all duration-200",
-              isLiked 
-                ? "bg-red-500/20 text-red-500" 
+              isLiked
+                ? "bg-red-500/20 text-red-500"
                 : "hover:bg-dark-3 text-light-3 hover:text-red-400"
             )}>
-              <Heart 
+              <Heart
                 className={cn(
                   "w-5 h-5 transition-all duration-200",
                   isLiked && "fill-current"
-                )} 
+                )}
               />
             </div>
             <span className={cn(
@@ -151,15 +151,15 @@ const PostStats = ({
         >
           <div className={cn(
             "p-2 rounded-full transition-all duration-200",
-            isSaved 
-              ? "bg-primary-500/20 text-primary-500" 
+            isSaved
+              ? "bg-primary-500/20 text-primary-500"
               : "hover:bg-dark-3 text-light-3 hover:text-primary-500"
           )}>
-            <Bookmark 
+            <Bookmark
               className={cn(
                 "w-5 h-5 transition-all duration-200",
                 isSaved && "fill-current"
-              )} 
+              )}
             />
           </div>
         </button>

@@ -178,3 +178,47 @@ export interface IUserWithOnlineStatus extends IUser {
   lastSeen?: string;
   isOnline?: boolean;
 }
+
+export type INotification = {
+  id: string;
+  type: 'like' | 'comment' | 'reply';
+  recipientUserId: string;
+  triggerUserId: string;
+  postId?: string;
+  commentId?: string;
+  parentCommentId?: string;
+  message: string;
+  isRead: boolean;
+  $createdAt: string;
+  $updatedAt: string;
+};
+
+export type INewNotification = {
+  type: 'like' | 'comment' | 'reply';
+  recipientUserId: string;
+  triggerUserId: string;
+  postId?: string;
+  commentId?: string;
+  parentCommentId?: string;
+  message: string;
+};
+
+export type IUpdateNotification = {
+  notificationId: string;
+  isRead?: boolean;
+};
+
+export type NotificationType = 'like' | 'comment' | 'reply';
+
+export interface INotificationWithUsers extends INotification {
+  triggerUser?: {
+    id: string;
+    name: string;
+    username: string;
+    imageUrl: string;
+  };
+  post?: {
+    id: string;
+    title: string;
+  };
+}

@@ -20,7 +20,10 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { QUERY_KEYS } from "../queryKeys";
+import { buildNotificationMessage } from "@/lib/appwrite/notifications/api";
 import { getCurrentUser } from "@/lib/appwrite/auth/api";
+import { useCreateNotification } from "@/lib/react-query/notifications";
+import { useGetUsers } from "@/lib/react-query/user";
 
 // ==================== HOOKS DE POSTS EXISTENTES ====================
 
@@ -51,13 +54,16 @@ export const useCreatePost = () => {
 
 export const useLikePost = () => {
   const queryClient = useQueryClient();
+  const { mutate: createNotification } = useCreateNotification();
+  const { data: usersData } = useGetUsers(); // Para buscar nome do usuário
 
   return useMutation({
     mutationFn: ({ postId, likesArray }: {
       postId: string;
-      likesArray: string[]
+      likesArray: string[];
     }) => likePost(postId, likesArray),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      // Lógica existente de invalidação...
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id],
       });
@@ -73,6 +79,45 @@ export const useLikePost = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POSTS_BY_ADVENTURES],
       });
+
+      // 🆕 NOVA LÓGICA DE NOTIFICAÇÃO
+      // Buscar dados do post do cache
+      const postData = queryClient.getQueryData([QUERY_KEYS.GET_POST_BY_ID, variables.postId]) as any;
+      
+      if (postData && usersData?.documents) {
+        // Determinar se foi like ou unlike comparando arrays
+        const previousLikes = postData.likes?.map((like: any) => like.$id) || [];
+        const newLikes = variables.likesArray;
+        
+        // Se o array novo é maior, foi um like
+        const wasLiked = newLikes.length > previousLikes.length;
+        
+        if (wasLiked) {
+          // Encontrar quem curtiu (usuário que está no novo array mas não no anterior)
+          const likerUserId = newLikes.find(userId => !previousLikes.includes(userId));
+          
+          if (likerUserId && likerUserId !== postData.creator?.$id) {
+            // Buscar dados do usuário que curtiu
+            const triggerUser = usersData.documents.find(u => u.$id === likerUserId);
+            
+            if (triggerUser) {
+              const message = buildNotificationMessage(
+                'like',
+                triggerUser.name,
+                postData.title
+              );
+
+              createNotification({
+                type: 'like',
+                recipientUserId: postData.creator.$id,
+                triggerUserId: likerUserId,
+                postId: postData.$id,
+                message
+              });
+            }
+          }
+        }
+      }
     },
   });
 }

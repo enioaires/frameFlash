@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "../ui/button";
 import { LogOut } from "lucide-react";
+import NotificationBell from "./NotificationBell";
 import { useEffect } from "react";
 import { useSignOutAccount } from "@/lib/react-query/auth";
 import { useUserContext } from "@/context/AuthContext";
@@ -18,7 +19,9 @@ const Topbar = () => {
   return (
     <section className="topbar">
       <div className="flex-between py-4 px-5">
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
+          <NotificationBell />
+          
           <Button
             variant={"ghost"}
             className="shad-button_ghost"
@@ -26,6 +29,7 @@ const Topbar = () => {
           >
             <LogOut className="w-5 h-5" />
           </Button>
+          
           <Link to={`/profile/${user.id}`} className="flex-center gap-3">
             <img
               src={user.imageUrl || "/assets/images/profile-placeholder.svg"}

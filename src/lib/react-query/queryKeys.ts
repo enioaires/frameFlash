@@ -45,6 +45,9 @@ export enum QUERY_KEYS {
 
   GET_USERS_WITH_LAST_SEEN = "getUsersWithLastSeen",
   UPDATE_USER_LAST_SEEN = "updateUserLastSeen",
+
+  GET_NOTIFICATIONS = "getNotifications",
+  GET_UNREAD_COUNT = "getUnreadCount",
 }
 
 export const queryKeys = {
