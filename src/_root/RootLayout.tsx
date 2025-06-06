@@ -7,7 +7,7 @@ import Topbar from "@/components/shared/Topbar";
 const RootLayout = () => {
   return (
     <SidebarProvider>
-      <div className="w-full">
+      <div className="w-full  overflow-hidden">
         <Topbar />
         <OrganizedSidebar />
 
