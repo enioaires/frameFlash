@@ -3,6 +3,7 @@ import {
   ChevronUp,
   Crown,
   Home,
+  Menu,
   Plus,
   X,
 } from 'lucide-react';
@@ -188,7 +189,7 @@ const SlideOutMenu = () => {
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 bg-primary-500 hover:bg-primary-600 rounded-full shadow-lg flex items-center justify-center z-50 md:hidden"
       >
-        <ChevronUp className="w-6 h-6 text-white" />
+        <Menu className="w-6 h-6 text-white" />
       </button>
 
       {/* Overlay */}
