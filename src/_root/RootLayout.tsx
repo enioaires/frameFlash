@@ -7,14 +7,14 @@ import Topbar from "@/components/shared/Topbar";
 const RootLayout = () => {
   return (
     <SidebarProvider>
-      <div className="w-full  overflow-hidden">
+      <div className="w-full flex flex-col h-full">
         <Topbar />
         <OrganizedSidebar />
-
-        <section className="flex flex-1 h-full w-full">
-          <Outlet />
-        </section>
-
+        <div className="flex-1 overflow-hidden">
+          <section className="flex flex-1 h-full w-full">
+            <Outlet />
+          </section>
+        </div>
         <SlideOutMenu />
       </div>
     </SidebarProvider>

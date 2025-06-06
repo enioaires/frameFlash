@@ -443,15 +443,11 @@
 
   /* Post Card */
   .post-card {
-    @apply bg-dark-2 rounded-3xl border border-dark-4 p-5 lg:p-7 w-full max-w-screen-xl;
+    @apply bg-dark-2 rounded-3xl border border-dark-4 p-5 lg:p-7 max-w-xs sm:max-w-full;
   }
 
   .post-card_img {
     @apply w-full h-auto rounded-[24px] object-fill mb-5;
-  }
-
-  .topbar {
-    @apply sticky top-0 z-50 md:hidden bg-dark-2 w-full;
   }
 
   /* User card */

@@ -2,7 +2,6 @@ import EmptyState, { LoadingState, NoAdventuresState } from "@/components/shared
 import { useAdventureFiltering, usePostFiltering } from "@/hooks/useFiltering";
 
 import BackToTopButton from "@/components/shared/BackToTopButton";
-import { CompactAdventureSelect } from "@/components/shared/AdventureSelect";
 import HeaderBanner from "@/components/shared/HeaderBanner";
 import { Models } from "appwrite";
 import PostCard from "@/components/shared/PostCard";
@@ -31,7 +30,7 @@ const TagPage = () => {
     isLoading: isPostLoading,
     isError: isErrorPosts,
   } = useGetPostsByTag(tag || "");
-  
+
   // Filtrar posts baseado nas aventuras do usuário
   const { filteredPosts } = usePostFiltering(allTagPosts?.documents || []);
 
@@ -41,11 +40,11 @@ const TagPage = () => {
     const term = searchTerm.toLowerCase();
     searchFilteredPosts = filteredPosts.filter(post => {
       const title = post.title?.toLowerCase() || '';
-      const captions = Array.isArray(post.captions) 
-        ? post.captions.join(' ').toLowerCase() 
+      const captions = Array.isArray(post.captions)
+        ? post.captions.join(' ').toLowerCase()
         : (post.captions || '').toLowerCase();
       const tags = post.tags?.join(' ').toLowerCase() || '';
-      
+
       return title.includes(term) || captions.includes(term) || tags.includes(term);
     });
   }
@@ -53,8 +52,8 @@ const TagPage = () => {
   // Posts finais (considerando filtro por aventura específica)
   const finalPosts = selectedAdventure
     ? searchFilteredPosts.filter((post: Models.Document) =>
-        post.adventures && post.adventures.includes(selectedAdventure)
-      )
+      post.adventures && post.adventures.includes(selectedAdventure)
+    )
     : searchFilteredPosts;
 
   // Encontrar aventura selecionada
@@ -105,7 +104,7 @@ const TagPage = () => {
   return (
     <div className="flex flex-1">
       <div className="flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar">
-        <div className="w-full max-w-6xl">
+        <div className="w-full max-w-7xl">
           <HeaderBanner
             type="tag"
             identifier={tag}
@@ -113,36 +112,13 @@ const TagPage = () => {
           />
         </div>
 
-        <div className="home-posts">
+        <div className="home-posts"> {/* Adicione w-full aqui */}
           {/* Header com filtro */}
           <div className="flex flex-col gap-4 w-full mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="h3-bold md:h2-bold text-left">
-                  Posts com a tag "{capitalizeTag(tag)}"
-                </h2>
-                {(selectedAdventure && selectedAdventureData) || searchTerm ? (
-                  <p className="text-light-4 text-sm mt-1">
-                    {searchTerm && (
-                      <>Busca: <span className="text-blue-400">"{searchTerm}"</span></>
-                    )}
-                    {searchTerm && selectedAdventure && " • "}
-                    {selectedAdventure && selectedAdventureData && (
-                      <>Aventura: <span className="text-primary-500">{selectedAdventureData.title}</span></>
-                    )}
-                  </p>
-                ) : null}
-              </div>
-
-              {/* Filtro por aventura */}
-              {activeUserAdventures.length > 0 && (
-                <CompactAdventureSelect
-                  adventures={activeUserAdventures}
-                  value={selectedAdventure}
-                  onChange={setSelectedAdventure}
-                  className="w-full sm:w-64"
-                />
-              )}
+              <h2 className="h3-bold md:h2-bold text-left">
+                Posts com a tag "{capitalizeTag(tag)}"
+              </h2>
             </div>
 
             {/* Input de Busca */}
@@ -265,8 +241,8 @@ const TagPage = () => {
               </button>
             </div>
           )}
-          <BackToTopButton postsCount={finalPosts.length} />
         </div>
+        <BackToTopButton postsCount={finalPosts.length} />
       </div>
     </div>
   );

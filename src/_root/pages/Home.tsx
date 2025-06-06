@@ -1,9 +1,7 @@
 import EmptyState, { LoadingState } from "@/components/shared/EmptyState";
-import { Filter, Globe, Lock, Users } from "lucide-react";
 import { useAdventureFiltering, usePostFiltering } from "@/hooks/useFiltering";
 
 import BackToTopButton from "@/components/shared/BackToTopButton";
-import { CompactAdventureSelect } from "@/components/shared/AdventureSelect";
 import HeaderBanner from "@/components/shared/HeaderBanner";
 import { Models } from "appwrite";
 import PostCard from "@/components/shared/PostCard";
@@ -132,16 +130,6 @@ const Home = () => {
           <div className="flex flex-col gap-4 w-full mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <h2 className="h3-bold md:h2-bold text-left">Publicações Recentes</h2>
-
-              {/* Filtro por aventura */}
-              {(activeUserAdventures.length > 0 || publicAdventures.length > 0) && (
-                <CompactAdventureSelect
-                  adventures={[...activeUserAdventures, ...publicAdventures]}
-                  value={selectedAdventure}
-                  onChange={setSelectedAdventure}
-                  className="w-full sm:w-64"
-                />
-              )}
             </div>
 
             {/* Input de Busca */}
@@ -151,43 +139,6 @@ const Home = () => {
                 onChange={setSearchTerm}
                 placeholder="Buscar posts por título, legenda ou tags..."
               />
-            </div>
-
-            {/* Filtros de Visibilidade */}
-            <div className="flex items-center gap-3">
-              <Filter className="w-4 h-4 text-light-4" />
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setVisibilityFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${visibilityFilter === 'all'
-                    ? 'bg-primary-500 text-white'
-                    : 'bg-dark-4 text-light-3 hover:bg-dark-3'
-                    }`}
-                >
-                  <Users className="w-3 h-3 inline mr-1" />
-                  Todos
-                </button>
-                <button
-                  onClick={() => setVisibilityFilter('public')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${visibilityFilter === 'public'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-dark-4 text-light-3 hover:bg-dark-3'
-                    }`}
-                >
-                  <Globe className="w-3 h-3 inline mr-1" />
-                  Públicos
-                </button>
-                <button
-                  onClick={() => setVisibilityFilter('private')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${visibilityFilter === 'private'
-                    ? 'bg-orange-500 text-white'
-                    : 'bg-dark-4 text-light-3 hover:bg-dark-3'
-                    }`}
-                >
-                  <Lock className="w-3 h-3 inline mr-1" />
-                  Restritos
-                </button>
-              </div>
             </div>
           </div>
 
@@ -252,7 +203,7 @@ const Home = () => {
           ) : (
             <ul className="flex flex-col flex-1 gap-9 w-full">
               {finalPosts.map((post: Models.Document) => (
-                <li key={post.$id} className="flex justify-center w-full">
+                <li key={post.$id}>
                   <PostCard post={post} />
                 </li>
               ))}
@@ -293,74 +244,6 @@ const Home = () => {
                   Limpar filtros
                 </button>
               )}
-            </div>
-          )}
-
-          {/* Stats de filtragem para admins */}
-          {isAdmin && allPosts?.documents && (
-            <div className="mt-6 p-4 bg-dark-4/50 rounded-lg border border-dark-4">
-              <p className="text-light-4 text-xs text-center mb-2">
-                <span className="text-primary-500 font-medium">Admin - Estatísticas:</span>
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-center">
-                <div>
-                  <p className="text-lg font-bold text-light-1">{stats.totalPosts}</p>
-                  <p className="text-xs text-light-4">Total</p>
-                </div>
-                <div>
-                  <p className="text-lg font-bold text-green-400">{stats.visiblePosts}</p>
-                  <p className="text-xs text-light-4">Visíveis</p>
-                </div>
-                <div>
-                  <p className="text-lg font-bold text-blue-400">{stats.publicPosts}</p>
-                  <p className="text-xs text-light-4">Públicos</p>
-                </div>
-                <div>
-                  <p className="text-lg font-bold text-cyan-400">{stats.publicAdventurePosts}</p>
-                  <p className="text-xs text-light-4">Aventuras Públicas</p>
-                </div>
-                <div>
-                  <p className="text-lg font-bold text-orange-400">{stats.privatePosts}</p>
-                  <p className="text-xs text-light-4">Privados</p>
-                </div>
-                {searchTerm && (
-                  <div>
-                    <p className="text-lg font-bold text-yellow-400">{finalPosts.length}</p>
-                    <p className="text-xs text-light-4">Busca</p>
-                  </div>
-                )}
-
-              </div>
-            </div>
-          )}
-
-          {/* Informações sobre aventuras públicas disponíveis */}
-          {!isAdmin && publicAdventures.length > 0 && (
-            <div className="mt-6 p-4 bg-blue-500/10 rounded-lg border border-blue-500/30">
-              <h3 className="text-blue-400 font-medium mb-2 flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                Aventuras Públicas Disponíveis
-              </h3>
-              <p className="text-light-4 text-sm mb-3">
-                Estas aventuras estão abertas para todos verem posts:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {publicAdventures.slice(0, 3).map((adventure) => (
-                  <div key={adventure.$id} className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/20 rounded-full text-sm">
-                    <img
-                      src={adventure.imageUrl || '/assets/icons/profile-placeholder.svg'}
-                      alt={adventure.title}
-                      className="w-4 h-4 rounded object-cover"
-                    />
-                    <span className="text-blue-300">{adventure.title}</span>
-                  </div>
-                ))}
-                {publicAdventures.length > 3 && (
-                  <span className="text-blue-400 text-sm py-1.5">
-                    +{publicAdventures.length - 3} mais
-                  </span>
-                )}
-              </div>
             </div>
           )}
         </div>
