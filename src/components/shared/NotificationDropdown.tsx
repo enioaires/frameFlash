@@ -60,31 +60,24 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
     }
   };
 
-  // Ajustar largura baseado na posição para evitar corte
-  const getWidthClasses = () => {
-    switch (position) {
-      case 'left':
-        return 'w-80 sm:w-96 max-w-[calc(100vw-2rem)]';
-      case 'center':
-        return 'w-80 sm:w-96 max-w-[calc(100vw-2rem)]';
-      case 'right':
-      default:
-        return 'w-80 sm:w-96';
-    }
-  };
-
   return (
     <div 
-      className={cn(
-        "bg-dark-2 border border-dark-4 rounded-xl shadow-2xl overflow-hidden",
-        getWidthClasses(),
-        getPositionClasses()
-      )}
-      style={{
-        // Garantir que não saia da viewport
-        maxWidth: position === 'left' ? 'calc(100vw - 20px)' : undefined
-      }}
-    >
+    className={cn(
+      "bg-dark-2 border border-dark-4 rounded-xl shadow-2xl overflow-hidden",
+      // Classes base
+      "w-[95vw] sm:w-96",
+      // Mobile: centralizado na tela
+      "fixed top-[200px] left-1/2 -translate-x-1/2 -translate-y-1/2",
+      // Desktop: posicionamento normal
+      "sm:static sm:translate-x-0 sm:translate-y-0",
+      // Desktop: posicionamento específico
+      "sm:" + getPositionClasses(),
+    )}
+    style={{
+      maxWidth: position === 'left' ? 'calc(100vw - 20px)' : undefined,
+      zIndex: 50
+    }}
+  >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-dark-4 bg-dark-1/50">
         <div className="flex items-center gap-2">
