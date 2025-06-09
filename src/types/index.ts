@@ -186,7 +186,6 @@ export type INotification = {
   triggerUserId: string;
   postId?: string;
   commentId?: string;
-  parentCommentId?: string;
   message: string;
   isRead: boolean;
   $createdAt: string;
@@ -199,7 +198,6 @@ export type INewNotification = {
   triggerUserId: string;
   postId?: string;
   commentId?: string;
-  parentCommentId?: string;
   message: string;
 };
 

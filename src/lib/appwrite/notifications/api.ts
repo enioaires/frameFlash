@@ -26,7 +26,6 @@ export async function createNotification(notification: INewNotification) {
         triggerUserId: notification.triggerUserId,
         postId: notification.postId || null,
         commentId: notification.commentId || null,
-        parentCommentId: notification.parentCommentId || null,
         message: notification.message,
         isRead: false,
       }

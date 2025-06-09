@@ -67,17 +67,15 @@ export const useCreateComment = () => {
         queryKey: [COMMENT_QUERY_KEYS.GET_COMMENTS_COUNT, variables.postId],
       });
 
-      // Lógica de notificação melhorada
       try {
         console.log('🔔 Processing comment notification...', variables);
 
         const { userId, postId, parentCommentId } = variables;
 
-        // Buscar dados necessários
         const notificationData = await ensureNotificationData(
           queryClient,
           userId,
-          parentCommentId ? 'pending' : 'pending', // Será determinado abaixo
+          'pending',
           postId
         );
 
@@ -89,10 +87,8 @@ export const useCreateComment = () => {
         const { triggerUser, post } = notificationData;
 
         if (parentCommentId) {
-          // É uma RESPOSTA - notificar autor do comentário original
           let parentComment = null;
 
-          // Buscar comentário pai do cache
           const commentsCache = queryClient.getQueryData([COMMENT_QUERY_KEYS.GET_COMMENTS_BY_POST, postId]) as any;
           parentComment = commentsCache?.documents?.find((c: any) => c.$id === parentCommentId);
 
@@ -106,7 +102,6 @@ export const useCreateComment = () => {
             return;
           }
 
-          // Verificar se não é auto-resposta
           if (parentComment.userId === userId) {
             console.log('⏭️ Skipping self-reply notification');
             return;
@@ -124,7 +119,6 @@ export const useCreateComment = () => {
             triggerUserId: userId,
             postId,
             commentId: data.$id,
-            parentCommentId,
             message
           };
 
@@ -132,9 +126,6 @@ export const useCreateComment = () => {
           await createNotificationWithRetry(createNotification, replyNotificationData);
 
         } else {
-          // É um COMENTÁRIO - notificar criador do post
-
-          // Verificar se não é auto-comentário
           if (post.creator.$id === userId) {
             console.log('⏭️ Skipping self-comment notification');
             return;
