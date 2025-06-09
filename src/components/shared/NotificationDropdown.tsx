@@ -1,8 +1,7 @@
-import { Bell, Check, ExternalLink } from 'lucide-react';
+import { Bell, Check } from 'lucide-react';
 import { useGetNotifications, useNotificationActions } from '@/lib/react-query/notifications';
 
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
 import Loader from './Loader';
 import NotificationItem from './NotificationItem';
 import React from 'react';
@@ -160,20 +159,6 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      {recentNotifications.length > 0 && (
-        <div className="p-3 border-t border-dark-4 bg-dark-1/30">
-          <Link
-            to="/notifications"
-            onClick={onClose}
-            className="flex items-center justify-center gap-2 w-full py-2 text-sm text-primary-500 hover:text-primary-400 transition-colors group"
-          >
-            <span>Ver todas as notificações</span>
-            <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-        </div>
-      )}
     </div>
   );
 };
