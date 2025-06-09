@@ -7,12 +7,11 @@ import {
   getCommentsCount,
   updateComment
 } from "@/lib/appwrite/comments/api";
+import { createNotificationWithRetry, ensureNotificationData } from "@/lib/notifications";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { QUERY_KEYS } from "../queryKeys";
 import { buildNotificationMessage } from "@/lib/appwrite/notifications/api";
 import { useCreateNotification } from "@/lib/react-query/notifications";
-import { useGetUsers } from "@/lib/react-query/user";
 
 // ==================== QUERY KEYS ====================
 
@@ -56,79 +55,112 @@ export const useGetCommentsCount = (postId: string) => {
 export const useCreateComment = () => {
   const queryClient = useQueryClient();
   const { mutate: createNotification } = useCreateNotification();
-  const { data: usersData } = useGetUsers(); // Para buscar nome do usuário
 
   return useMutation({
     mutationFn: (comment: INewComment) => createComment(comment),
-    onSuccess: (data, variables) => {
-      // Lógica existente de invalidação...
+    onSuccess: async (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: [COMMENT_QUERY_KEYS.GET_COMMENTS_BY_POST, variables.postId],
       });
-      
+
       queryClient.invalidateQueries({
         queryKey: [COMMENT_QUERY_KEYS.GET_COMMENTS_COUNT, variables.postId],
       });
 
-      // 🆕 NOVA LÓGICA DE NOTIFICAÇÃO
-      const { userId, postId, parentCommentId } = variables;
-      
-      // Buscar dados do usuário que comentou
-      const triggerUser = usersData?.documents.find(u => u.$id === userId);
-      
-      if (triggerUser) {
+      // Lógica de notificação melhorada
+      try {
+        console.log('🔔 Processing comment notification...', variables);
+
+        const { userId, postId, parentCommentId } = variables;
+
+        // Buscar dados necessários
+        const notificationData = await ensureNotificationData(
+          queryClient,
+          userId,
+          parentCommentId ? 'pending' : 'pending', // Será determinado abaixo
+          postId
+        );
+
+        if (!notificationData) {
+          console.error('❌ Failed to get notification data');
+          return;
+        }
+
+        const { triggerUser, post } = notificationData;
+
         if (parentCommentId) {
           // É uma RESPOSTA - notificar autor do comentário original
-          
-          // Buscar comentário pai para obter o autor original
-          const commentsData = queryClient.getQueryData([COMMENT_QUERY_KEYS.GET_COMMENTS_BY_POST, postId]) as any;
-          const parentComment = commentsData?.documents?.find(
-            (comment: any) => comment.$id === parentCommentId
-          );
-          
-          const postData = queryClient.getQueryData([QUERY_KEYS.GET_POST_BY_ID, postId]) as any;
-          
-          if (parentComment && parentComment.userId !== userId && postData) {
-            const message = buildNotificationMessage(
-              'reply',
-              triggerUser.name,
-              postData?.title
-            );
+          let parentComment = null;
 
-            createNotification({
-              type: 'reply',
-              recipientUserId: parentComment.userId,
-              triggerUserId: userId,
-              postId,
-              commentId: data.$id,
-              parentCommentId,
-              message
-            });
+          // Buscar comentário pai do cache
+          const commentsCache = queryClient.getQueryData([COMMENT_QUERY_KEYS.GET_COMMENTS_BY_POST, postId]) as any;
+          parentComment = commentsCache?.documents?.find((c: any) => c.$id === parentCommentId);
+
+          if (!parentComment) {
+            console.log('🔄 Parent comment not in cache, fetching from API...');
+            parentComment = await getCommentById(parentCommentId);
           }
-            
+
+          if (!parentComment) {
+            console.error('❌ Parent comment not found:', parentCommentId);
+            return;
+          }
+
+          // Verificar se não é auto-resposta
+          if (parentComment.userId === userId) {
+            console.log('⏭️ Skipping self-reply notification');
+            return;
+          }
+
+          const message = buildNotificationMessage(
+            'reply',
+            triggerUser.name,
+            post.title
+          );
+
+          const replyNotificationData = {
+            type: 'reply',
+            recipientUserId: parentComment.userId,
+            triggerUserId: userId,
+            postId,
+            commentId: data.$id,
+            parentCommentId,
+            message
+          };
+
+          console.log('📤 Creating reply notification:', replyNotificationData);
+          await createNotificationWithRetry(createNotification, replyNotificationData);
+
         } else {
           // É um COMENTÁRIO - notificar criador do post
-          
-          // Buscar dados do post
-          const postData = queryClient.getQueryData([QUERY_KEYS.GET_POST_BY_ID, postId]) as any;
-          
-          if (postData && postData?.creator?.$id !== userId) {
-            const message = buildNotificationMessage(
-              'comment',
-              triggerUser.name,
-              postData?.title
-            );
 
-            createNotification({
-              type: 'comment',
-              recipientUserId: postData.creator.$id,
-              triggerUserId: userId,
-              postId,
-              commentId: data.$id,
-              message
-            });
+          // Verificar se não é auto-comentário
+          if (post.creator.$id === userId) {
+            console.log('⏭️ Skipping self-comment notification');
+            return;
           }
+
+          const message = buildNotificationMessage(
+            'comment',
+            triggerUser.name,
+            post.title
+          );
+
+          const commentNotificationData = {
+            type: 'comment',
+            recipientUserId: post.creator.$id,
+            triggerUserId: userId,
+            postId,
+            commentId: data.$id,
+            message
+          };
+
+          console.log('📤 Creating comment notification:', commentNotificationData);
+          await createNotificationWithRetry(createNotification, commentNotificationData);
         }
+
+      } catch (error) {
+        console.error('❌ Error in comment notification process:', error);
       }
     },
   });
@@ -136,7 +168,7 @@ export const useCreateComment = () => {
 
 export const useUpdateComment = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (comment: IUpdateComment) => updateComment(comment),
     onSuccess: (data) => {
@@ -144,7 +176,7 @@ export const useUpdateComment = () => {
       queryClient.invalidateQueries({
         queryKey: [COMMENT_QUERY_KEYS.GET_COMMENT_BY_ID, data.$id],
       });
-      
+
       // Invalidar lista de comentários do post
       queryClient.invalidateQueries({
         queryKey: [COMMENT_QUERY_KEYS.GET_COMMENTS_BY_POST, data.postId],
@@ -155,16 +187,16 @@ export const useUpdateComment = () => {
 
 export const useDeleteComment = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ commentId }: { commentId: string; postId: string }) => 
+    mutationFn: ({ commentId }: { commentId: string; postId: string }) =>
       deleteComment(commentId),
     onSuccess: (_data, variables) => {
       // Invalidar lista de comentários do post
       queryClient.invalidateQueries({
         queryKey: [COMMENT_QUERY_KEYS.GET_COMMENTS_BY_POST, variables.postId],
       });
-      
+
       // Invalidar contador de comentários
       queryClient.invalidateQueries({
         queryKey: [COMMENT_QUERY_KEYS.GET_COMMENTS_COUNT, variables.postId],
