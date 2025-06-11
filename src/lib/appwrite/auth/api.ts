@@ -64,41 +64,91 @@ export async function saveUserToDatabase(user: {
 
 export async function signInAccount(user: { email: string; password: string }) {
   try {
-    const session = await account.createEmailSession(user.email, user.password)
+    const session = await account.createEmailSession(user.email, user.password);
+    
+    if (!session) {
+      throw new Error('Failed to create session');
+    }
 
-    return session
+    return session;
   } catch (error) {
-    console.log(error)
+    // Re-throw com mensagem mais clara
+    if (error && typeof error === 'object' && 'type' in error) {
+      const errorType = (error as any).type;
+      if (errorType === 'user_invalid_credentials') {
+        throw new Error('Invalid credentials');
+      }
+      if (errorType === 'user_blocked') {
+        throw new Error('Account blocked');
+      }
+    }
+    
+    throw error;
   }
 }
 
 export async function getCurrentUser() {
   try {
-    const currentAccount = await account.get()
+    const currentAccount = await account.get();
 
-    if (!currentAccount) throw Error
+    if (!currentAccount) throw new Error('No account found');
 
     const currentUser = await database.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
       [Query.equal('accountId', currentAccount.$id)]
-    )
+    );
 
-    if (!currentUser) throw Error
+    if (!currentUser || currentUser.documents.length === 0) {
+      throw new Error('User document not found');
+    }
 
-    return currentUser.documents[0]
+    return currentUser.documents[0];
   } catch (error) {
-    console.log(error)
+    // Não loggar erros de sessão expirada - são normais
+    if (error && typeof error === 'object' && 'code' in error) {
+      const errorCode = (error as any).code;
+      if (errorCode === 401 || errorCode === 'user_session_not_found') {
+        return null; // Sessão expirada, retorna null
+      }
+    }
+    
+    console.error('getCurrentUser error:', error);
+    return null;
   }
 }
 
+
 export async function signOutAccount() {
   try {
-    const session = await account.deleteSession('current')
+    // Tentar deletar sessão atual
+    const session = await account.deleteSession('current');
+    
+    // Limpar storage local
+    try {
+      localStorage.removeItem('cookieFallback');
+    } catch (storageError) {
+      // Ignorar erros de storage
+    }
 
-    return session
+    return session;
   } catch (error) {
-    console.log(error)
+    // Mesmo se falhar, limpar storage local
+    try {
+      localStorage.removeItem('cookieFallback');
+    } catch (storageError) {
+      // Ignorar erros de storage
+    }
+    
+    // Re-throw apenas se não for erro de sessão
+    if (error && typeof error === 'object' && 'code' in error) {
+      const errorCode = (error as any).code;
+      if (errorCode === 401 || errorCode === 'user_session_not_found') {
+        return null; // Sessão já não existia
+      }
+    }
+    
+    throw error;
   }
 }
 
@@ -260,8 +310,8 @@ export async function updateUserLastSeen(userId: string) {
 
     return updatedUser;
   } catch (error) {
-    console.log("Error updating last seen:", error);
-    // Não lançar erro para não quebrar a aplicação
+    // Falhar silenciosamente para não interromper a experiência
+    // console.error("Error updating last seen:", error);
     return null;
   }
 }
@@ -305,7 +355,7 @@ export async function initializeUserLastSeen(userId: string) {
     
     return user;
   } catch (error) {
-    console.log("Error initializing user last seen:", error);
+    console.warn("Error initializing user last seen:", error);
     return null;
   }
 }

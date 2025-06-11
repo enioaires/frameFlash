@@ -1,8 +1,6 @@
-// ATUALIZAR src/context/AuthContext.tsx
-
 import { IContextType, IUser } from "@/types";
-import { createContext, useContext, useEffect, useState } from "react";
-import { getCurrentUser, initializeUserLastSeen } from "@/lib/appwrite/auth/api"; // IMPORTAR A NOVA FUNÇÃO
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { getCurrentUser, initializeUserLastSeen } from "@/lib/appwrite/auth/api";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { isAdminById } from "@/lib/adventures";
@@ -34,12 +32,24 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [hasInitialized, setHasInitialized] = useState<boolean>(false);
+  
+  // Usar refs para evitar múltiplas chamadas simultâneas
+  const initializingRef = useRef<boolean>(false);
+  const checkingAuthRef = useRef<boolean>(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
   const checkAuthUser = async () => {
+    // Evitar múltiplas verificações simultâneas
+    if (checkingAuthRef.current) {
+      console.log('Auth check already in progress, skipping...');
+      return isAuthenticated;
+    }
+
+    checkingAuthRef.current = true;
     setIsLoading(true);
+    
     try {
       const currentAccount = await getCurrentUser();
 
@@ -48,9 +58,13 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         let userWithLastSeen = currentAccount;
         if (!currentAccount.lastSeen) {
           console.log('Inicializando lastSeen para usuário:', currentAccount.name);
-          const initialized = await initializeUserLastSeen(currentAccount.$id);
-          if (initialized) {
-            userWithLastSeen = initialized;
+          try {
+            const initialized = await initializeUserLastSeen(currentAccount.$id);
+            if (initialized) {
+              userWithLastSeen = initialized;
+            }
+          } catch (error) {
+            console.warn('Failed to initialize lastSeen:', error);
           }
         }
 
@@ -59,10 +73,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         
         // FALLBACK: Se não tem role, verificar por ID (transição)
         if (!userRole) {
-          userRole = await isAdminById(userWithLastSeen.$id) ? 'admin' : 'user';
+          userRole = isAdminById(userWithLastSeen.$id) ? 'admin' : 'user';
         }
 
-        setUser({
+        const userData = {
           id: userWithLastSeen.$id,
           name: userWithLastSeen.name,
           email: userWithLastSeen.email,
@@ -70,53 +84,80 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           imageUrl: userWithLastSeen.imageUrl,
           bio: userWithLastSeen.bio || "",
           role: userRole,
-        });
+        };
 
+        setUser(userData);
         setIsAuthenticated(true);
         return true;
       }
 
+      // Se não há usuário autenticado, limpar estado
+      setUser(INITIAL_USER);
+      setIsAuthenticated(false);
       return false;
     } catch (error) {
-      console.log(error);
+      console.error('Auth check error:', error);
+      setUser(INITIAL_USER);
+      setIsAuthenticated(false);
       return false;
     } finally {
       setIsLoading(false);
       setHasInitialized(true);
+      checkingAuthRef.current = false;
     }
   };
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const cookieFallback = localStorage.getItem("cookieFallback");
-      
-      if (
-        cookieFallback === "[]" ||
-        cookieFallback === null ||
-        cookieFallback === undefined
-      ) {
-        setIsLoading(false);
-        setHasInitialized(true);
+      // Evitar múltiplas inicializações
+      if (initializingRef.current) {
+        console.log('Auth initialization already in progress, skipping...');
         return;
       }
 
-      const isAuth = await checkAuthUser();
-      
-      if (!isAuth && cookieFallback && cookieFallback !== "[]") {
+      initializingRef.current = true;
+
+      try {
+        const cookieFallback = localStorage.getItem("cookieFallback");
+        
+        if (
+          cookieFallback === "[]" ||
+          cookieFallback === null ||
+          cookieFallback === undefined
+        ) {
+          setIsLoading(false);
+          setHasInitialized(true);
+          return;
+        }
+
+        const isAuth = await checkAuthUser();
+        
+        // Limpar cookie inválido
+        if (!isAuth && cookieFallback && cookieFallback !== "[]") {
+          console.log('Clearing invalid auth cookie');
+          localStorage.removeItem("cookieFallback");
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
         localStorage.removeItem("cookieFallback");
+        setIsLoading(false);
+        setHasInitialized(true);
+      } finally {
+        initializingRef.current = false;
       }
     };
 
     initializeAuth();
-  }, []);
+  }, []); // Executar apenas uma vez
 
-  // HOOKS DE ONLINE STATUS - SÓ EXECUTAR APÓS AUTENTICAÇÃO CONFIRMADA
+  // Hook de online status - só executar após autenticação
   useOnlineStatus({
     updateInterval: 2,
     enableVisibilityTracking: true,
     enableBeforeUnload: true
   });
 
+  // Navegação automática
   useEffect(() => {
     const authRoutes = ["/sign-in", "/sign-up"];
     const isOnAuthRoute = authRoutes.includes(location.pathname);

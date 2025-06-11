@@ -14,9 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Loader from "@/components/shared/Loader";
 import { SigninSchema } from "@/lib/validation";
-import { account } from "@/lib/appwrite/config"; // MUDANÇA: import estático
+import { account } from "@/lib/appwrite/config";
 import { useForm } from "react-hook-form";
 import { useSignInAccount } from "@/lib/react-query/auth";
+import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,10 +26,10 @@ const SigninForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { checkAuthUser, isLoading } = useUserContext();
+  const { checkAuthUser, isLoading: isContextLoading } = useUserContext();
+  const [isSigningIn, setIsSigningIn] = useState(false);
 
-  const { mutateAsync: signInAccount, isPending: isSigningIn } =
-    useSignInAccount();
+  const { mutateAsync: signInAccount } = useSignInAccount();
 
   const form = useForm<z.infer<typeof SigninSchema>>({
     resolver: zodResolver(SigninSchema),
@@ -38,14 +39,40 @@ const SigninForm = () => {
     },
   });
 
-  async function onSubmit(values: z.infer<typeof SigninSchema>) {
+  // Função para limpar sessões antigas de forma segura
+  const clearExistingSessions = async () => {
     try {
-      // Limpar sessão existente se houver
-      try {
-        await account.deleteSession('current'); // MUDANÇA: usar import estático
-      } catch (error) {
-        // Ignorar erro se não houver sessão
-      }
+      // Múltiplas tentativas de limpeza
+      const cleanupPromises = [
+        // Tentar deletar sessão atual
+        account.deleteSession('current').catch(() => null),
+        // Limpar storage local
+        Promise.resolve().then(() => {
+          try {
+            localStorage.removeItem("cookieFallback");
+          } catch (e) {
+            // Ignorar
+          }
+        })
+      ];
+
+      await Promise.allSettled(cleanupPromises);
+    } catch (error) {
+      // Falhar silenciosamente na limpeza
+    }
+  };
+
+  async function onSubmit(values: z.infer<typeof SigninSchema>) {
+    if (isSigningIn) return; // Evitar submissões duplas
+    
+    setIsSigningIn(true);
+
+    try {
+      // Limpar sessões existentes primeiro
+      await clearExistingSessions();
+
+      // Pequeno delay para garantir limpeza
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const session = await signInAccount({
         email: values.email,
@@ -53,37 +80,60 @@ const SigninForm = () => {
       });
 
       if (!session) {
-        return toast({
-          title: "Erro ao entrar",
-          description: "Verifique suas credenciais e tente novamente.",
-        });
+        throw new Error("Failed to create session");
       }
 
+      // Verificar autenticação
       const isLoggedIn = await checkAuthUser();
 
       if (isLoggedIn) {
         form.reset();
+        
+        // Atualizar cookie de fallback
+        localStorage.setItem("cookieFallback", JSON.stringify(session));
+        
         const from = (location.state as any)?.from?.pathname || "/";
-        navigate(from, { replace: true });
-      } else {
-        return toast({
-          title: "Erro ao entrar",
-          description: "Não foi possível entrar com sua conta, tente novamente.",
+        
+        toast({
+          title: "Login realizado com sucesso!",
+          description: "Bem-vindo de volta!",
         });
+
+        // Pequeno delay antes de navegar para garantir que o estado foi atualizado
+        setTimeout(() => {
+          navigate(from, { replace: true });
+        }, 100);
+      } else {
+        throw new Error("Authentication verification failed");
       }
     } catch (error: any) {
+      console.error('Login error:', error);
+      
       let message = "Ocorreu um erro inesperado.";
       
-      if (error.message?.includes("Invalid credentials") || error.code === 401) {
+      if (error.message?.includes("Invalid credentials") || 
+          error.code === 401 || 
+          error.type === 'user_invalid_credentials') {
         message = "Email ou senha incorretos.";
+      } else if (error.message?.includes("network") || error.name === "NetworkError") {
+        message = "Erro de conexão. Verifique sua internet.";
+      } else if (error.message?.includes("rate")) {
+        message = "Muitas tentativas. Aguarde um momento.";
       }
       
       toast({
         title: "Erro ao entrar",
         description: message,
       });
+
+      // Limpar campos de senha em caso de erro
+      form.setValue("password", "");
+    } finally {
+      setIsSigningIn(false);
     }
   }
+
+  const isLoading = isSigningIn || isContextLoading;
 
   return (
     <Form {...form}>
@@ -104,7 +154,12 @@ const SigninForm = () => {
               <FormItem>
                 <FormLabel>E-mail</FormLabel>
                 <FormControl>
-                  <Input type="email" className="shad-input" {...field} />
+                  <Input 
+                    type="email" 
+                    className="shad-input" 
+                    disabled={isLoading}
+                    {...field} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -118,7 +173,12 @@ const SigninForm = () => {
               <FormItem>
                 <FormLabel>Senha</FormLabel>
                 <FormControl>
-                  <Input type="password" className="shad-input" {...field} />
+                  <Input 
+                    type="password" 
+                    className="shad-input" 
+                    disabled={isLoading}
+                    {...field} 
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -128,11 +188,12 @@ const SigninForm = () => {
           <Button 
             type="submit" 
             className="shad-button_primary"
-            disabled={isSigningIn || isLoading}
+            disabled={isLoading}
           >
-            {isSigningIn || isLoading ? (
-              <div className="flex-center">
-                <Loader />
+            {isLoading ? (
+              <div className="flex-center gap-2">
+                <Loader size="sm" />
+                <span>Entrando...</span>
               </div>
             ) : (
               "Entrar"
@@ -143,7 +204,7 @@ const SigninForm = () => {
             Não possui uma conta?{" "}
             <Link
               to="/sign-up"
-              className="text-primary-500 text-small-semibold ml-1"
+              className="text-primary-500 text-small-semibold ml-1 hover:text-primary-400 transition-colors"
             >
               Registre-se
             </Link>
