@@ -30,11 +30,11 @@ export type INewPost = {
   title: string;
   captions: string[];
   file: File[];
+  audioFile?: File[];
   adventures: string[];
   tags?: string;
 };
 
-// ATUALIZADO: adventures array
 export type IUpdatePost = {
   postId: string;
   title: string;
@@ -42,6 +42,9 @@ export type IUpdatePost = {
   imageId: string;
   imageUrl: URL;
   file: File[];
+  audioFile?: File[];
+  audioId?: string;
+  audioUrl?: string;
   adventures: string[];
   tags?: string;
 };

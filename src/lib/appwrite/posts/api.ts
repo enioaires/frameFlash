@@ -63,6 +63,28 @@ export async function createPost(post: INewPost) {
       throw Error;
     }
 
+    // Upload audio file if provided
+    let audioUrl = null;
+    let audioId = null;
+    
+    if (post.audioFile && post.audioFile.length > 0) {
+      const uploadedAudioFile = await uploadFile(post.audioFile[0]);
+      
+      if (!uploadedAudioFile) {
+        await deleteFile(uploadedFile.$id);
+        throw Error;
+      }
+
+      audioUrl = getAudioFileUrl(uploadedAudioFile.$id);
+      audioId = uploadedAudioFile.$id;
+      
+      if (!audioUrl) {
+        await deleteFile(uploadedFile.$id);
+        await deleteFile(uploadedAudioFile.$id);
+        throw Error;
+      }
+    }
+
     // Convert tags into array
     const tags = post.tags?.replace(/ /g, "").split(",") || [];
 
@@ -89,13 +111,16 @@ export async function createPost(post: INewPost) {
         captions: captions,
         imageUrl: fileUrl,
         imageId: uploadedFile.$id,
-        adventures: adventures, // Can be empty array for public posts
+        audioUrl: audioUrl, // NOVO: URL do áudio
+        audioId: audioId,   // NOVO: ID do áudio
+        adventures: adventures,
         tags: tags,
       }
     );
 
     if (!newPost) {
       await deleteFile(uploadedFile.$id);
+      if (audioId) await deleteFile(audioId);
       throw Error;
     }
 
@@ -107,11 +132,17 @@ export async function createPost(post: INewPost) {
 
 export async function updatePost(post: IUpdatePost) {
   const hasFileToUpdate = post.file.length > 0;
+  const hasAudioToUpdate = post.audioFile && post.audioFile.length > 0;
 
   try {
     let image = {
       imageUrl: post.imageUrl,
       imageId: post.imageId,
+    };
+
+    let audio = {
+      audioUrl: post.audioUrl || null,
+      audioId: post.audioId || null,
     };
 
     if (hasFileToUpdate) {
@@ -127,6 +158,25 @@ export async function updatePost(post: IUpdatePost) {
       }
 
       image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
+    }
+
+    if (hasAudioToUpdate) {
+      // Upload new audio file
+      const uploadedAudioFile = await uploadFile(post.audioFile![0]);
+      if (!uploadedAudioFile) {
+        if (hasFileToUpdate) await deleteFile(image.imageId);
+        throw Error;
+      }
+
+      // Get new audio url
+      const audioUrl = getAudioFileUrl(uploadedAudioFile.$id);
+      if (!audioUrl) {
+        await deleteFile(uploadedAudioFile.$id);
+        if (hasFileToUpdate) await deleteFile(image.imageId);
+        throw Error;
+      }
+
+      audio = { audioUrl: audioUrl.toString(), audioId: uploadedAudioFile.$id };
     }
 
     // Convert tags into array
@@ -154,25 +204,32 @@ export async function updatePost(post: IUpdatePost) {
         captions: captions,
         imageUrl: image.imageUrl,
         imageId: image.imageId,
-        adventures: adventures, // Can be empty array for public posts
+        audioUrl: audio.audioUrl,   // NOVO: URL do áudio
+        audioId: audio.audioId,     // NOVO: ID do áudio
+        adventures: adventures,
         tags: tags,
       }
     );
 
     // Failed to update
     if (!updatedPost) {
-      // Delete new file that has been recently uploaded
+      // Delete new files that have been recently uploaded
       if (hasFileToUpdate) {
         await deleteFile(image.imageId);
       }
+      if (hasAudioToUpdate) {
+        await deleteFile(audio.audioId!);
+      }
 
-      // If no new file uploaded, just throw error
       throw Error;
     }
 
-    // Safely delete old file after successful update
+    // Safely delete old files after successful update
     if (hasFileToUpdate) {
       await deleteFile(post.imageId);
+    }
+    if (hasAudioToUpdate && post.audioId) {
+      await deleteFile(post.audioId);
     }
 
     return updatedPost;
@@ -548,5 +605,20 @@ export async function getRecentPostsPaginated(page: number = 1, limit: number = 
   } catch (error) {
     console.log("Error getting paginated posts:", error);
     throw error;
+  }
+}
+
+export function getAudioFileUrl(fileId: string) {
+  try {
+    const audioUrl = storage.getFileView(
+      appwriteConfig.storageId,
+      fileId
+    );
+
+    if (!audioUrl) throw Error;
+
+    return audioUrl;
+  } catch (error) {
+    console.log(error);
   }
 }

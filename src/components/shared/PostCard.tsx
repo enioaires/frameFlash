@@ -1,3 +1,6 @@
+// Em src/components/shared/PostCard.tsx
+
+import AudioPlayer from "./AudioPlayer"; // ADICIONAR ESTE IMPORT
 import CollapsibleCaption from "./CollapsibleCaption";
 import { Link } from "react-router-dom";
 import { Models } from "appwrite";
@@ -16,7 +19,6 @@ const PostCard = ({ post }: PostCardProps) => {
 
   if (!post.creator) return null;
 
-  // CORREÇÃO: Verificar se o usuário pode editar o post
   const canEdit = user.id === post.creator.$id || userIsAdmin;
 
   return (
@@ -46,7 +48,6 @@ const PostCard = ({ post }: PostCardProps) => {
           </div>
         </div>
         
-        {/* CORREÇÃO: Só mostrar botão de editar se o usuário puder editar */}
         {canEdit && (
           <Link to={`/update-post/${post.$id}`}>
             <img
@@ -69,6 +70,16 @@ const PostCard = ({ post }: PostCardProps) => {
           className="post-card_img"
         />
       </Link>
+
+      {/* Player de áudio - posicionado abaixo da imagem */}
+      {post.audioUrl && (
+        <div className="mt-4">
+          <AudioPlayer 
+            audioUrl={post.audioUrl} 
+            title={post.title}
+          />
+        </div>
+      )}
 
       <div className="text-md py-5">
         <div className="flex flex-col gap-4">

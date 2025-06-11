@@ -16,13 +16,29 @@ export const PostSchema = z.object({
   title: z.string().min(5).max(100),
   captions: z.string().min(1, { message: "A legenda é obrigatória" }),
   file: z.custom<File[]>(),
+  audioFile: z.custom<File[]>().optional(), // NOVO: campo opcional para áudio
   adventures: z.array(z.string()).optional().default([]),
   tags: z.array(z.string()).min(1, { message: "Selecione pelo menos uma tag" }),
-}).refine(() => {
+}).refine((data) => {
+  // Validar formato de áudio se fornecido
+  if (data.audioFile && data.audioFile.length > 0) {
+    const audioFile = data.audioFile[0];
+    const allowedTypes = ['audio/mp3', 'audio/wav', 'audio/ogg', 'audio/mp4', 'audio/mpeg'];
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    
+    if (!allowedTypes.includes(audioFile.type)) {
+      return false;
+    }
+    
+    if (audioFile.size > maxSize) {
+      return false;
+    }
+  }
+  
   return true;
 }, {
-  message: "Selecione pelo menos uma aventura ou deixe vazio para post público",
-  path: ["adventures"]
+  message: "Arquivo de áudio inválido. Use MP3, WAV, OGG ou M4A (máx. 50MB)",
+  path: ["audioFile"]
 });
 
 export const ProfileSchema = z.object({

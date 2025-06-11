@@ -13,6 +13,7 @@ import {
 import { useCreatePost, useUpdatePost } from "@/lib/react-query/posts";
 
 import AdventureMultiSelect from "../shared/AdventureMultiSelect";
+import AudioUploader from "../shared/AudioUploader";
 import { Button } from "../ui/button";
 import FileUploader from "../shared/FileUploader";
 import { Input } from "../ui/input";
@@ -45,7 +46,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
 
   // BUSCAR AVENTURAS DISPONÍVEIS PARA O USUÁRIO
   const { data: userAdventures, isLoading: isLoadingAdventures } = useGetAdventuresForUser(
-    user.id, 
+    user.id,
     user.role
   );
 
@@ -66,7 +67,8 @@ const PostForm = ({ post, action }: PostFormProps) => {
       title: post ? post.title : "",
       captions: post ? (Array.isArray(post.captions) ? post.captions.join('<br>') : post.captions || "") : "",
       file: [],
-      adventures: post ? (post.adventures || []) : [], 
+      audioFile: [],
+      adventures: post ? (post.adventures || []) : [],
       tags: post ? post.tags || [] : [],
     },
   });
@@ -95,10 +97,10 @@ const PostForm = ({ post, action }: PostFormProps) => {
     // VALIDAR SE USUÁRIO PODE POSTAR NAS AVENTURAS SELECIONADAS
     if (!isAdmin(user) && adventures.length > 0) {
       const userAdventureIds = userAdventures?.documents.map(a => a.$id) || [];
-      const canPost = adventures.every(adventureId => 
+      const canPost = adventures.every(adventureId =>
         userAdventureIds.includes(adventureId)
       );
-      
+
       if (!canPost) {
         return toast({
           title: "Erro de permissão",
@@ -114,8 +116,9 @@ const PostForm = ({ post, action }: PostFormProps) => {
         postId: post.$id,
         imageId: post.imageId,
         imageUrl: post.imageUrl,
+        audioId: post.audioId,
+        audioUrl: post.audioUrl,
         adventures: adventures,
-        // Converte o array de tags para string separada por vírgula
         tags: values.tags.join(","),
       });
 
@@ -133,7 +136,6 @@ const PostForm = ({ post, action }: PostFormProps) => {
       captions: prepareCaptions(values.captions),
       userId: user.id,
       adventures: adventures,
-      // Converte o array de tags para string separada por vírgula
       tags: values.tags.join(","),
     });
 
@@ -202,6 +204,25 @@ const PostForm = ({ post, action }: PostFormProps) => {
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="audioFile"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="shad-form_label">
+                Add Áudio (Opcional)
+              </FormLabel>
+              <FormControl>
+                <AudioUploader
+                  fieldChange={field.onChange}
+                  audioUrl={post?.audioUrl}
+                />
+              </FormControl>
+              <FormMessage className="shad-form_message" />
+            </FormItem>
+          )}
+        />
+
         {/* CAMPO AVENTURAS - AGORA OPCIONAL */}
         <FormField
           control={form.control}
@@ -226,25 +247,23 @@ const PostForm = ({ post, action }: PostFormProps) => {
                       placeholder="Selecione aventuras específicas ou deixe vazio para post público..."
                       error={form.formState.errors.adventures?.message}
                     />
-                    
+
                     {/* Indicador de Visibilidade */}
-                    <div className={`p-3 rounded-lg border transition-colors ${
-                      isPublicPost 
-                        ? 'bg-blue-500/10 border-blue-500/30' 
+                    <div className={`p-3 rounded-lg border transition-colors ${isPublicPost
+                        ? 'bg-blue-500/10 border-blue-500/30'
                         : 'bg-green-500/10 border-green-500/30'
-                    }`}>
+                      }`}>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg">
                           {isPublicPost ? '🌍' : '🔒'}
                         </span>
-                        <span className={`font-medium ${
-                          isPublicPost ? 'text-blue-400' : 'text-green-400'
-                        }`}>
+                        <span className={`font-medium ${isPublicPost ? 'text-blue-400' : 'text-green-400'
+                          }`}>
                           {isPublicPost ? 'Post Público' : 'Post Restrito'}
                         </span>
                       </div>
                       <p className="text-xs text-light-4">
-                        {isPublicPost 
+                        {isPublicPost
                           ? 'Este post será visível para todos os usuários da plataforma'
                           : `Este post será visível apenas para participantes das ${field.value?.length || 0} aventura(s) selecionada(s)`
                         }
@@ -256,7 +275,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
               <FormMessage className="shad-form_message" />
               {!isAdmin(user) && (
                 <p className="text-light-4 text-sm mt-1">
-                  {isPublicPost 
+                  {isPublicPost
                     ? 'Posts públicos são visíveis para todos'
                     : 'Você só pode postar em aventuras onde participa'
                   }

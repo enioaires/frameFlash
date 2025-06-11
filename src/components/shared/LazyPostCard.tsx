@@ -21,9 +21,26 @@ export const PostCardSkeleton = () => (
       <div className="h-6 bg-dark-3 rounded w-1/2" />
     </div>
     
-    <div className="w-full h-80 bg-dark-3 rounded-[24px] mb-5 relative overflow-hidden">
+    <div className="w-full h-80 bg-dark-3 rounded-[24px] mb-4 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-dark-2/50 to-transparent animate-shimmer" />
     </div>
+    
+    {/* NOVO: Skeleton para player de áudio (50% chance de aparecer) */}
+    {Math.random() > 0.5 && (
+      <div className="mb-4 bg-dark-3 rounded-lg p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-4 h-4 bg-dark-4 rounded" />
+          <div className="h-3 bg-dark-4 rounded w-24" />
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-dark-4 rounded" />
+          <div className="w-12 h-12 bg-dark-4 rounded-full" />
+          <div className="w-8 h-8 bg-dark-4 rounded" />
+          <div className="flex-1 h-2 bg-dark-4 rounded-full" />
+          <div className="w-16 h-1 bg-dark-4 rounded" />
+        </div>
+      </div>
+    )}
     
     <div className="space-y-2 mb-5">
       <div className="h-4 bg-dark-3 rounded w-full" />

@@ -6,6 +6,7 @@ import {
   useGetUserPosts,
 } from "@/lib/react-query/posts";
 
+import AudioPlayer from "@/components/shared/AudioPlayer";
 import { Button } from "@/components/ui/button";
 import CollapsibleCaption from "@/components/shared/CollapsibleCaption";
 import CommentsSection from "@/components/shared/CommentsSection";
@@ -52,7 +53,7 @@ const PostDetails = () => {
     if (!id || !post) return;
 
     const confirmMessage = `Tem certeza que deseja deletar o post "${post.title}"?\n\nEsta ação não pode ser desfeita.`;
-    
+
     if (confirm(confirmMessage)) {
       deletePost({ postId: id, imageId: post.imageId }, {
         onSuccess: () => {
@@ -119,7 +120,7 @@ const PostDetails = () => {
                 </Button>
               </Link>
             )}
-            
+
             {canDelete && (
               <Button
                 onClick={handleDeletePost}
@@ -147,7 +148,7 @@ const PostDetails = () => {
           <div className="p-6 border-b border-dark-4">
             <div className="flex items-start justify-between mb-4">
               {/* Info do criador */}
-              <Link 
+              <Link
                 to={`/profile/${post.creator.$id}`}
                 className="flex items-center gap-3 hover:opacity-80 transition-opacity"
               >
@@ -174,7 +175,7 @@ const PostDetails = () => {
                     </Button>
                   </Link>
                 )}
-                
+
                 {canDelete && (
                   <Button
                     onClick={handleDeletePost}
@@ -250,12 +251,19 @@ const PostDetails = () => {
               className="w-full h-auto object-cover"
             />
           </div>
-
+          {post.audioUrl && (
+            <div className="px-6 py-4 border-b border-dark-4">
+              <AudioPlayer
+                audioUrl={post.audioUrl}
+                title={post.title}
+              />
+            </div>
+          )}
           {/* Conteúdo */}
           <div className="p-6">
             {/* Legenda */}
             <div className="mb-6">
-              <CollapsibleCaption 
+              <CollapsibleCaption
                 captions={post.captions}
                 maxLines={15}
                 className="text-base leading-relaxed"
