@@ -15,6 +15,7 @@
 }
 
 @layer utilities {
+
   /* TYPOGRAPHY */
   .h1-bold {
     @apply text-[36px] font-bold leading-[140%] tracking-tighter;
@@ -140,75 +141,76 @@
   }
 
   .home-posts {
-    @apply max-w-screen-xl flex flex-col items-center w-full gap-6 md:gap-9;
+    @apply max-w-screen-lg flex flex-col items-center w-full gap-6 md:gap-9;
   }
 
   .home-creators {
-    @apply hidden xl:flex flex-col w-60 2xl:w-60 px-2 py-10 gap-10  overflow-scroll custom-scrollbar;
+    @apply hidden xl:flex flex-col w-60 2xl:w-60 px-2 py-10 gap-10 overflow-scroll custom-scrollbar;
   }
 
   /* Post Details */
   .post-details-container {
     @apply flex flex-col flex-1 items-center gap-10 overflow-scroll py-10 px-5 md:px-8 lg:p-14 custom-scrollbar;
   }
-  
+
   /* Layout responsivo simples */
   .post-details-card {
     @apply bg-dark-2 w-full rounded-3xl border border-dark-4 overflow-hidden;
-    max-width: 1024px; /* max-w-4xl */
+    max-width: 1024px;
+    /* max-w-4xl */
   }
-  
+
   .post-details-image {
     @apply w-full h-auto object-cover;
   }
-  
+
   /* Melhorias na navegação */
   .post-details-back-button {
     @apply flex items-center gap-2 px-4 py-2 text-light-3 hover:text-light-1 transition-colors rounded-lg hover:bg-dark-3;
   }
-  
+
   /* Stats integradas */
   .post-details-stats {
     @apply border-t border-dark-4 pt-6;
   }
-  
+
   /* Comentários integrados */
   .post-details-comments {
     @apply border-t border-dark-4 pt-6 mt-6;
   }
-  
+
   /* Posts relacionados */
   .post-details-related {
     @apply w-full max-w-4xl space-y-6;
   }
-  
+
   .post-details-related-grid {
     @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
   }
-  
+
   /* Melhorias de acessibilidade */
   .post-details-action-button {
     @apply flex items-center gap-2 px-3 py-2 rounded-lg transition-colors;
   }
-  
+
   .post-details-action-button:hover {
     @apply bg-dark-3;
   }
-  
+
   .post-details-action-button.danger:hover {
     @apply bg-red-500/20 text-red-400;
   }
-  
+
   /* Responsividade para mobile */
   @media (max-width: 768px) {
     .post-details-container {
       @apply px-4 py-6 gap-6;
     }
-    
+
     .post-details-card {
       @apply rounded-2xl;
     }
-    
+
     .post-details-image {
       max-height: 50vh;
     }
@@ -224,7 +226,7 @@
   }
 
   .profile-tab {
-    @apply flex-center gap-3 py-4 w-48 bg-dark-2  transition flex-1 xl:flex-initial;
+    @apply flex-center gap-3 py-4 w-48 bg-dark-2 transition flex-1 xl:flex-initial;
   }
 
   /* Saved */
@@ -263,183 +265,186 @@
     @apply absolute bottom-0 p-5 flex-between w-full bg-gradient-to-t from-dark-3 to-transparent rounded-b-[24px] gap-2;
   }
 
-/* Adicione estas classes ao seu globals.css, substituindo ou complementando as existentes */
+  /* Adicione estas classes ao seu globals.css, substituindo ou complementando as existentes */
 
-/* Left sidebar - Responsivo */
-.leftsidebar {
-  @apply px-6 py-10 flex-col min-w-[270px] bg-dark-2 h-screen sticky top-0;
-  display: none; /* Default state for smaller screens */
-}
-
-/* Show sidebar on larger screens */
-@media (min-width: 1440px) {
+  /* Left sidebar - Responsivo */
   .leftsidebar {
-    display: flex;
-  }
-}
-
-/* Hide sidebar on smaller screens (controlled by JS) */
-@media (max-width: 1439px) {
-  .leftsidebar {
+    @apply px-6 py-10 flex-col min-w-[270px] bg-dark-2 h-screen sticky top-0;
     display: none;
+    /* Default state for smaller screens */
   }
-}
 
-/* Menu flutuante específico */
-.floating-sidebar {
-  @apply fixed top-0 left-0 h-screen w-80 bg-dark-2 border-r border-dark-4 z-50 shadow-2xl;
-  transition: transform 0.3s ease-in-out;
-}
-
-.floating-sidebar.open {
-  transform: translateX(0);
-}
-
-.floating-sidebar.closed {
-  transform: translateX(-100%);
-}
-
-/* Botão toggle do menu flutuante */
-.menu-toggle {
-  @apply fixed top-4 left-4 z-50 p-3 bg-dark-2 border border-dark-4 rounded-lg shadow-lg transition-all duration-300;
-  @apply hover:bg-dark-3 hover:border-primary-500/50;
-}
-
-.menu-toggle.active {
-  @apply bg-primary-500 border-primary-500;
-}
-
-/* Overlay para menu flutuante */
-.menu-overlay {
-  @apply fixed inset-0 bg-black/50 z-40 backdrop-blur-sm;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+  /* Show sidebar on larger screens */
+  @media (min-width: 1440px) {
+    .leftsidebar {
+      display: flex;
+    }
   }
-  to {
-    opacity: 1;
+
+  /* Hide sidebar on smaller screens (controlled by JS) */
+  @media (max-width: 1439px) {
+    .leftsidebar {
+      display: none;
+    }
   }
-}
 
-/* Ajustes para o conteúdo principal quando em modo flutuante */
-.main-content-floating {
-  @apply w-full;
-  margin-left: 0 !important;
-}
-
-/* Scrollbar customizada para o menu flutuante */
-.floating-sidebar .custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-
-.floating-sidebar .custom-scrollbar::-webkit-scrollbar-track {
-  background: #09090a;
-}
-
-.floating-sidebar .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #5c5c7b;
-  border-radius: 50px;
-}
-
-.floating-sidebar .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #7878a3;
-}
-
-/* Animações para os itens do menu */
-.floating-sidebar .leftsidebar-link {
-  @apply transition-all duration-200;
-}
-
-.floating-sidebar .leftsidebar-link:hover {
-  @apply transform translate-x-1;
-}
-
-/* Responsividade para telas muito pequenas */
-@media (max-width: 640px) {
+  /* Menu flutuante específico */
   .floating-sidebar {
-    @apply w-full max-w-sm;
+    @apply fixed top-0 left-0 h-screen w-80 bg-dark-2 border-r border-dark-4 z-50 shadow-2xl;
+    transition: transform 0.3s ease-in-out;
   }
-}
 
-/* Estados de carregamento */
-.sidebar-loading {
-  @apply animate-pulse;
-}
-
-.sidebar-loading .user-avatar {
-  @apply bg-dark-3 rounded-full;
-}
-
-.sidebar-loading .menu-item {
-  @apply bg-dark-3 h-4 rounded;
-}
-
-/* Melhorias visuais */
-.floating-sidebar .menu-header {
-  @apply border-b border-dark-4 bg-dark-1/50 backdrop-blur-sm;
-}
-
-.floating-sidebar .menu-content {
-  @apply bg-gradient-to-b from-dark-2 to-dark-1;
-}
-
-/* Indicador visual quando o menu está aberto */
-.menu-open-indicator {
-  @apply absolute -top-1 -right-1 w-3 h-3 bg-primary-500 rounded-full animate-pulse;
-}
-
-/* Transições suaves para mudanças de layout */
-.layout-transition {
-  @apply transition-all duration-300 ease-in-out;
-}
-
-/* Ajustes para o header em modo flutuante */
-@media (max-width: 1439px) {
-  .topbar {
-    @apply pl-20; /* Espaço para o botão do menu */
+  .floating-sidebar.open {
+    transform: translateX(0);
   }
-}
 
-/* Efeitos hover melhorados */
-.floating-menu-item {
-  @apply relative overflow-hidden;
-}
+  .floating-sidebar.closed {
+    transform: translateX(-100%);
+  }
 
-.floating-menu-item::before {
-  content: '';
-  @apply absolute left-0 top-0 h-full w-1 bg-primary-500 transform -translate-x-full transition-transform duration-200;
-}
+  /* Botão toggle do menu flutuante */
+  .menu-toggle {
+    @apply fixed top-4 left-4 z-50 p-3 bg-dark-2 border border-dark-4 rounded-lg shadow-lg transition-all duration-300;
+    @apply hover:bg-dark-3 hover:border-primary-500/50;
+  }
 
-.floating-menu-item:hover::before {
-  @apply transform translate-x-0;
-}
+  .menu-toggle.active {
+    @apply bg-primary-500 border-primary-500;
+  }
 
-.floating-menu-item.active::before {
-  @apply transform translate-x-0 bg-white;
-}
+  /* Overlay para menu flutuante */
+  .menu-overlay {
+    @apply fixed inset-0 bg-black/50 z-40 backdrop-blur-sm;
+    animation: fadeIn 0.3s ease-in-out;
+  }
 
-/* Estados de foco para acessibilidade */
-.menu-toggle:focus-visible {
-  @apply ring-2 ring-primary-500 ring-offset-2 ring-offset-dark-1;
-}
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
 
-.floating-sidebar .leftsidebar-link:focus-visible {
-  @apply ring-2 ring-primary-500 ring-offset-2 ring-offset-dark-2;
-}
+    to {
+      opacity: 1;
+    }
+  }
 
-/* Otimizações de performance */
-.floating-sidebar {
-  will-change: transform;
-  contain: layout style paint;
-}
+  /* Ajustes para o conteúdo principal quando em modo flutuante */
+  .main-content-floating {
+    @apply w-full;
+    margin-left: 0 !important;
+  }
 
-.menu-overlay {
-  will-change: opacity;
-  contain: layout style paint;
-}
+  /* Scrollbar customizada para o menu flutuante */
+  .floating-sidebar .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .floating-sidebar .custom-scrollbar::-webkit-scrollbar-track {
+    background: #09090a;
+  }
+
+  .floating-sidebar .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #5c5c7b;
+    border-radius: 50px;
+  }
+
+  .floating-sidebar .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #7878a3;
+  }
+
+  /* Animações para os itens do menu */
+  .floating-sidebar .leftsidebar-link {
+    @apply transition-all duration-200;
+  }
+
+  .floating-sidebar .leftsidebar-link:hover {
+    @apply transform translate-x-1;
+  }
+
+  /* Responsividade para telas muito pequenas */
+  @media (max-width: 640px) {
+    .floating-sidebar {
+      @apply w-full max-w-sm;
+    }
+  }
+
+  /* Estados de carregamento */
+  .sidebar-loading {
+    @apply animate-pulse;
+  }
+
+  .sidebar-loading .user-avatar {
+    @apply bg-dark-3 rounded-full;
+  }
+
+  .sidebar-loading .menu-item {
+    @apply bg-dark-3 h-4 rounded;
+  }
+
+  /* Melhorias visuais */
+  .floating-sidebar .menu-header {
+    @apply border-b border-dark-4 bg-dark-1/50 backdrop-blur-sm;
+  }
+
+  .floating-sidebar .menu-content {
+    @apply bg-gradient-to-b from-dark-2 to-dark-1;
+  }
+
+  /* Indicador visual quando o menu está aberto */
+  .menu-open-indicator {
+    @apply absolute -top-1 -right-1 w-3 h-3 bg-primary-500 rounded-full animate-pulse;
+  }
+
+  /* Transições suaves para mudanças de layout */
+  .layout-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  /* Ajustes para o header em modo flutuante */
+  @media (max-width: 1439px) {
+    .topbar {
+      @apply pl-20;
+      /* Espaço para o botão do menu */
+    }
+  }
+
+  /* Efeitos hover melhorados */
+  .floating-menu-item {
+    @apply relative overflow-hidden;
+  }
+
+  .floating-menu-item::before {
+    content: '';
+    @apply absolute left-0 top-0 h-full w-1 bg-primary-500 transform -translate-x-full transition-transform duration-200;
+  }
+
+  .floating-menu-item:hover::before {
+    @apply transform translate-x-0;
+  }
+
+  .floating-menu-item.active::before {
+    @apply transform translate-x-0 bg-white;
+  }
+
+  /* Estados de foco para acessibilidade */
+  .menu-toggle:focus-visible {
+    @apply ring-2 ring-primary-500 ring-offset-2 ring-offset-dark-1;
+  }
+
+  .floating-sidebar .leftsidebar-link:focus-visible {
+    @apply ring-2 ring-primary-500 ring-offset-2 ring-offset-dark-2;
+  }
+
+  /* Otimizações de performance */
+  .floating-sidebar {
+    will-change: transform;
+    contain: layout style paint;
+  }
+
+  .menu-overlay {
+    will-change: opacity;
+    contain: layout style paint;
+  }
 
   /* Post Card */
   .post-card {
@@ -457,6 +462,7 @@
 }
 
 @layer components {
+
   /* SHADCN COMPONENTS */
   /* Form */
   .shad-form_label {
@@ -487,117 +493,131 @@
   .shad-button_ghost {
     @apply flex gap-4 items-center justify-start hover:bg-transparent hover:text-white !important;
   }
-  
+
   /* Adicione estes estilos ao seu globals.css */
 
-/* Estilos para o editor de texto rico */
-.rich-text-content {
-  @apply text-light-1;
-  line-height: 1.6;
-}
+  /* Estilos para o editor de texto rico */
+  .rich-text-content {
+    @apply text-light-1;
+    line-height: 1.6;
+  }
 
-.rich-text-content p {
-  @apply mb-3;
-}
+  .rich-text-content p {
+    @apply mb-3;
+  }
 
-.rich-text-content p:last-child {
-  @apply mb-0;
-}
+  .rich-text-content p:last-child {
+    @apply mb-0;
+  }
 
-.rich-text-content strong,
-.rich-text-content b {
-  @apply font-bold text-primary-500;
-}
+  .rich-text-content strong,
+  .rich-text-content b {
+    @apply font-bold text-primary-500;
+  }
 
-.rich-text-content em,
-.rich-text-content i {
-  @apply italic;
-}
+  .rich-text-content em,
+  .rich-text-content i {
+    @apply italic;
+  }
 
-.rich-text-content ul {
-  @apply list-disc list-inside ml-4 mb-3;
-}
+  .rich-text-content ul {
+    @apply list-disc list-inside ml-4 mb-3;
+  }
 
-.rich-text-content ol {
-  @apply list-decimal list-inside ml-4 mb-3;
-}
+  .rich-text-content ol {
+    @apply list-decimal list-inside ml-4 mb-3;
+  }
 
-.rich-text-content li {
-  @apply mb-1;
-}
+  .rich-text-content li {
+    @apply mb-1;
+  }
 
-.rich-text-content br {
-  @apply block;
-  content: "";
-  margin-bottom: 0.75rem;
-}
+  .rich-text-content br {
+    @apply block;
+    content: "";
+    margin-bottom: 0.75rem;
+  }
 
-/* Estilos específicos para o editor contentEditable */
-[contenteditable="true"] {
-  @apply text-light-1;
-  line-height: 1.6;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
+  /* Estilos específicos para o editor contentEditable */
+  [contenteditable="true"] {
+    @apply text-light-1;
+    line-height: 1.6;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
 
-[contenteditable="true"]:empty:before {
-  content: attr(data-placeholder);
-  color: #7c7c8a;
-  font-style: italic;
-  pointer-events: none;
-}
+  [contenteditable="true"]:empty:before {
+    content: attr(data-placeholder);
+    color: #7c7c8a;
+    font-style: italic;
+    pointer-events: none;
+  }
 
-[contenteditable="true"]:focus:before {
-  content: none;
-}
+  [contenteditable="true"]:focus:before {
+    content: none;
+  }
 
-/* Melhorar quebras de linha no editor */
-[contenteditable="true"] br {
-  display: block;
-  margin-bottom: 0.5rem;
-  content: "";
-}
+  /* Melhorar quebras de linha no editor */
+  [contenteditable="true"] br {
+    display: block;
+    margin-bottom: 0.5rem;
+    content: "";
+  }
 
-[contenteditable="true"] div {
-  margin-bottom: 0.5rem;
-}
+  [contenteditable="true"] div {
+    margin-bottom: 0.5rem;
+  }
 
-/* Melhorar a aparência das listas no editor */
-[contenteditable="true"] ul {
-  @apply list-disc list-inside ml-4 mb-3;
-}
+  /* Melhorar a aparência das listas no editor */
+  [contenteditable="true"] ul {
+    @apply list-disc list-inside ml-4 mb-3;
+  }
 
-[contenteditable="true"] ol {
-  @apply list-decimal list-inside ml-4 mb-3;
-}
+  [contenteditable="true"] ol {
+    @apply list-decimal list-inside ml-4 mb-3;
+  }
 
-[contenteditable="true"] li {
-  @apply mb-1;
-}
+  [contenteditable="true"] li {
+    @apply mb-1;
+  }
 
-[contenteditable="true"] strong,
-[contenteditable="true"] b {
-  @apply font-bold text-primary-500;
-}
+  [contenteditable="true"] strong,
+  [contenteditable="true"] b {
+    @apply font-bold text-primary-500;
+  }
 
-[contenteditable="true"] em,
-[contenteditable="true"] i {
-  @apply italic;
-}
+  [contenteditable="true"] em,
+  [contenteditable="true"] i {
+    @apply italic;
+  }
 
-/* Garantir que o texto não quebre de forma estranha */
-[contenteditable="true"] * {
-  max-width: 100%;
-}
+  /* Garantir que o texto não quebre de forma estranha */
+  [contenteditable="true"] * {
+    max-width: 100%;
+  }
 
-/* Estilos para melhor visualização */
-.rich-text-content {
-  white-space: pre-wrap;
-  word-break: break-word;
-}
+  /* Estilos para melhor visualização */
+  .rich-text-content {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
 
-/* Ajustar espaçamento entre elementos */
-.rich-text-content > *:not(:last-child) {
-  margin-bottom: 0.75rem;
-}
+  /* Ajustar espaçamento entre elementos */
+  .rich-text-content>*:not(:last-child) {
+    margin-bottom: 0.75rem;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
 }

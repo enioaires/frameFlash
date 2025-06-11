@@ -522,3 +522,31 @@ export async function getPublicPosts() {
     throw error;
   }
 }
+
+export async function getRecentPostsPaginated(page: number = 1, limit: number = 10) {
+  const offset = (page - 1) * limit;
+  
+  try {
+    const posts = await database.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [
+        Query.orderDesc('$createdAt'), 
+        Query.limit(limit),
+        Query.offset(offset)
+      ]
+    );
+
+    if (!posts) throw Error;
+
+    return {
+      ...posts,
+      hasMore: posts.documents.length === limit,
+      currentPage: page,
+      totalPages: Math.ceil((posts.total || 0) / limit)
+    };
+  } catch (error) {
+    console.log("Error getting paginated posts:", error);
+    throw error;
+  }
+}

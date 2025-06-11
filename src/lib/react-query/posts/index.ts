@@ -11,6 +11,7 @@ import {
   getPostsByTagForUser,
   getPublicPosts,
   getRecentPosts,
+  getRecentPostsPaginated,
   getUserPosts,
   likePost,
   savePost,
@@ -417,5 +418,13 @@ export const useGetUserPosts = (userId?: string) => {
     queryKey: [QUERY_KEYS.GET_USER_POSTS, userId],
     queryFn: () => getUserPosts(userId),
     enabled: !!userId,
+  });
+};
+
+export const useGetRecentPostsPaginated = (page: number = 1, limit: number = 10) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_RECENT_POSTS, 'paginated', page, limit],
+    queryFn: () => getRecentPostsPaginated(page, limit),
+    staleTime: 2 * 60 * 1000,
   });
 };

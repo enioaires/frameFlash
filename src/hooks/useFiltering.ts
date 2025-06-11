@@ -63,7 +63,6 @@ export const useAdventureFiltering = () => {
   };
 };
 
-// 🆕 CORRIGIDO: Lógica de filtragem de posts para incluir posts públicos
 export const usePostFiltering = (posts: Models.Document[] = []) => {
   const { 
     userAdventureIds, 
@@ -73,74 +72,42 @@ export const usePostFiltering = (posts: Models.Document[] = []) => {
 
   const filteredPosts = useMemo(() => {
     if (!posts.length) return [];
-
-    // Admin vê todos os posts
     if (userIsAdmin) return posts;
 
+    const publicAdventureIds = publicAdventures.map(a => a.$id);
+
     return posts.filter(post => {
-      // 🆕 PRIORIDADE 1: Posts públicos (sem aventuras) - TODOS podem ver
       if (!post.adventures || !Array.isArray(post.adventures) || post.adventures.length === 0) {
         return true;
       }
       
-      // 🆕 PRIORIDADE 2: Posts em aventuras públicas - TODOS podem ver
-      const publicAdventureIds = publicAdventures.map(a => a.$id);
       const hasPublicAdventures = post.adventures.some((adventureId: string) => 
         publicAdventureIds.includes(adventureId)
       );
       
-      if (hasPublicAdventures) {
-        return true;
-      }
+      if (hasPublicAdventures) return true;
       
-      // 🆕 PRIORIDADE 3: Posts em aventuras privadas onde o usuário participa
-      const hasUserAdventures = post.adventures.some((adventureId: string) => 
+      return post.adventures.some((adventureId: string) => 
         userAdventureIds.includes(adventureId)
       );
-      
-      return hasUserAdventures;
     });
   }, [posts, userAdventureIds, publicAdventures, userIsAdmin]);
 
-  // 🆕 NOVO: Estatísticas detalhadas
   const stats = useMemo(() => {
     const totalPosts = posts.length;
     const visiblePosts = filteredPosts.length;
-    const hiddenPosts = totalPosts - visiblePosts;
     
-    const publicPosts = posts.filter(post => 
-      !post.adventures || !Array.isArray(post.adventures) || post.adventures.length === 0
-    ).length;
-    
-    const publicAdventureIds = publicAdventures.map(a => a.$id);
-    const publicAdventurePosts = posts.filter(post => 
-      post.adventures && Array.isArray(post.adventures) && 
-      post.adventures.some((id: string) => publicAdventureIds.includes(id))
-    ).length;
-    
-    const privatePosts = posts.filter(post => 
-      post.adventures && Array.isArray(post.adventures) && post.adventures.length > 0 &&
-      !post.adventures.some((id: string) => publicAdventureIds.includes(id))
-    ).length;
-
     return {
       totalPosts,
       visiblePosts,
-      hiddenPosts,
-      publicPosts,
-      publicAdventurePosts,
-      privatePosts,
+      hiddenPosts: totalPosts - visiblePosts,
+      publicPosts: posts.filter(post => 
+        !post.adventures || !Array.isArray(post.adventures) || post.adventures.length === 0
+      ).length,
     };
-  }, [posts, filteredPosts, publicAdventures]);
+  }, [posts, filteredPosts]);
 
-  return {
-    filteredPosts,
-    totalPosts: posts.length,
-    visiblePosts: filteredPosts.length,
-    hiddenPosts: posts.length - filteredPosts.length,
-    canSeeAll: userIsAdmin,
-    stats, // 🆕 NOVO
-  };
+  return { filteredPosts, stats };
 };
 
 // Hook para filtrar aventuras baseado em permissões
