@@ -1,3 +1,4 @@
+import OnlineStatusTracker from "@/components/shared/OnlineStatusTracker";
 import OrganizedSidebar from "@/components/shared/OrganizedSidebar";
 import { Outlet } from "react-router-dom";
 import { SidebarProvider } from "@/components/shared/Topbar";
@@ -7,6 +8,7 @@ import Topbar from "@/components/shared/Topbar";
 const RootLayout = () => {
   return (
     <SidebarProvider>
+      <OnlineStatusTracker />
       <div className="w-full flex flex-col h-full">
         <Topbar />
         <OrganizedSidebar />

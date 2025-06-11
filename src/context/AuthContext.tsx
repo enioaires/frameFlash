@@ -4,7 +4,6 @@ import { getCurrentUser, initializeUserLastSeen } from "@/lib/appwrite/auth/api"
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { isAdminById } from "@/lib/adventures";
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const INITIAL_USER = {
   id: "",
@@ -20,8 +19,8 @@ const INITIAL_STATE = {
   user: INITIAL_USER,
   isLoading: false,
   isAuthenticated: false,
-  setUser: () => {},
-  setIsAuthenticated: () => {},
+  setUser: () => { },
+  setIsAuthenticated: () => { },
   checkAuthUser: async () => false as boolean,
 };
 
@@ -32,7 +31,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [hasInitialized, setHasInitialized] = useState<boolean>(false);
-  
+
   // Usar refs para evitar múltiplas chamadas simultâneas
   const initializingRef = useRef<boolean>(false);
   const checkingAuthRef = useRef<boolean>(false);
@@ -49,7 +48,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     checkingAuthRef.current = true;
     setIsLoading(true);
-    
+
     try {
       const currentAccount = await getCurrentUser();
 
@@ -70,7 +69,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         // VERIFICAR SE O USUÁRIO TEM ROLE DEFINIDA
         let userRole = userWithLastSeen.role;
-        
+
         // FALLBACK: Se não tem role, verificar por ID (transição)
         if (!userRole) {
           userRole = isAdminById(userWithLastSeen.$id) ? 'admin' : 'user';
@@ -119,7 +118,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       try {
         const cookieFallback = localStorage.getItem("cookieFallback");
-        
+
         if (
           cookieFallback === "[]" ||
           cookieFallback === null ||
@@ -131,7 +130,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         const isAuth = await checkAuthUser();
-        
+
         // Limpar cookie inválido
         if (!isAuth && cookieFallback && cookieFallback !== "[]") {
           console.log('Clearing invalid auth cookie');
@@ -149,13 +148,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     initializeAuth();
   }, []); // Executar apenas uma vez
-
-  // Hook de online status - só executar após autenticação
-  useOnlineStatus({
-    updateInterval: 2,
-    enableVisibilityTracking: true,
-    enableBeforeUnload: true
-  });
 
   // Navegação automática
   useEffect(() => {
